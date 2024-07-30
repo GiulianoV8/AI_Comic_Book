@@ -1,0 +1,26 @@
+{
+    "name": "comic-book-project",
+    "version": "1.0.0",
+    "description": "A comic book project with user authentication",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "aws-amplify": "^6.4.3",
+        "aws-sdk": "^2.1664.0",
+        "body-parser": "^1.20.2",
+        "express": "^4.19.2"
+    },
+    "author": "Giuliano Vitale",
+    "devDependencies": {
+        "@aws-amplify/backend": "^1.0.4",
+        "@aws-amplify/backend-cli": "^1.2.1",
+        "aws-cdk": "^2.150.0",
+        "aws-cdk-lib": "^2.150.0",
+        "constructs": "^10.3.0",
+        "esbuild": "^0.23.0",
+        "tsx": "^4.16.2",
+        "typescript": "^5.5.4"
+    }
+}

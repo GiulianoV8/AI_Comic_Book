@@ -1,0 +1,186 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    background-color: #333;
+    padding: 10px;
+}
+button{
+    cursor: pointer;
+}
+nav button{
+    color: white;
+    border: none;
+    font-size: 20px;
+    height: 40px; /* Set a consistent height */
+    line-height: 100%; /* Center text vertically */
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center text vertically */
+    justify-content: space-evenly; /* Center text horizontally */
+    padding: 10px;
+    text-align: center;
+}
+
+nav > div{
+    width: 20%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+a{
+    text-decoration: none;
+}
+
+#comic-title{
+    display: flex;
+    margin: auto;
+    width: 75%;
+    line-height: 2em;
+    max-width: 75%;
+    max-height: 2em;
+    font-size: 1em;
+    text-align: center;
+}
+
+#gearBtn{
+    background-color: #7a7a7a;
+}
+#questionBtn{
+    background-color: rgb(250, 173, 72);
+}
+.red-button {
+    background-color: rgb(155, 0, 0);
+}
+
+.text-box {
+    text-align: center;
+    margin: 20px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    height: 90%;
+    width: 90%;
+    gap: 90px;
+    padding: 5%;
+    margin: auto;
+}
+
+.grid-item {
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    text-align: center;
+    position: relative;
+    height: 150px;
+    width: 150px;
+}
+
+.grid-item.create {
+    background-color: #b3ffb3;
+    cursor: default;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+}
+
+.event-input {
+    width: 80%;
+    height: 20%;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    padding: 5px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    border-top: 1px solid #ccc;
+}
+.event-submit {
+    width: 20%;
+    height: 20%;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    padding: 5px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    border-top: 1px solid #ccc;
+}
+
+
+.generated-image{
+    width: 100%;
+    height: 80%;
+    position: absolute;
+    padding: 0px;
+    left: 0;
+    top: 0;
+}
+
+.highlight {
+    border: 2px solid red;
+}
+
+.circle {
+    position: absolute;
+    margin: 5px;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: white;
+    border: 1px solid red;
+    display: none;
+}
+
+.circle.selected {
+    background-color: red;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+#deleteDropdown {
+    display: block;
+    position: absolute;
+    background-color: #333;
+    min-width: 120px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    left: 100%;
+    height: 100%;
+    top: 0;
+}
+
+#deleteDropdown #deleteBtn {
+    color: white;
+    background-color: #333;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    height: 40px; /* Match the height of the x button */
+    line-height: 40px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.submit-image{
+    width: 100%;
+    height: 100%;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+}
