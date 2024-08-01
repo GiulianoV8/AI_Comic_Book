@@ -4,30 +4,35 @@ const AWS = require('aws-sdk');
 const path = require('path');
 
 const app = express();
-const PORT = 3000;
+const PORT = 3001;
 
 AWS.config.update({
-    region: 'us-east-1', // replace with your region
-    accessKeyId: 'your-access-key-id', // replace with your access key ID
-    secretAccessKey: 'your-secret-access-key' // replace with your secret access key
+    region: 'us-east-1' // Replace with your region
+    // Use environment variables or AWS CLI configuration for credentials
 });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
-const TABLE_NAME = 'users';
+const TABLE_NAME = 'ComicUsers';
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Define a route for the root URL to serve login.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
 app.post('/signup', (req, res) => {
     const { username, email, password } = req.body;
+    console.log('Signup request body:', req.body); // Log the request body for debugging
     if (!username || !email || !password) {
-        return res.json({ success: false, message: 'All fields are required.' });
+        return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
 
     const user = {
         TableName: TABLE_NAME,
         Item: {
-            userId: username,
+            userID: username,
             email: email,
             password: password
         }
@@ -36,35 +41,36 @@ app.post('/signup', (req, res) => {
     docClient.put(user, (err, data) => {
         if (err) {
             console.error('Error adding user:', JSON.stringify(err, null, 2));
-            return res.json({ success: false, message: 'Error signing up.' });
+            return res.status(500).json({ success: false, message: 'Error signing up.' });
         } else {
-            return res.json({ success: true, message: 'User signed up successfully.' });
+            return res.status(201).json({ success: true, message: 'User signed up successfully.' });
         }
     });
 });
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
+    console.log('Login request body:', req.body); // Log the request body for debugging
     if (!username || !password) {
-        return res.json({ success: false, message: 'Username and password are required.' });
+        return res.status(400).json({ success: false, message: 'Username and password are required.' });
     }
 
     const params = {
         TableName: TABLE_NAME,
         Key: {
-            userId: username
+            userID: username
         }
     };
 
     docClient.get(params, (err, data) => {
         if (err) {
             console.error('Error logging in:', JSON.stringify(err, null, 2));
-            return res.json({ success: false, message: 'Error logging in.' });
+            return res.status(500).json({ success: false, message: 'Error logging in.' });
         } else {
             if (data.Item && data.Item.password === password) {
-                return res.json({ success: true });
+                return res.status(200).json({ success: true });
             } else {
-                return res.json({ success: false, message: 'Invalid username or password.' });
+                return res.status(401).json({ success: false, message: 'Invalid username or password.' });
             }
         }
     });

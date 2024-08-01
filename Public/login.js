@@ -11,11 +11,16 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector('.signup-container').style.display = 'block';
     });
 
+    document.getElementById('backToLogin-button').addEventListener('click', () => {
+        document.querySelector('.login-container').style.display = 'block';
+        document.querySelector('.signup-container').style.display = 'none';
+    });
     document.querySelector('form#signUpForm').addEventListener('submit', event => {
         event.preventDefault();
         const newUsername = document.querySelector('#newUsername').value;
+        const newEmail = document.querySelector('#newEmail').value;
         const newPassword = document.querySelector('#newPassword').value;
-        signUp(newUsername, newPassword);
+        signUp(newUsername, newEmail, newPassword);
     });
 });
 
@@ -30,7 +35,7 @@ function authenticate(username, password) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Login successful!');
+            window.location.replace("/home.html");
         } else {
             alert('Invalid username or password.');
         }
@@ -40,13 +45,13 @@ function authenticate(username, password) {
     });
 }
 
-function signUp(newUsername, newPassword) {
+function signUp(newUsername, newEmail, newPassword) {
     fetch('/signup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username: newUsername, password: newPassword })
+        body: JSON.stringify({ username: newUsername, email: newEmail, password: newPassword })
     })
     .then(response => response.json())
     .then(data => {

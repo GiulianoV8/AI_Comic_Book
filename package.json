@@ -8,9 +8,10 @@
     },
     "dependencies": {
         "aws-amplify": "^6.4.3",
-        "aws-sdk": "^2.1664.0",
+        "aws-sdk": "^2.1665.0",
         "body-parser": "^1.20.2",
-        "express": "^4.19.2"
+        "express": "^4.19.2",
+        "path": "^0.12.7"
     },
     "author": "Giuliano Vitale",
     "devDependencies": {
