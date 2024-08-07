@@ -1,13 +1,127 @@
+body {
+    font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+nav {
+    background-color: #ffcc00;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav a button {
+    background-color: #00bfff;
+    color: white;
+    border: 2px solid #000;
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+nav a button:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 10px 2px #ffcc00;
+}
+
 .settings-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
-    padding: 20px;
+    gap: 15px;
+    padding: 50px;
 }
 
 .settings-container button {
-    padding: 10px 20px;
-    font-size: 16px;
+    background-color: #ffcc00;
+    color: #000;
+    border: 3px solid #000;
+    border-radius: 15px;
+    padding: 15px 30px;
+    font-size: 20px;
+    font-weight: bold;
     cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
+
+.settings-container button:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 15px 3px #00bfff;
+}
+
+#logoutBtn{
+    background-color: #ff6666;
+}
+#logoutBtn:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 15px 3px #ffcc00;
+}
+.settings-container {
+    position: relative;
+}
+
+.hidden {
+    display: none;
+}
+.settings-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pre-set-title-container {
+    position: relative;
+}
+
+#titleInputContainer {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f0f0f0;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: left 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+#titleInputContainer.visible {
+    left: calc(100% + 10px);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#titleInput {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+#submitTitleBtn {
+    padding: 5px 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#submitTitleBtn:hover {
+    background-color: #0056b3;
+}
+

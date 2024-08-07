@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings Page</title>
-    <link rel="stylesheet" href="home.css">
     <link rel="stylesheet" href="settings.css">
 </head>
 <body>
@@ -12,10 +11,17 @@
         <a href="home.html"><button id="homeBtn">Home</button></a>
     </nav>
     <div class="settings-container">
-        <button id="editCharacterBtn">Edit Character</button>
-        <button id="preSetTitleBtn">Pre-set Title</button>
-        <button id="feedbackBtn">Questions, Feedback, Contact</button>
+        <button id="editHeroBtn">Edit Hero</button>
+        <div class="pre-set-title-container">
+            <button id="preSetTitleBtn">Pre-set Title</button>
+            <div id="titleInputContainer" class="hidden">
+                <input type="text" id="titleInput" placeholder="Enter new title">
+                <button id="submitTitleBtn">Submit</button>
+            </div>
+        </div>
+        <a href="mailto:contact@example.com?subject=Questions%20and%20Feedback"><button id="feedbackBtn">Questions, Feedback, Contact</button></a>
         <a href="login.html"><button id="logoutBtn">Logout</button></a>
     </div>
+    <script src="settings.js"></script>
 </body>
 </html>

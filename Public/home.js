@@ -5,28 +5,33 @@ document.addEventListener("DOMContentLoaded", function() {
     let deleteMode = false;
     let selectedItems = [];
 
+    userID = localStorage.getItem("userID");
+    fillData(userID);
+
     xBtn.addEventListener("click", function() {
         dropdown.classList.toggle('hidden');
         console.log('Dropdown toggled');
         if (!deleteMode) {
             deleteMode = true;
             document.querySelectorAll(".grid-item").forEach(item => {
-                let circle = document.createElement("div");
-                circle.classList.add("circle");
-                circle.style.display = "block";
-                circle.addEventListener("click", function() {
-                    console.log("Selecting for deletion");
-                    if (deleteMode && circle.classList.contains("circle")) {
-                        circle.classList.toggle("selected");
-                        circle.parentElement.classList.toggle("highlight");
-                        if (circle.classList.contains("selected")) {
-                            selectedItems.push(circle.parentElement);
-                        } else {
-                            selectedItems = selectedItems.filter(item => item !== circle.parentElement);
+                if(!item.classList.contains("create")){ 
+                    let circle = document.createElement("div");
+                    circle.classList.add("circle");
+                    circle.style.display = "block";
+                    circle.addEventListener("click", function() {
+                        console.log("Selecting for deletion");
+                        if (deleteMode && circle.classList.contains("circle")) {
+                            circle.classList.toggle("selected");
+                            circle.parentElement.classList.toggle("highlight");
+                            if (circle.classList.contains("selected")) {
+                                selectedItems.push(circle.parentElement);
+                            } else {
+                                selectedItems = selectedItems.filter(item => item !== circle.parentElement);
+                            }
                         }
-                    }
-                });
-                item.appendChild(circle);
+                    });
+                    item.appendChild(circle);
+                }
             });
         } else {
             document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
@@ -42,10 +47,9 @@ document.addEventListener("DOMContentLoaded", function() {
         selectedItems.forEach(item => {
             let img = item.querySelector('.generated-image');
             if (img) { img.remove(); }
-
-            document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
         });
-
+        document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
+        document.querySelectorAll(".highlight").forEach(highlight => highlight.classList.remove("highlight"));
         // Reset delete mode and close dropdown
         deleteMode = false;
         selectedItems = [];
@@ -55,6 +59,34 @@ document.addEventListener("DOMContentLoaded", function() {
     let forms = document.querySelectorAll(".input-container");
     forms.forEach(item => item.addEventListener("submit", e => e.preventDefault()));
 });
+
+async function fillData(userID) {
+    try {
+        // Fetch user data from the backend
+        const response = await fetch(`/getUserData?userID=${userID}`);
+        const userData = await response.json();
+
+        // Fill in the #comic-title input tag with the comicTitle attribute value
+        const comicTitleInput = document.getElementById('comic-title');
+        if (comicTitleInput && userData.comicTitle) {
+            comicTitleInput.value = userData.comicTitle;
+            localStorage.setItem('comicTitle', userData.comicTitle);
+        }
+
+        // Get images from the datatable's image urls list attribute
+        const imageUrls = userData.imageUrls || [];
+
+        // Fill in each .generated-img img tag's src attribute with the corresponding url
+        const generatedImgs = document.querySelectorAll('.generated-img img');
+        generatedImgs.forEach((img, index) => {
+            if (imageUrls[index]) {
+                img.src = imageUrls[index];
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+}
 
 function submitEvent(form, description){
     console.log(description);

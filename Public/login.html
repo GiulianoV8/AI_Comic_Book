@@ -43,6 +43,25 @@
         </form>
     </div>
 
+    <div class="attributes-container" style="display: none;">
+        <h1 class="title">Create Your Hero</h1>
+        <h2 class="subtitle">Physical Attributes</h2>
+        <form id="attributesForm">
+            <div id="attributes-container">
+                <div class="attribute" id="attribute-1">
+                    <label for="attributeInput-1">Attribute 1:</label>
+                    <input type="text" id="attributeInput-1" name="attributes[]">
+                    <button type="button" class="delete-attribute" onclick="deleteAttribute(1)">Delete</button>
+                </div>
+            </div>
+            <div class="buttons">
+                <button type="button" id="backToSignUp-button" class="login-button">Back to Sign Up</button>
+                <button type="button" onclick="addAttribute()">Add Attribute</button>
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+
     <script src="login.js"></script>
 </body>
 </html>

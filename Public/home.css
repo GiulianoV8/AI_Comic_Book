@@ -10,51 +10,58 @@ nav {
     background-color: #333;
     padding: 10px;
 }
-button{
-    cursor: pointer;
-}
-nav button{
+
+nav button {
     color: white;
     border: none;
     font-size: 20px;
-    height: 40px; /* Set a consistent height */
-    line-height: 100%; /* Center text vertically */
-    display: flex; /* Use flexbox for alignment */
-    align-items: center; /* Center text vertically */
-    justify-content: space-evenly; /* Center text horizontally */
-    padding: 10px;
-    text-align: center;
-}
-
-nav > div{
-    width: 20%;
+    height: 40px;
+    line-height: 100%;
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
+    padding: 5px;
+    text-align: center;
+    background-color: #444; /* Darker shade for comic theme */
+    transition: background-color 0.3s;
+    cursor: pointer;
+    border-radius: 5px;
 }
 
-a{
+a {
     text-decoration: none;
 }
 
-#comic-title{
-    display: flex;
-    margin: auto;
-    width: 75%;
-    line-height: 2em;
-    max-width: 75%;
-    max-height: 2em;
-    font-size: 1em;
-    text-align: center;
+.title-box {
+    position: relative;
+    display: inline-block;
+    background-color: #f0f0f0; /* Match background color */
+    border: 2px solid #555; /* Match border color */
+    padding: 20px; /* Adjust padding as needed */
+    margin: 20px;
+    border-radius: 5px; /* Optional rounded corners */
+    overflow: hidden; /* Ensure slant effect does not overflow */
 }
 
-#gearBtn{
+#comic-title {
+    font-size: 1.5em;
+    text-align: center;
+    border: none; /* Remove default border */
+    background-color: transparent; /* Make background transparent */
+    width: 100%; /* Full width to align with the box */
+    box-sizing: border-box;
+    padding: 10px;
+    color: #333; /* Text color */
+}
+
+#gearBtn {
     background-color: #7a7a7a;
 }
-#questionBtn{
+
+#questionBtn {
     background-color: rgb(250, 173, 72);
 }
+
 .red-button {
     background-color: rgb(155, 0, 0);
 }
@@ -66,56 +73,58 @@ a{
 
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     height: 90%;
     width: 90%;
-    gap: 90px;
+    gap: 20px; /* Reduced gap for better layout */
     padding: 5%;
     margin: auto;
 }
 
 .grid-item {
-    background-color: #f0f0f0;
-    border: 2px solid #ccc;
+    background-color: #f9f9f9; /* Slightly different to match comic theme */
+    border: 2px solid #ddd; /* Match settings page border color */
     text-align: center;
     position: relative;
     height: 150px;
     width: 150px;
+    transition: background-color 0.3s;
+}
+
+.grid-item:hover {
+    background-color: #e0e0e0; /* Light hover effect */
 }
 
 .grid-item.create {
-    background-color: #b3ffb3;
+    background-color: #d0f0d0; /* Lighter green for create item */
     cursor: default;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
 }
 
 .event-input {
     width: 80%;
     height: 20%;
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd; /* Match settings page border color */
     padding: 5px;
     position: absolute;
     bottom: 0;
     left: 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #ddd;
 }
+
 .event-submit {
     width: 20%;
     height: 20%;
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd; /* Match settings page border color */
     padding: 5px;
     position: absolute;
     bottom: 0;
     right: 0;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #ddd;
 }
 
-
-.generated-image{
+.generated-image {
     width: 100%;
     height: 80%;
     position: absolute;
@@ -153,7 +162,7 @@ a{
 #deleteDropdown {
     display: block;
     position: absolute;
-    background-color: #333;
+    background-color: rgb(255, 31, 31);
     min-width: 120px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
@@ -164,12 +173,13 @@ a{
 
 #deleteDropdown #deleteBtn {
     color: white;
-    background-color: #333;
-    border: none;
+    background-color: rgb(255, 31, 31);
+    border: 2px solid rgb(159, 0, 0);
+    border-radius: 0px;
     padding: 10px;
     text-align: center;
     width: 100%;
-    height: 40px; /* Match the height of the x button */
+    height: 40px;
     line-height: 40px;
 }
 
@@ -177,7 +187,7 @@ a{
     display: none !important;
 }
 
-.submit-image{
+.submit-image {
     width: 100%;
     height: 100%;
     right: 0;
