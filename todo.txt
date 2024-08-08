@@ -1,4 +1,3 @@
--Create Edit Hero Functionality
 -Integrate image generator (Novita)
     -Add image fill
 -Add change password and forgot password at login screen

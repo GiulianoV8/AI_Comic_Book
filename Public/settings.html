@@ -11,7 +11,6 @@
         <a href="home.html"><button id="homeBtn">Home</button></a>
     </nav>
     <div class="settings-container">
-        <button id="editHeroBtn">Edit Hero</button>
         <div class="pre-set-title-container">
             <button id="preSetTitleBtn">Pre-set Title</button>
             <div id="titleInputContainer" class="hidden">
@@ -20,8 +19,24 @@
             </div>
         </div>
         <a href="mailto:contact@example.com?subject=Questions%20and%20Feedback"><button id="feedbackBtn">Questions, Feedback, Contact</button></a>
+        <button id="editAttributesBtn">Edit Attributes</button>
         <a href="login.html"><button id="logoutBtn">Logout</button></a>
     </div>
+
+    <!-- Modal for editing attributes -->
+    <div id="editAttributesModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Edit Hero</h2>
+            <form id="editAttributesForm">
+                <div id="attributesContainer"></div>
+                <button type="button" id="addAttributeBtn">Add Attribute</button>
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
     <script src="settings.js"></script>
 </body>
 </html>
+

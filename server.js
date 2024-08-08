@@ -135,6 +135,68 @@ app.post('/setComicTitle', async (req, res) => {
     }
 });
 
+app.get('/getUserAttributes', async (req, res) => {
+    const userID = req.query.userID;
+
+    console.log(`Received request for user attributes with userID: ${userID}`);
+
+    if (!userID) {
+        return res.status(400).json({ error: 'Missing userID parameter' });
+    }
+
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            userID: userID
+        }
+    };
+
+    try {
+        const data = await docClient.get(params).promise();
+        if (!data.Item) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log(`Successfully fetched attributes for userID: ${userID}`);
+        res.json(data.Item.attributes); // Return only the attributes
+    } catch (error) {
+        console.error('Error fetching data from DynamoDB:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+app.post('/editAttributes', async (req, res) => {
+    const { userID, attributes } = req.body;
+
+    if (!userID || !attributes) {
+        return res.status(400).json({ error: 'Missing userID or attributes parameter' });
+    }
+
+    const params = {
+        TableName: TABLE_NAME,
+        Key: {
+            userID: userID
+        },
+        UpdateExpression: 'set attributes = :attributes',
+        ExpressionAttributeValues: {
+            ':attributes': attributes
+        }
+    };
+
+    try {
+        await docClient.update(params).promise();
+        res.status(200).json({ message: 'Attributes updated successfully' });
+    } catch (err) {
+        console.log('Error updating attributes: ', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
+
+
+
+
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
