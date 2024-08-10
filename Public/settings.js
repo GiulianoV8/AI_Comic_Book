@@ -191,10 +191,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     preSetTitleBtn.addEventListener('click', async () => {
         if (!titleInputContainer.classList.contains('visible')) {
-            titleInput.placeholder = localStorage.getItem('comicTitle') || 'Comic Book Title';
+            console.log(localStorage.getItem('comicTitle'));
 
             titleInputContainer.classList.add('visible');
             titleInputContainer.classList.remove('hidden');
+            titleInput.value = localStorage.getItem('comicTitle') || 'Comic Book Title';
         } else {
             titleInputContainer.classList.remove('visible');
             titleInputContainer.classList.add('hidden');

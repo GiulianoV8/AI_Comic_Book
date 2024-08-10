@@ -9,8 +9,63 @@ document.addEventListener("DOMContentLoaded", function() {
     const addGridItemBtn = document.getElementById("addGridItemBtn");
     const deleteGridItemBtn = document.getElementById("deleteGridItemBtn");
 
+    const comicTitle = document.getElementById("comic-title");
+    const editTitleBtn = document.getElementById("edit-title-btn");
+    const saveTitleBtn = document.getElementById("save-title-btn");
+    const cancelTitleBtn = document.getElementById("cancel-title-btn");
+
     userID = localStorage.getItem("userID");
     fillData(userID);
+
+    let previousTitle = comicTitle.innerText;
+
+    // Function to enable editing
+    editTitleBtn.addEventListener("click", function() {
+        previousTitle = comicTitle.innerText;
+        comicTitle.contentEditable = true;
+        comicTitle.focus();
+        editTitleBtn.style.display = "none";
+        saveTitleBtn.style.display = "inline-block";
+        cancelTitleBtn.style.display = "inline-block";
+    });
+
+    // Function to cancel editing
+    cancelTitleBtn.addEventListener("click", function() {
+        comicTitle.innerText = previousTitle;
+        comicTitle.contentEditable = false;
+        editTitleBtn.style.display = "inline-block";
+        saveTitleBtn.style.display = "none";
+        cancelTitleBtn.style.display = "none";
+    });
+
+    // Function to save the new title
+    saveTitleBtn.addEventListener("click", async function() {
+        const newTitle = comicTitle.innerText.trim();
+        if (newTitle) {
+            // Update the comic title in DynamoDB
+            const response = await fetch('/setComicTitle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userID: userID, comicTitle: newTitle })
+            });
+
+            if (response.ok) {
+                alert('Title updated successfully');
+                previousTitle = newTitle;
+                comicTitle.contentEditable = false;
+                editTitleBtn.style.display = "inline-block";
+                saveTitleBtn.style.display = "none";
+                cancelTitleBtn.style.display = "none";
+            } else {
+                alert('Error updating title');
+            }
+            localStorage.setItem('comicTitle', newTitle);
+        } else {
+            alert('Please enter a title');
+        }
+    });
 
     // Add new grid item on "Add Grid Item" button click
     addGridItemBtn.addEventListener("click", function() {
@@ -89,15 +144,16 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 async function fillData(userID) {
+    console.log('Filling Data');
     try {
         // Fetch user data from the backend
         const response = await fetch(`/getUserData?userID=${userID}`);
         const userData = await response.json();
 
         // Fill in the #comic-title input tag with the comicTitle attribute value
-        const comicTitleInput = document.getElementById('comic-title');
-        if (comicTitleInput && userData.comicTitle) {
-            comicTitleInput.value = userData.comicTitle;
+        const comicTitle = document.getElementById('comic-title');
+        if (comicTitle && userData.comicTitle) {
+            comicTitle.innerText = userData.comicTitle;
             localStorage.setItem('comicTitle', userData.comicTitle);
         }
 

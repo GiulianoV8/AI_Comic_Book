@@ -43,9 +43,15 @@
             </button>
         </div>
     </nav>
-    <div class="title-box">
-        <input type="text" id="comic-title" placeholder="Enter title here" />
+    <div id="title-box" class="title-box">
+        <span id="comic-title"></span>
+        <div id="edit-title-btns">
+            <button id="edit-title-btn" class="edit-btn">✏️</button>
+            <button id="save-title-btn" class="save-btn" style="display: none;">✔️</button>
+            <button id="cancel-title-btn" class="cancel-btn" style="display: none;">❌</button>
+        </div>
     </div>
+    
     
     <div class="controls">
         <button id="addGridItemBtn">Add Panel</button>

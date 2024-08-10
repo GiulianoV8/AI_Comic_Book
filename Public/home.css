@@ -88,24 +88,58 @@ a {
 /* Title Box Styling */
 .title-box {
     position: relative;
+    padding: 10px 15px;
+    background-color: #ffe600;
+    border: 3px solid #000;
+    border-radius: 10px;
+    box-shadow: 3px 3px 0px #000;
+    font-family: 'Comic Sans MS', sans-serif;
     display: inline-block;
-    background-color: #f0f0f0; /* Match background color */
-    border: 2px solid #555; /* Match border color */
-    padding: 20px;
-    margin: 20px;
-    border-radius: 5px; /* Optional rounded corners */
-    box-shadow: 5px 5px 0 #333;
+    margin-bottom: 5%;
 }
 
-#comic-title {
-    font-size: 1.5em;
-    text-align: center;
-    border: none;
-    background-color: transparent;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    color: #333;
+.title-box span {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 1.5rem;
+    color: #000;
+}
+
+#edit-title-btns {
+    display: inline-block;
+
+}
+.edit-btn, .save-btn, .cancel-btn {
+    background-color: #ff6347;
+    color: #fff;
+    border: 2px solid #000;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    height: 100%;
+    font-family: 'Comic Sans MS', sans-serif;
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.edit-btn:hover, .save-btn:hover, .cancel-btn:hover {
+    background-color: #ff4500;
+    box-shadow: 2px 2px 0px #000;
+}
+
+.save-btn, .cancel-btn {
+    display: none;
+}
+
+input#comic-title {
+    border: 2px solid #000;
+    padding: 5px;
+    font-family: 'Comic Sans MS', sans-serif;
+    font-size: 1.5rem;
+    background-color: #fff;
+    color: #000;
+    width: auto;
+    outline: none;
 }
 
 .controls {
