@@ -20,6 +20,8 @@
         </div>
         <a href="mailto:contact@example.com?subject=Questions%20and%20Feedback"><button id="feedbackBtn">Questions, Feedback, Contact</button></a>
         <button id="editAttributesBtn">Edit Attributes</button>
+        <button id="changeUsernameBtn">Change Username</button>
+        <button id="changePasswordBtn">Change Password</button>
         <a href="login.html"><button id="logoutBtn">Logout</button></a>
     </div>
 
@@ -32,6 +34,32 @@
                 <div id="attributesContainer"></div>
                 <button type="button" id="addAttributeBtn">Add Attribute</button>
                 <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Changing Username -->
+    <div id="changeUsernameModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Change Username</h2>
+            <form id="changeUsernameForm">
+                <label for="newUsername">New Username:</label>
+                <input type="text" id="newUsername" name="newUsername" required>
+                <button type="submit">Change Username</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Changing Password -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Change Password</h2>
+            <form id="changePasswordForm">
+                <label for="newPassword">New Password:</label>
+                <input type="password" id="newPassword" name="newPassword" required>
+                <button type="submit">Change Password</button>
             </form>
         </div>
     </div>

@@ -12,47 +12,67 @@ AWS.config.update({
 });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
+const ddb = new AWS.DynamoDB();
 const TABLE_NAME = 'ComicUsers';
+const COUNTER_TABLE_NAME = 'UserIDCounter';
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Generate a new userID using an atomic counter
+async function generateUserID() {
+    const params = {
+        TableName: COUNTER_TABLE_NAME,
+        Key: { CounterName: 'UserID' },
+        UpdateExpression: 'SET userID = if_not_exists(userID, :start) + :increment',
+        ExpressionAttributeValues: {
+            ':start': 1000,
+            ':increment': 1
+        },
+        ReturnValues: 'UPDATED_NEW'
+    };
+
+    const result = await docClient.update(params).promise();
+    return result.Attributes.userID;
+}
 
 // Define a route for the root URL to serve starting page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
-app.post('/signup', (req, res) => {
-    const { username, email, password, attributes, comicTitle, timeZone} = req.body;
+app.post('/signup', async (req, res) => {
+    const { username, email, password, attributes, comicTitle, timeZone } = req.body;
     console.log('Signup request body:', req.body); // Log the request body for debugging
     if (!username || !email || !password || !attributes) {
         return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
 
-    const user = {
-        TableName: TABLE_NAME,
-        Item: {
-            userID: username,
-            email: email,
-            password: password,
-            attributes: attributes,
-            comicTitle: comicTitle,
-            timeZone: timeZone,
-            imageUrls: []
-        }
-    };
+    try {
+        const userID = await generateUserID();
+        const user = {
+            TableName: TABLE_NAME,
+            Item: {
+                userID: userID.toString(),
+                username: username,
+                email: email,
+                password: password,
+                attributes: attributes,
+                comicTitle: comicTitle,
+                timeZone: timeZone,
+                imageUrls: []
+            }
+        };
 
-    docClient.put(user, (err, data) => {
-        if (err) {
-            console.error('Error adding user:', JSON.stringify(err, null, 2));
-            return res.status(500).json({ success: false, message: 'Error signing up.' });
-        } else {
-            return res.status(201).json({ success: true, message: 'User signed up successfully.' });
-        }
-    });
+        await docClient.put(user).promise();
+        return res.status(201).json({ success: true, message: 'User signed up successfully.' });
+    } catch (err) {
+        console.error('Error adding user:', JSON.stringify(err, null, 2));
+        return res.status(500).json({ success: false, message: 'Error signing up.' });
+    }
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     console.log('Login request body:', req.body); // Log the request body for debugging
     if (!username || !password) {
@@ -61,23 +81,24 @@ app.post('/login', (req, res) => {
 
     const params = {
         TableName: TABLE_NAME,
-        Key: {
-            userID: username
+        IndexName: 'username', // Using GSI (secondary index)
+        KeyConditionExpression: 'username = :username',
+        ExpressionAttributeValues: {
+            ':username': username
         }
     };
 
-    docClient.get(params, (err, data) => {
-        if (err) {
-            console.error('Error logging in:', JSON.stringify(err, null, 2));
-            return res.status(500).json({ success: false, message: 'Error logging in.' });
+    try {
+        const data = await docClient.query(params).promise();
+        if (data.Items.length > 0 && data.Items[0].password === password) {
+            return res.status(200).json({ success: true });
         } else {
-            if (data.Item && data.Item.password === password) {
-                return res.status(200).json({ success: true });
-            } else {
-                return res.status(401).json({ success: false, message: 'Invalid username or password.' });
-            }
+            return res.status(401).json({ success: false, message: 'Invalid username or password.' });
         }
-    });
+    } catch (err) {
+        console.error('Error logging in:', JSON.stringify(err, null, 2));
+        return res.status(500).json({ success: false, message: 'Error logging in.' });
+    }
 });
 
 app.get('/getUserData', async (req, res) => {
@@ -89,9 +110,7 @@ app.get('/getUserData', async (req, res) => {
 
     const params = {
         TableName: TABLE_NAME,
-        Key: {
-            userID: userID
-        }
+        Key: { userID: userID }
     };
 
     try {
@@ -116,18 +135,13 @@ app.post('/setComicTitle', async (req, res) => {
 
     const params = {
         TableName: TABLE_NAME,
-        Key: {
-            userID: userID
-        },
+        Key: { userID: userID },
         UpdateExpression: 'set comicTitle = :comicTitle',
-        ExpressionAttributeValues: {
-            ':comicTitle': comicTitle
-        }
+        ExpressionAttributeValues: { ':comicTitle': comicTitle }
     };
 
     try {
-        const data = await docClient.update(params).promise();
-        console.log(data);
+        await docClient.update(params).promise();
         res.status(200).json({ message: 'Comic title updated successfully' });
     } catch (err) {
         console.log('Error setting comicTitle: ', err);
@@ -146,9 +160,7 @@ app.get('/getUserAttributes', async (req, res) => {
 
     const params = {
         TableName: TABLE_NAME,
-        Key: {
-            userID: userID
-        }
+        Key: { userID: userID }
     };
 
     try {
@@ -174,13 +186,9 @@ app.post('/editAttributes', async (req, res) => {
 
     const params = {
         TableName: TABLE_NAME,
-        Key: {
-            userID: userID
-        },
+        Key: { userID: userID },
         UpdateExpression: 'set attributes = :attributes',
-        ExpressionAttributeValues: {
-            ':attributes': attributes
-        }
+        ExpressionAttributeValues: { ':attributes': attributes }
     };
 
     try {
@@ -192,10 +200,44 @@ app.post('/editAttributes', async (req, res) => {
     }
 });
 
+// Endpoint to change username
+app.post('/changeUsername', async (req, res) => {
+    const { userID, newUsername } = req.body;
 
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { userID: userID },
+        UpdateExpression: 'set username = :newUsername',
+        ExpressionAttributeValues: { ':newUsername': newUsername }
+    };
 
+    try {
+        await docClient.update(params).promise();
+        res.status(200).json({ message: 'Username updated successfully' });
+    } catch (error) {
+        console.log('Error changing username: ', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
+// Endpoint to change password
+app.post('/changePassword', async (req, res) => {
+    const { userID, newPassword } = req.body;
 
+    const params = {
+        TableName: TABLE_NAME,
+        Key: { userID: userID },
+        UpdateExpression: 'set password = :newPassword',
+        ExpressionAttributeValues: { ':newPassword': newPassword }
+    };
+
+    try {
+        await docClient.update(params).promise();
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

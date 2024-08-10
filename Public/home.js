@@ -5,8 +5,36 @@ document.addEventListener("DOMContentLoaded", function() {
     let deleteMode = false;
     let selectedItems = [];
 
+    const gridContainer = document.getElementById("gridContainer");
+    const addGridItemBtn = document.getElementById("addGridItemBtn");
+    const deleteGridItemBtn = document.getElementById("deleteGridItemBtn");
+
     userID = localStorage.getItem("userID");
     fillData(userID);
+
+    // Add new grid item on "Add Grid Item" button click
+    addGridItemBtn.addEventListener("click", function() {
+        const newGridItem = document.createElement("div");
+        newGridItem.classList.add("grid-item");
+        newGridItem.innerHTML = `
+            <img class="generated-image" src="">
+            <form class="input-container" onSubmit="submitEvent(this, description.value)">
+                <input class="event-input" type="text" name="description" placeholder="Event">
+                <button class="event-submit" type="submit">
+                    <img src="imgs/pencil_icon.jpeg" alt="Submit" class="submit-image">
+                </button>
+            </form>
+        `;
+        gridContainer.insertBefore(newGridItem, document.querySelector(".grid-item.create")); // Insert before the "Create" grid item
+    });
+
+    // Delete the last grid item (except the "Create" grid item) on "Delete Grid Item" button click
+    deleteGridItemBtn.addEventListener("click", function() {
+        const gridItems = gridContainer.querySelectorAll(".grid-item:not(.create)");
+        if (gridItems.length > 0) {
+            gridContainer.removeChild(gridItems[gridItems.length - 1]); // Remove the last grid item
+        }
+    });
 
     xBtn.addEventListener("click", function() {
         dropdown.classList.toggle('hidden');
@@ -89,6 +117,7 @@ async function fillData(userID) {
 }
 
 function submitEvent(form, description){
+    event.preventDefault()
     console.log(description);
     form.parentElement.querySelector('.generated-image').src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlrZqTCInyg6RfYC7Ape20o-EWP1EN_A8fOA&s'
 }

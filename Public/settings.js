@@ -1,9 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('loaded');
+    // Change title
     const preSetTitleBtn = document.getElementById('preSetTitleBtn');
     const titleInputContainer = document.getElementById('titleInputContainer');
     const titleInput = document.getElementById('titleInput');
     const submitTitleBtn = document.getElementById('submitTitleBtn');
+    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
+    // Change hero attributes
     const modal = document.getElementById('editAttributesModal');
     const editHeroBtn = document.getElementById('editAttributesBtn');
     const span = document.getElementsByClassName('close')[0];
@@ -11,7 +15,90 @@ document.addEventListener('DOMContentLoaded', () => {
     const attributesContainer = document.getElementById('attributesContainer');
     const addAttributeBtn = document.getElementById('addAttributeBtn');
 
+    // Change username/password
+    const changeUsernameModal = document.getElementById('changeUsernameModal');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const changeUsernameBtn = document.getElementById('changeUsernameBtn');
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const closeButtons = document.getElementsByClassName('close');
+
+
     let userID = localStorage.getItem('userID'); // Replace with the actual userID
+
+    // Open Change Username Modal
+    changeUsernameBtn.onclick = function() {
+        changeUsernameModal.style.display = 'block';
+    }
+
+    // Open Change Password Modal
+    changePasswordBtn.onclick = function() {
+        changePasswordModal.style.display = 'block';
+    }
+
+    // Close modals
+    Array.from(closeButtons).forEach(button => {
+        button.onclick = function() {
+            changeUsernameModal.style.display = 'none';
+            changePasswordModal.style.display = 'none';
+        }
+    });
+
+    window.onclick = function(event) {
+        if (event.target == changeUsernameModal) {
+            changeUsernameModal.style.display = 'none';
+        }
+        if (event.target == changePasswordModal) {
+            changePasswordModal.style.display = 'none';
+        }
+    }
+
+    // Handle Change Username Form Submission
+    document.getElementById('changeUsernameForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const newUsername = document.getElementById('newUsername').value;
+        try {
+            const response = await fetch('/changeUsername', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userID: userID, newUsername: newUsername })
+            });
+
+            if (response.ok) {
+                alert('Username updated successfully! Make sure your comic title is what you would like.');
+                changeUsernameModal.style.display = 'none';
+            } else {
+                alert('Error updating username');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
+
+    // Handle Change Password Form Submission
+    document.getElementById('changePasswordForm').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const newPassword = document.getElementById('newPassword').value;
+        try {
+            const response = await fetch('/changePassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userID: userID, newPassword: newPassword })
+            });
+
+            if (response.ok) {
+                alert('Password updated successfully!');
+                changePasswordModal.style.display = 'none';
+            } else {
+                alert('Error updating password');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    });
 
     editHeroBtn.onclick = async function() {
         modal.style.display = 'block';
