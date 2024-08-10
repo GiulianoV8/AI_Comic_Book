@@ -1,6 +1,6 @@
 body {
     font-family: 'Comic Sans MS', 'Comic Sans', cursive;
-    background-color: #f4f4f9;
+    background-color: #faf3e0;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -8,22 +8,25 @@ body {
 
 nav {
     background-color: #ffcc00;
-    padding: 10px;
+    padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 4px solid #000;
+    margin-bottom: 2%;
 }
 
 nav a button {
-    background-color: #00bfff;
+    background-color: #ff0000;
     color: white;
-    border: 2px solid #000;
+    border: 4px solid #000;
     border-radius: 10px;
     padding: 10px 20px;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    text-shadow: 2px 2px #000;
 }
 
 nav a button:hover {
@@ -35,98 +38,123 @@ nav a button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     padding: 50px;
+    background-color: #f4f4f9;
+    border: 4px solid #000;
+    border-radius: 15px;
+    box-shadow: 10px 10px 0px 0px #000;
 }
 
 .settings-container button {
-    background-color: #ffcc00;
-    color: #000;
-    border: 3px solid #000;
-    border-radius: 15px;
+    background-color: #00bfff;
+    color: #fff;
+    border: 4px solid #000;
+    border-radius: 10px;
     padding: 15px 30px;
     font-size: 20px;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    text-shadow: 2px 2px #000;
 }
 
 .settings-container button:hover {
     transform: scale(1.1);
-    box-shadow: 0px 0px 15px 3px #00bfff;
+    box-shadow: 0px 0px 15px 3px #ffcc00;
 }
 
-#logoutBtn{
+#logoutBtn {
     background-color: #ff6666;
 }
 #logoutBtn:hover {
     transform: scale(1.1);
-    box-shadow: 0px 0px 15px 3px #ffcc00;
-}
-.settings-container {
-    position: relative;
-}
-
-.hidden {
-    display: none;
-}
-.settings-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+    box-shadow: 0px 0px 15px 3px #00bfff;
 }
 
 .pre-set-title-container {
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 600px; /* Maximum width for the container */
+    margin: auto;
+}
+
+#editTitleBtn {
+    padding: 10px 15px;
+    border: 4px solid #000;
+    background-color: #00bfff;
+    color: white;
+    width: 30%;
+    border-radius: 10px;
+    cursor: pointer;
+    text-shadow: 2px 2px #000;
+    position: relative;
+    z-index: 1;
+    transition: all 0.3s ease;
 }
 
 #titleInputContainer {
     position: absolute;
     top: 0;
-    left: 100%;
+    left: 70%;
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #f0f0f0;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    transition: left 0.3s ease, opacity 0.3s ease;
+    background: #ffcc00;
+    padding: 10px;
+    border: 4px solid #000;
+    border-radius: 10px;
+    box-shadow: 5px 5px 0px 0px #000;
     opacity: 0;
     pointer-events: none;
+    white-space: nowrap; /* Prevent text wrapping */
+    transition: all 0.3s ease;
+    transform: translateX(-100%); /* Initial position to keep it hidden behind the button */
 }
 
 #titleInputContainer.visible {
-    left: calc(100% + 10px);
+    transform: translateX(0);
     opacity: 1;
     pointer-events: auto;
 }
 
 #titleInput {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
+    padding: 10px;
+    border: 4px solid #000;
+    border-radius: 10px;
+    font-size: 16px;
+    background-color: #fff;
 }
 
-#submitTitleBtn {
-    padding: 5px 10px;
-    border: none;
-    background-color: #007bff;
+#submitTitleBtn,
+#cancelTitleBtn {
+    padding: 10px 15px;
+    border: 4px solid #000;
+    background-color: #00bfff;
     color: white;
-    border-radius: 4px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    text-shadow: 1px 1px #000;
 }
 
-#submitTitleBtn:hover {
-    background-color: #0056b3;
+/* Ensure the container stays within screen boundaries */
+@media screen and (max-width: 600px) {
+    .pre-set-title-container {
+        max-width: 100%; /* Ensure the container doesn't exceed the screen width */
+    }
+
+    #titleInputContainer {
+        left: auto;
+        right: 0;
+        transform: translateX(0);
+    }
 }
 
-/* Add styles for modal */
 
+/* Modal Styles */
 .modal {
     display: none;
     position: fixed;
@@ -136,42 +164,62 @@ nav a button:hover {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
 .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
+    background-color: #ffcc00;
+    margin: 10% auto;
+    padding: 30px; /* Increased padding for better spacing */
+    border: 4px solid #000;
+    border-radius: 15px;
     width: 80%;
-    max-width: 500px;
+    max-width: 500px; /* Adjusted max-width for consistency */
+    box-shadow: 10px 10px 0px 0px #000;
 }
 
 .close {
-    color: #aaa;
+    color: #000;
     float: right;
     font-size: 28px;
     font-weight: bold;
+    cursor: pointer;
 }
 
 .close:hover,
 .close:focus {
-    color: black;
+    color: red;
     text-decoration: none;
-    cursor: pointer;
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
-input[type="text"] {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
+input[type="text"], input[type="password"] {
+    width: calc(100% - 22px); /* Ensure inputs are responsive within the modal */
+    padding: 10px;
+    border: 4px solid #000;
+    border-radius: 10px;
+    box-shadow: 3px 3px 0px 0px #000;
+    background-color: #fff;
 }
 
 button {
     margin-top: 10px;
+    background-color: #00bfff;
+    color: white;
+    border: 4px solid #000;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-shadow: 1px 1px #000;
+}
+
+button:hover {
+    transform: scale(1.1);
+    box-shadow: 0px 0px 10px 2px #ffcc00;
 }

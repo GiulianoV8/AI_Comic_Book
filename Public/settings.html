@@ -11,18 +11,29 @@
         <a href="home.html"><button id="homeBtn">Home</button></a>
     </nav>
     <div class="settings-container">
-        <div class="pre-set-title-container">
-            <button id="preSetTitleBtn">Pre-set Title</button>
-            <div id="titleInputContainer" class="hidden">
-                <input type="text" id="titleInput" placeholder="Enter new title">
-                <button id="submitTitleBtn">Submit</button>
+        <button id="editTitleBtn">Edit Title</button>
+
+        <a href="mailto:contact@example.com?subject=Questions%20and%20Feedback"><button id="feedbackBtn">Questions, Feedback, Contact</button></a>
+        
+        <button id="editAttributesBtn">Edit Attributes</button>
+        
+        <button id="changeUsernameBtn">Change Username</button>
+        
+        <button id="changePasswordBtn">Change Password</button>
+        
+        <a href="login.html"><button id="logoutBtn">Logout</button></a>
+    </div>
+    <!-- Modal for changing title -->
+    <div class="modal" id="titleModal">
+        <div class="modal-content">
+            <span class="close" id="closeTitleModal">&times;</span>
+            <h2>Edit Title</h2>
+            <input type="text" id="titleInput" placeholder="Enter new title">
+            <div class="modal-buttons">
+                <button id="submitTitleBtn">Save</button>
+                <button id="cancelTitleBtn">Cancel</button>
             </div>
         </div>
-        <a href="mailto:contact@example.com?subject=Questions%20and%20Feedback"><button id="feedbackBtn">Questions, Feedback, Contact</button></a>
-        <button id="editAttributesBtn">Edit Attributes</button>
-        <button id="changeUsernameBtn">Change Username</button>
-        <button id="changePasswordBtn">Change Password</button>
-        <a href="login.html"><button id="logoutBtn">Logout</button></a>
     </div>
 
     <!-- Modal for editing attributes -->
@@ -38,7 +49,7 @@
         </div>
     </div>
 
-    <!-- Modal for Changing Username -->
+    <!-- Modal for changing username -->
     <div id="changeUsernameModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>
@@ -51,7 +62,7 @@
         </div>
     </div>
 
-    <!-- Modal for Changing Password -->
+    <!-- Modal for changing password -->
     <div id="changePasswordModal" class="modal">
         <div class="modal-content">
             <span class="close">&times;</span>

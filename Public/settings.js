@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('loaded');
     // Change title
-    const preSetTitleBtn = document.getElementById('preSetTitleBtn');
+    const editTitleBtn = document.getElementById('editTitleBtn');
     const titleInputContainer = document.getElementById('titleInputContainer');
     const titleInput = document.getElementById('titleInput');
     const submitTitleBtn = document.getElementById('submitTitleBtn');
@@ -189,18 +189,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     logoutBtn.addEventListener('click', () => localStorage.clear());
 
-    preSetTitleBtn.addEventListener('click', async () => {
-        if (!titleInputContainer.classList.contains('visible')) {
-            console.log(localStorage.getItem('comicTitle'));
-
-            titleInputContainer.classList.add('visible');
-            titleInputContainer.classList.remove('hidden');
-            titleInput.value = localStorage.getItem('comicTitle') || 'Comic Book Title';
-        } else {
-            titleInputContainer.classList.remove('visible');
-            titleInputContainer.classList.add('hidden');
+    document.getElementById("editTitleBtn").onclick = function() {
+        document.getElementById("titleModal").style.display = "block";
+        document.getElementById("titleInput").value = localStorage.getItem("comicTitle") || '';
+    }
+    
+    document.getElementById("closeTitleModal").onclick = function() {
+        document.getElementById("titleModal").style.display = "none";
+    };
+    
+    document.getElementById("cancelTitleBtn").onclick = function() {
+        document.getElementById("titleModal").style.display = "none";
+    };
+    
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("titleModal")) {
+            document.getElementById("titleModal").style.display = "none";
         }
-    }); 
+    };
 
     submitTitleBtn.addEventListener('click', async () => {
         const newTitle = titleInput.value.trim();
