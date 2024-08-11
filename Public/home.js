@@ -72,6 +72,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const newGridItem = document.createElement("div");
         newGridItem.classList.add("grid-item");
         newGridItem.innerHTML = `
+            <div class="scribble-container">
+                <img class="pencil hidden" src="imgs/pencil_icon_transparent.webp">
+            </div>
             <img class="generated-image" src="">
             <form class="input-container" onSubmit="submitEvent(this, description.value)">
                 <input class="event-input" type="text" name="description" placeholder="Event">
@@ -158,8 +161,22 @@ async function fillData(userID) {
         }
 
         // Get images from the datatable's image urls list attribute
-        const imageUrls = userData.imageUrls || [];
-
+        let imageUrls;
+        if(localStorage.getItem('imageUrls')){
+            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
+        }else{
+            imageUrls = userData.images;
+            localStorage.setItem('images', JSON.stringify(imageUrls));
+        }
+        
+        // Set user;s attributes
+        let attributes;
+        if(localStorage.getItem('attributes')){
+            attributes = JSON.parse(localStorage.getItem('attributes'));
+        }else{
+            attributes = userData.attributes;
+            localStorage.setItem('attributes', JSON.stringify(attributes));
+        }
         // Fill in each .generated-img img tag's src attribute with the corresponding url
         const generatedImgs = document.querySelectorAll('.generated-img img');
         generatedImgs.forEach((img, index) => {
@@ -175,9 +192,53 @@ async function fillData(userID) {
 function submitEvent(form, description){
     event.preventDefault()
     console.log(description);
-    form.parentElement.querySelector('.generated-image').src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSlrZqTCInyg6RfYC7Ape20o-EWP1EN_A8fOA&s'
+
+    const selectedPanel = form.parentElement.querySelector('.generated-image');
+
+    const pencil = form.parentElement.querySelector('.pencil');
+    pencil.classList.remove('hidden');
+
+    let stringedAttributes = "";
+    for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
+        stringedAttributes += `${attribute}, \n`;
+    }
+    generateImage(selectedPanel, pencil, description);
 }
 
-function titleName(){
-    
+async function generateImage(imgElement, pencil, description, attributes) {
+    const apiKey = 'your-api-key-here';
+    const url = 'https://api.novita.ai/v3/lcm-txt2img';
+
+    const data = {
+        prompt: `In a comic-book theme, a superhero with the following attributes: \n ${attributes} did this: ${description}`,
+        height: 512,
+        width: 512,
+        image_num: 1,
+        steps: 8,
+        guidance_scale: 1.5
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+                'Accept-Encoding': 'gzip'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        const imageUrl = result.images[0];
+        pencil.classList.add('hidden');
+        imgElement.src = imageUrl;
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }

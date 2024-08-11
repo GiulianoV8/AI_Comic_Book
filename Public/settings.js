@@ -104,22 +104,34 @@ document.addEventListener('DOMContentLoaded', () => {
         modal.style.display = 'block';
         
         // Fetch user's current attributes
-        try {
-            const response = await fetch(`/getUserAttributes?userID=${userID}`);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const data = await response.json();
-
+        let attributes;
+        if(localStorage.getItem('attributes')) {
+            attributes = JSON.parse(localStorage.getItem('attributes'));
             // Clear existing attributes
             attributesContainer.innerHTML = '';
 
             // Populate form with current attributes
-            for (const attribute of data) {
+            for (const attribute of attributes) {
                 addAttributeInput(attribute);
             }
-        } catch (error) {
-            console.error('Error fetching user attributes:', error);
+        }else{
+            try {
+                const response = await fetch(`/getUserAttributes?userID=${userID}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+
+                // Clear existing attributes
+                attributesContainer.innerHTML = '';
+
+                // Populate form with current attributes
+                for (const attribute of data) {
+                    addAttributeInput(attribute);
+                }
+            } catch (error) {
+                console.error('Error fetching user attributes:', error);
+            }
         }
     }
 
@@ -144,6 +156,8 @@ document.addEventListener('DOMContentLoaded', () => {
         inputs.forEach(input => {
             attributes.push(input.querySelector('.attribute').value)
         });
+        
+        localSStorage.setItem('attributes', attributes);
 
         try {
             const response = await fetch('/editAttributes', {
@@ -193,7 +207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById("titleModal").style.display = "block";
         document.getElementById("titleInput").value = localStorage.getItem("comicTitle") || '';
     }
-    
+
     document.getElementById("closeTitleModal").onclick = function() {
         document.getElementById("titleModal").style.display = "none";
     };
