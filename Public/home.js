@@ -1,3 +1,7 @@
+import { NovitaSDK, TaskStatus } from 'novita-sdk';
+
+const novitaClient = new NovitaSDK("df06b948-2b6d-465f-b997-c6cb900bd551");
+
 document.addEventListener("DOMContentLoaded", function() {
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -200,45 +204,86 @@ function submitEvent(form, description){
 
     let stringedAttributes = "";
     for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
-        stringedAttributes += `${attribute}, \n`;
+        stringedAttributes += `${attribute},\n`;
     }
-    generateImage(selectedPanel, pencil, description);
+    generateImage(selectedPanel, pencil, description.trim(), stringedAttributes);
 }
 
 async function generateImage(imgElement, pencil, description, attributes) {
-    const apiKey = 'your-api-key-here';
-    const url = 'https://api.novita.ai/v3/lcm-txt2img';
-
-    const data = {
-        prompt: `In a comic-book theme, a superhero with the following attributes: \n ${attributes} did this: ${description}`,
-        height: 512,
-        width: 512,
-        image_num: 1,
-        steps: 8,
-        guidance_scale: 1.5
+    const params = {
+        extra: {
+            test_mode: {
+                enabled: true,
+                // Set return_task_status to TASK_STATUS_SUCCEED to test the success response.
+                // Set return_task_status to TASK_STATUS_FAILED to test the error response.
+                return_task_status: 'TASK_STATUS_SUCCEED'
+            }
+        },
+        request: {
+            model_name: "rainbowpatch_V10.safetensors",
+            prompt: `In a comic-book style, a person with the following attributes:{${attributes} and casual clothing\n} ${description}`,
+            negative_prompt: "nsfw",
+            width: 512,
+            height: 512,
+            sampler_name: "DPM++ 2S a Karras",
+            guidance_scale: 10.5,
+            steps: 20,
+            image_num: 1,
+            clip_skip: 1,
+            seed: -1,
+            loras: [],
+        },
     };
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                'Accept-Encoding': 'gzip'
-            },
-            body: JSON.stringify(data)
+    novitaClient.txt2ImgV3(params)
+        .then((res) => {
+            if (res && res.task_id) {
+                const timer = setInterval(() => {
+                    novitaClient.progressV3({
+                        task_id: res.task_id,
+                    })
+                    .then((progressRes) => {
+                        if (progressRes.task.status === TaskStatus.SUCCEED) {
+                            console.log("Task succeeded!");
+
+                            // Fetch the result using the task_id
+                            fetch(`https://api.novita.ai/v3/async/task-result?task_id=${res.task_id}`, {
+                                method: 'GET',
+                                headers: {
+                                    'Authorization': 'Bearer df06b948-2b6d-465f-b997-c6cb900bd551',
+                                    'Content-Type': 'application/json',
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(result => {
+                                const imageUrl = result.images[0].image_url;
+                                pencil.classList.add('hidden');
+                                imgElement.src = imageUrl;
+                                clearInterval(timer);
+                            })
+                            .catch(err => {
+                                console.error("Error fetching task result:", err);
+                                clearInterval(timer);
+                            });
+                        }
+
+                        if (progressRes.task.status === TaskStatus.FAILED) {
+                            console.warn("Task failed:", progressRes.task.reason);
+                            clearInterval(timer);
+                        }
+
+                        if (progressRes.task.status === TaskStatus.QUEUED) {
+                            console.log("Task is queued.");
+                        }
+                    })
+                    .catch((err) => {
+                        console.error("Progress error:", err);
+                        clearInterval(timer);
+                    });
+                }, 1000);
+            }
+        })
+        .catch((err) => {
+            console.error("txt2Img error:", err);
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        const imageUrl = result.images[0];
-        pencil.classList.add('hidden');
-        imgElement.src = imageUrl;
-    } catch (error) {
-        console.error('Error:', error);
-    }
 }
