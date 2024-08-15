@@ -85,6 +85,26 @@ a {
     margin-left: -1px; /* Remove space between buttons */
 }
 
+#deleteConfirmBtn {
+    color: white;
+    background-color: #cd0000;
+    border-color: #000;
+    border-radius: 5px;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+#deleteConfirmBtn:hover {
+    background-color: #a00000;
+    box-shadow: 4px 4px 0 #5d0000; /* More pronounced shadow on hover */
+    transform: translate(-2px, -2px); /* "Lifted" effect on hover */
+}
+#deleteConfirmBtn:active {
+    box-shadow: 1px 1px 0 #5d0000; /* Subtle shadow when clicked */
+    transform: translate(1px, 1px); /* Slight "press" effect when clicked */
+}
+
 /* Title Box Styling */
 .title-box {
     position: relative;
@@ -148,7 +168,7 @@ input#comic-title {
     margin-bottom: 20px;
 }
 
-#addGridItemBtn, #deleteGridItemBtn {
+#addPanelBtn, #deletePanelBtn {
     background-color: #FFEB3B; /* Bright yellow for a comic book feel */
     border: 2px solid #333;    /* Black border */
     color: #333;               /* Black text */
@@ -162,13 +182,13 @@ input#comic-title {
     box-shadow: 2px 2px 0 #333; /* Comic book-style shadow */
 }
 
-#addGridItemBtn:hover, #deleteGridItemBtn:hover {
+#addPanelBtn:hover, #deletePanelBtn:hover {
     background-color: #FFC107; /* Slightly darker yellow on hover */
     box-shadow: 4px 4px 0 #333; /* More pronounced shadow on hover */
     transform: translate(-2px, -2px); /* "Lifted" effect on hover */
 }
 
-#addGridItemBtn:active, #deleteGridItemBtn:active {
+#addPanelBtn:active, #deletePanelBtn:active {
     box-shadow: 1px 1px 0 #333; /* Subtle shadow when clicked */
     transform: translate(1px, 1px); /* Slight "press" effect when clicked */
 }
@@ -216,15 +236,22 @@ input#comic-title {
 
 .grid-item.create {
     background-color: #d0f0d0; /* Lighter green for create item */
+    height: 75%; /* Slightly Smaller */
     cursor: default;
     display: flex;
+    margin: auto;
     justify-content: center;
     align-items: center;
     font-size: 1.2em; /* Slightly larger text */
     color: #333; /* Text color */
-    border: 2px dashed #333; /* Dashed border for a creative look */
+    border: 2px solid #333; /* Dashed border for a creative look */
     box-shadow: 3px 3px 0 #333; /* Comic book-style shadow */
     transition: transform 0.2s, box-shadow 0.2s;
+}
+#createBtn{
+    background-color: #d0f0d0;
+    width: 100%;
+    height: 100%;
 }
 
 .grid-item.create:hover {
@@ -376,4 +403,24 @@ input#comic-title {
     right: 0;
     bottom: 0;
     position: absolute;
+}
+
+
+/* Plus button */
+.plus-button {
+    width: 40px;
+    height: 40px;
+    background-color: #00aaff;
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin: auto;
+}
+.plus-button.hidden {
+    display: none;
 }

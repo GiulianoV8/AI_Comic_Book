@@ -29,7 +29,7 @@
                 </svg>
             </button>
             <div id="deleteDropdown" class="hidden">
-                <button id="deleteBtn">Delete</button>
+                <button id="deleteBtn" class="important-red-button">Confirm Delete All</button>
             </div>
         </div>
 
@@ -52,29 +52,20 @@
         </div>
     </div>
     
-    
     <div class="controls">
-        <button id="addGridItemBtn">Add Panel</button>
-        <button id="deleteGridItemBtn">Delete Panel</button>
+        <button id="addPanelBtn">Add Panel</button>
+        <button id="deletePanelBtn">Delete Panel</button>
+        <div id="deleteConfirmDropdown" class="hidden">
+            <button id="deleteConfirmBtn" class="red-button">Delete Selected</button>
+        </div>
     </div>
     
     <div class="grid-container" id="gridContainer">
-        <div class="grid-item">
-            <div class="scribble-container">
-                <img class="pencil hidden" src="imgs/pencil_icon_transparent.webp">
-            </div>
-            <img class="generated-image" src="">
-            <form class="input-container" onSubmit="submitEvent(this, description.value)">
-                <input class="event-input" type="text" name="description" placeholder="Event">
-                <button class="event-submit" type="submit">
-                    <img src="imgs/pencil_icon.jpeg" alt="Submit" class="submit-image">
-                </button>
-            </form>
+        <div class="grid-item create">
+            <button id="createBtn">Create</button>
         </div>
-        
-        <div class="grid-item create">Create ✔️</div>
     </div>
-
-    <script src="./home.js"></script>
+    
+    <script src="home.js"></script>
 </body>
 </html>

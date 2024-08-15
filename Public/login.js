@@ -50,8 +50,9 @@ function authenticate(username, password) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            console.log(data.userID);
+            localStorage.setItem('userID', data.userID);
             window.location.replace("/home.html");
-            localStorage.setItem('userID', username);
         } else {
             alert('Invalid username or password.');
         }
