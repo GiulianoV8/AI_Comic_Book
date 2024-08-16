@@ -16,11 +16,40 @@ document.addEventListener("DOMContentLoaded", function() {
     const saveTitleBtn = document.getElementById("save-title-btn");
     const cancelTitleBtn = document.getElementById("cancel-title-btn");
 
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const captionText = document.getElementById("caption");
+    const closeBtn = document.getElementsByClassName("close")[0];
+
     if(!localStorage.getItem('userID')){
         window.location.replace("/login.html")
     }
     userID = localStorage.getItem("userID");
     fillData(userID);
+
+    // Function to open modal
+    function openModal(imageUrl, description) {
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        captionText.innerHTML = description;
+    }
+
+    // Function to close modal
+    closeBtn.onclick = function () {
+        modal.style.display = "none";
+    }
+
+    // Add click event listeners to each grid item with an image
+    const gridItems = document.querySelectorAll('.grid-item img');
+    let imageIndex = 0;
+    gridItems.forEach(item => {
+        item.addEventListener('click', function () {
+            const imageUrl = item.src;
+            const description = JSON.parse(localStorage)[imageIndex]; // Assuming you want to use alt text as the description
+            openModal(imageUrl, description);
+        });
+        imageIndex++;
+    });
 
     let previousTitle = comicTitle.innerText;
 
@@ -228,31 +257,40 @@ function createPanel(src, image, position) {
         gridContainer.insertBefore(newGridItem, createItem);
     }
 }
-async function deleteImageUrl(imgSrc) {
+async function deleteImageUrl(imgSrc, imgDescription) {
     if (imgSrc === undefined) {
+        return false;
+    }
+    if (imgDescription === undefined) {
         return false;
     }
     try {
         console.log('deleting image ' + imgSrc);
         // Send a request to delete the image URL from DynamoDB
-        const response = await fetch('/deleteImageUrl', {
+        const response = await fetch('/deleteImage', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userID: localStorage.getItem('userID'),
-                imageUrl: imgSrc
+                imageUrl: imgSrc,
+                imgDescription: imgDescription
             })
         });
         const result = await response.json();
         if (result.success) {
-            let imageUrls = JSON.parse(localStorage.getItem('imagesUrls')) || [];
+            let imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
             console.log(imageUrls); 
             updatedImageUrls = imageUrls.filter(url => !imgSrc.includes(url));
             localStorage.setItem('imageUrls', JSON.stringify(updatedImageUrls));
+
+            let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
+            console.log(imageDescriptions); 
+            updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
+            localStorage.setItem('imageDescriptions', JSON.stringify(updatedImageDescriptions));
         } else {
-            console.error("Error removing image URL from DynamoDB:", result.message);
+            console.error("Error removing image from DynamoDB:", result.message);
         }
     } catch (error) {
         console.error("Error during deletion request:", error);
@@ -279,6 +317,14 @@ async function fillData(userID) {
             imageUrls = userData.imageUrls;
             localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
         }
+
+        let imageDescriptions = [];
+        if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
+            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
+        }else{
+            imageDescriptions = userData.imageDescriptions;
+            localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+        }
         let insertIndex = 0;
         for(const imageUrl of imageUrls) {
             createPanel(imageUrl, true, insertIndex);
@@ -302,8 +348,12 @@ function submitEvent(form, description){
     event.preventDefault()
     console.log(description);
 
+    const progressDisplay = document.createElement('span');
+    progressDisplay.classList.add('progress-display', 'hidden');
+    form.parentElement.appendChild(progressDisplay);
+    
     const selectedPanel = form.parentElement.querySelector('.generated-image');
-
+    
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
@@ -311,24 +361,23 @@ function submitEvent(form, description){
     for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
         stringedAttributes += `${attribute},\n`;
     }
-    generateImage(selectedPanel, pencil, description.trim(), stringedAttributes);
+    generateImage(selectedPanel, pencil, progressDisplay, description.trim(), stringedAttributes);
 }
 
-async function generateImage(imgElement, pencil, description, attributes) {
-    const {NovitaSDK, TaskStatus} = require('novita-sdk');
-    const novitaClient = new NovitaSDK('df06b948-2b6d-465f-b997-c6cb900bd551')
-    const params = {
+async function generateImage(imgElement, pencil, progressDisplay, description, attributes) {
+    const url = "https://api.novita.ai/v3/async/txt2img";
+    const key = "df06b948-2b6d-465f-b997-c6cb900bd551";
+
+    const data = {
         extra: {
             test_mode: {
                 enabled: true,
-                // Set return_task_status to TASK_STATUS_SUCCEED to test the success response.
-                // Set return_task_status to TASK_STATUS_FAILED to test the error response.
-                return_task_status: 'TASK_STATUS_SUCCEED'
-            }
+                return_task_status: "TASK_STATUS_SUCCEED",
+            },
         },
         request: {
-            model_name: "rainbowpatch_V10.safetensors",
-            prompt: `In a comic-book style, a person with the following attributes:{${attributes} and casual clothing\n} ${description}`,
+            model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
+            prompt: `In a superhero comic book theme, a person with the following attributes:{${attributes} and casual clothing\n} is doing this: ${description} ${description} ${description} ${description} ${description}`,
             negative_prompt: "nsfw",
             width: 512,
             height: 512,
@@ -342,59 +391,69 @@ async function generateImage(imgElement, pencil, description, attributes) {
         },
     };
 
-    novitaClient.txt2ImgV3(params)
-        .then((res) => {
-            if (res && res.task_id) {
-                const timer = setInterval(() => {
-                    novitaClient.progressV3({
-                        task_id: res.task_id,
-                    })
-                    .then((progressRes) => {
-                        if (progressRes.task.status === TaskStatus.SUCCEED) {
-                            console.log("Task succeeded!");
+    const options = {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${key}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+    };
 
-                            // Fetch the result using the task_id
-                            fetch(`https://api.novita.ai/v3/async/task-result?task_id=${res.task_id}`, {
-                                method: 'GET',
-                                headers: {
-                                    'Authorization': 'Bearer df06b948-2b6d-465f-b997-c6cb900bd551',
-                                    'Content-Type': 'application/json',
-                                },
-                            })
-                            .then(response => response.json())
-                            .then(async result => {
-                                const imageUrl = result.images[0].image_url;
-                                pencil.classList.add('hidden');
-                                imgElement.src = imageUrl;
-                                await saveImage(localStorage.getItem('userID'));
-                                clearInterval(timer);
-                            })
-                            .catch(err => {
-                                console.error("Error fetching task result:", err);
-                                clearInterval(timer);
-                            });
-                        }
+    try {
+        // Request to generate the image
+        const response = await fetch(url, options);
+        const result = await response.json();
+        const task_id = result.task_id;
 
-                        if (progressRes.task.status === TaskStatus.FAILED) {
-                            console.warn("Task failed:", progressRes.task.reason);
-                            clearInterval(timer);
-                        }
+        // Function to poll the task status
+        const checkTaskStatus = async () => {
+            const imageFetchUrl = `https://api.novita.ai/v3/async/task-result?task_id=${task_id}`;
+            const statusResponse = await fetch(imageFetchUrl, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${key}`,
+                    "Content-Type": "application/json",
+                },
+            });
+            const statusResult = await statusResponse.json();
 
-                        if (progressRes.task.status === TaskStatus.QUEUED) {
-                            console.log("Task is queued.");
-                        }
-                    })
-                    .catch((err) => {
-                        console.error("Progress error:", err);
-                        clearInterval(timer);
-                    });
-                }, 1000);
+            console.log("ETA", statusResult.task.eta);
+            progressDisplay.classList.remove('hidden');
+            progressDisplay.innerHTML = `${statusResult.task.progress_percent}%`;
+
+            if (statusResult.task.status === "TASK_STATUS_SUCCEED") {
+                // Image successfully received
+                console.log("Received image");
+                const imageUrl = statusResult.images[0].image_url;
+                imgElement.src = imageUrl;
+                
+                imgElement.parentElement.innerHTML = `<img class="generated-image" src=${imageUrl}>`
+
+                let imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
+                imageUrls.push(imageUrl);
+                localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
+
+                let imageDescriptions = JSON.parse(localStorage.getItem('imageUrls'));
+                imageDescriptions.push(imageDescription);
+                localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+            } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
+                // Still processing, retry after some time
+                console.log("Task is still processing", statusResult.task.status);
+                setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
+            } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
+                // Task failed
+                console.error("Task did not succeed:", statusResult.task.reason);
             }
-        })
-        .catch((err) => {
-            console.error("txt2Img error:", err);
-        });
+        };
+
+        // Start polling the task status
+        checkTaskStatus();
+    } catch (error) {
+        console.error("Error:", error);
+    }
 }
+
 async function saveImage(userID) {
     try {
         let imageUrls = [];
@@ -403,14 +462,16 @@ async function saveImage(userID) {
                 imageUrls.push(image.src);
             }
         }
-        const response = await fetch('/saveImageUrl', {
+        console.log(userID, imageUrls);
+        const response = await fetch('/saveImage', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userID: userID,
-                imageUrls: imageUrls
+                updatedImageUrls: imageUrls,
+                updatedImageDescriptions: JSON.parse(localStorage.getItem('imageDescriptions'))
             })
         });
         const result = await response.json();

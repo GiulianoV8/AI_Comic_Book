@@ -10,8 +10,6 @@ AWS.config.update({
     region: 'us-east-1'
     // Use environment variables or AWS CLI configuration for credentials
 });
-const NOVITA_API_URL = 'https://api.novita.ai/v3/async/txt2img'; 
-const NOVITA_API_KEY = "df06b948-2b6d-465f-b997-c6cb900bd551"; 
 
 const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 'ComicUsers';
@@ -61,7 +59,8 @@ app.post('/signup', async (req, res) => {
                 attributes: attributes,
                 comicTitle: comicTitle,
                 timeZone: timeZone,
-                imageUrls: ["imgs/pencil_icon_transparent.webp"]
+                imageUrls: ["imgs/pencil_icon_transparent.webp"],
+                imageDescriptions: []
             }
         };
 
@@ -242,35 +241,11 @@ app.post('/changePassword', async (req, res) => {
     }
 });
 
-// Endpoint to get image
-app.post('/get-image', async (req, res) => {
-    try {
-        const { description } = req.body;
+app.post('/deleteImage', async (req, res) => {
+    const { userID, imageUrl, imageDescription } = req.body;
 
-        // Make a request to Novita AI
-        const response = await axios.post(NOVITA_API_URL, {
-            description: description,
-        }, {
-            headers: {
-                'Authorization': `Bearer ${NOVITA_API_KEY}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        // Return the image URL or binary data
-        const task_id = response.task_id; // Adjust according to the response structure
-        res.json({ task_id });
-    } catch (error) {
-        console.error('Error fetching image from Novita AI:', error);
-        res.status(500).json({ error: 'Failed to fetch image' });
-    }
-});
-
-app.post('/deleteImageUrl', async (req, res) => {
-    const { userID, imageUrl } = req.body;
-
-    if (!userID || !imageUrl) {
-        return res.status(400).json({ success: false, message: 'User ID and image URL are required.' });
+    if (!userID || !imageUrl || !imageDescription) {
+        return res.status(400).json({ success: false, message: 'User ID and image are required.' });
     }
 
     // Fetch the user's data from DynamoDB
@@ -288,33 +263,36 @@ app.post('/deleteImageUrl', async (req, res) => {
         // Remove the image URL from the user's imageUrls list
         const imageUrls = data.Item.imageUrls;
         const updatedImageUrls = imageUrls.filter(url => !imageUrl.includes(url));
-        console.log('Removing image' + imageUrl)
+
+        let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
+        updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
 
         // Update the user's data in DynamoDB
         const updateParams = {
             TableName: TABLE_NAME,
             Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls",
+            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
             ExpressionAttributeValues: {
-                ":urls": updatedImageUrls
+                ":urls": updatedImageUrls,
+                ":descriptions": updatedImageDescriptions
             },
             ReturnValues: "UPDATED_NEW"
         };
 
         await docClient.update(updateParams).promise();
 
-        return res.status(200).json({ success: true, message: 'Image URL removed successfully.' });
+        return res.status(200).json({ success: true, message: 'Image removed successfully.' });
     } catch (err) {
         console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error deleting image URL.' });
+        return res.status(500).json({ success: false, message: 'Error image URL.' });
     }
 });
 
-app.post('/saveImageUrl', async (req, res) => {
-    const { userID, updatedImageUrls } = req.body;
+app.post('/saveImage', async (req, res) => {
+    const { userID, updatedImageUrls, updatedImageDescriptions } = req.body;
 
-    if (!userID || !imageUrl) {
-        return res.status(400).json({ success: false, message: 'User ID and image URLs are required.' });
+    if (!userID || !updatedImageUrls || !updatedImageDescriptions) {
+        return res.status(400).json({ success: false, message: `User ID and image are required: userID: ${userID}, image Urls: ${updatedImageUrls}, image descriptions: ${imageDescriptions}` });
     }
 
     // Fetch the user's data from DynamoDB
@@ -333,19 +311,20 @@ app.post('/saveImageUrl', async (req, res) => {
         const updateParams = {
             TableName: TABLE_NAME,
             Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls",
+            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
             ExpressionAttributeValues: {
-                ":urls": updatedImageUrls
+                ":urls": updatedImageUrls,
+                ":descriptions": updatedImageDescriptions
             },
             ReturnValues: "UPDATED_NEW"
         };
 
         await docClient.update(updateParams).promise();
 
-        return res.status(200).json({ success: true, message: 'Image URL saved successfully.' });
+        return res.status(200).json({ success: true, message: 'Image URLs saved successfully.' });
     } catch (err) {
         console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error saving image URL.' });
+        return res.status(500).json({ success: false, message: 'Error saving image URLs.' });
     }
 });
 
