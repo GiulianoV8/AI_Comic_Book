@@ -16,36 +16,20 @@ document.addEventListener("DOMContentLoaded", function() {
     const saveTitleBtn = document.getElementById("save-title-btn");
     const cancelTitleBtn = document.getElementById("cancel-title-btn");
 
-    const modal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("modalImage");
-    const captionText = document.getElementById("caption");
-    const closeBtn = document.getElementsByClassName("close")[0];
-
     if(!localStorage.getItem('userID')){
         window.location.replace("/login.html")
     }
     userID = localStorage.getItem("userID");
-    fillData(userID);
-
-    // Function to open modal
-    function openModal(imageUrl, description) {
-        modal.style.display = "block";
-        modalImg.src = imageUrl;
-        captionText.innerHTML = description;
-    }
-
-    // Function to close modal
-    closeBtn.onclick = function () {
-        modal.style.display = "none";
-    }
+    fillData(userID);    
 
     // Add click event listeners to each grid item with an image
-    const gridItems = document.querySelectorAll('.grid-item img');
+    const gridItems = document.querySelectorAll('.generated-image');
+
     let imageIndex = 0;
     gridItems.forEach(item => {
         item.addEventListener('click', function () {
             const imageUrl = item.src;
-            const description = JSON.parse(localStorage)[imageIndex]; // Assuming you want to use alt text as the description
+            const description = JSON.parse(localStorage.getItem('imageDescriptions'))[imageIndex];
             openModal(imageUrl, description);
         });
         imageIndex++;
@@ -229,11 +213,30 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Function to create a new panel at a specified position
 function createPanel(src, image, position) {
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const captionText = document.getElementById("caption");
+    const closeBtn = document.getElementsByClassName("close")[0];
+    // Function to close modal
+    closeBtn.onclick = function () {
+        modal.style.display = "none";
+    }
+    // Function to open modal
+    function openModal(imageUrl, description) {
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        captionText.innerHTML = description;
+    }
+
     const newGridItem = document.createElement("div");
     newGridItem.classList.add("grid-item");
 
     if (image) {
         newGridItem.innerHTML = `<img class="generated-image" src=${src}>`;
+        const imageUrl = src;
+        const description = JSON.parse(localStorage.getItem('imageDescriptions'))[position];
+        newGridItem.addEventListener('click', () => openModal(imageUrl, description));
+
     } else {
         newGridItem.innerHTML = `
             <div class="scribble-container">
@@ -257,13 +260,13 @@ function createPanel(src, image, position) {
         gridContainer.insertBefore(newGridItem, createItem);
     }
 }
-async function deleteImageUrl(imgSrc, imgDescription) {
+async function deleteImageUrl(imgSrc) {
     if (imgSrc === undefined) {
         return false;
     }
-    if (imgDescription === undefined) {
-        return false;
-    }
+
+    let imageDescription = JSON.parse(localStorage.getItem('imageDescriptions'))[JSON.parse(localStorage.getItem('imageUrls')).indexOf(imgSrc)];
+    
     try {
         console.log('deleting image ' + imgSrc);
         // Send a request to delete the image URL from DynamoDB
@@ -361,10 +364,10 @@ function submitEvent(form, description){
     for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
         stringedAttributes += `${attribute},\n`;
     }
-    generateImage(selectedPanel, pencil, progressDisplay, description.trim(), stringedAttributes);
+    generateImage(selectedPanel, progressDisplay, description.trim(), stringedAttributes);
 }
 
-async function generateImage(imgElement, pencil, progressDisplay, description, attributes) {
+async function generateImage(imgElement, progressDisplay, description, attributes) {
     const url = "https://api.novita.ai/v3/async/txt2img";
     const key = "df06b948-2b6d-465f-b997-c6cb900bd551";
 
@@ -427,16 +430,19 @@ async function generateImage(imgElement, pencil, progressDisplay, description, a
                 console.log("Received image");
                 const imageUrl = statusResult.images[0].image_url;
                 imgElement.src = imageUrl;
-                
-                imgElement.parentElement.innerHTML = `<img class="generated-image" src=${imageUrl}>`
 
                 let imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
                 imageUrls.push(imageUrl);
                 localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
 
-                let imageDescriptions = JSON.parse(localStorage.getItem('imageUrls'));
-                imageDescriptions.push(imageDescription);
+                let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
+                imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(imageUrl), 0, description);
                 localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+                
+                saveImage(localStorage.getItem('userID'));
+
+                imgElement.parentElement.innerHTML = `<img class="generated-image" src=${imageUrl}>`
+
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
                 // Still processing, retry after some time
                 console.log("Task is still processing", statusResult.task.status);
@@ -462,7 +468,7 @@ async function saveImage(userID) {
                 imageUrls.push(image.src);
             }
         }
-        console.log(userID, imageUrls);
+
         const response = await fetch('/saveImage', {
             method: 'POST',
             headers: {

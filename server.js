@@ -59,7 +59,7 @@ app.post('/signup', async (req, res) => {
                 attributes: attributes,
                 comicTitle: comicTitle,
                 timeZone: timeZone,
-                imageUrls: ["imgs/pencil_icon_transparent.webp"],
+                imageUrls: [],
                 imageDescriptions: []
             }
         };
