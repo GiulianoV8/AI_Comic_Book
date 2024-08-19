@@ -47,16 +47,6 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         comicBackground.classList.remove("hidden");
-        console.log('animating');
-        comicBackground.animate([
-            { top: '100%' },
-            { top: '90%' },
-            { top: '50%' },
-            { top: '10%' },
-            { top: '0%' }
-          ], {
-            duration: 1000,
-          });
     }
 
     function closeComicPanels() {

@@ -395,6 +395,7 @@ input#comic-title {
 /* Hidden Elements */
 .hidden {
     display: none !important;
+    animation: none;
 }
 
 /* General Submit Image Styling */
@@ -421,9 +422,6 @@ input#comic-title {
     align-items: center;
     cursor: pointer;
     margin: auto;
-}
-.plus-button.hidden {
-    display: none;
 }
 
 .progress-display {
@@ -512,9 +510,8 @@ input#comic-title {
 
 .comic-overlay {
     position: fixed;
-    top: 55%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    top: 100%;
+    left: 100%;
     width: 85%;
     height: 80%;
     background-color: rgb(0, 0, 0);
@@ -528,6 +525,7 @@ input#comic-title {
     border-radius: 15px;
     box-shadow: 0 0 10px #000000ee;
     color: #fff;
+    animation: slideOverlayUp 1s ease-in-out forwards;
 }
 
 .close-overlay {
@@ -572,8 +570,32 @@ input#comic-title {
     position: absolute;
     top: 100%;
     left: 100%;
-    height: 200%;
+    height: 100%;
     width: 200%;
     z-index: 2;
     background: linear-gradient(#e66465, #9198e5);
+    animation: slideComicUp 1s ease forwards;
+}
+
+@keyframes slideOverlayUp {
+    from {
+        top: 100%;
+        left: 100%;
+        transform: 100%;
+    }
+    to {
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+}
+@keyframes slideComicUp {
+    from{
+        top: 100%;
+        left: 100%
+    }
+    to{
+        top: 0%;
+        left: 0%;
+    }
 }
