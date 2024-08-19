@@ -60,7 +60,8 @@ app.post('/signup', async (req, res) => {
                 comicTitle: comicTitle,
                 timeZone: timeZone,
                 imageUrls: [],
-                imageDescriptions: []
+                imageDescriptions: [],
+                resetImages: false
             }
         };
 
@@ -122,6 +123,19 @@ app.get('/getUserData', async (req, res) => {
         }
         console.log('User Data: ', data)
         res.json(data.Item);
+
+         // After sending the response, update the reset value to false
+         const updateParams = {
+            TableName: TABLE_NAME,
+            Key: { userID: userID },
+            UpdateExpression: 'SET resetImages = :resetVal',
+            ExpressionAttributeValues: {
+                ':resetVal': false
+            }
+        };
+
+        await docClient.update(updateParams).promise();
+        console.log('Reset attribute updated to false');
     } catch (error) {
         console.error('Error fetching data from DynamoDB:', error);
         res.status(500).json({ error: 'Internal Server Error' });

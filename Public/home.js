@@ -1,3 +1,4 @@
+let openModal;
 document.addEventListener("DOMContentLoaded", function() {
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -16,11 +17,60 @@ document.addEventListener("DOMContentLoaded", function() {
     const saveTitleBtn = document.getElementById("save-title-btn");
     const cancelTitleBtn = document.getElementById("cancel-title-btn");
 
+    const modal = document.getElementById("imageModal");
+    const modalImg = document.getElementById("modalImage");
+    const captionText = document.getElementById("caption");
+    const closeBtn = document.getElementsByClassName("close")[0];
+    
+
     if(!localStorage.getItem('userID')){
         window.location.replace("/login.html")
     }
     userID = localStorage.getItem("userID");
     fillData(userID);    
+
+    document.getElementById("createBtn").addEventListener("click", showComicPanels);
+    document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
+
+    function showComicPanels() {
+        const comicBackground = document.getElementById("comic-background");
+        const comicGrid = document.querySelector(".comic-grid");
+        const comicDisplayTitle = document.getElementById("comic-display-title");
+        
+        comicDisplayTitle.innerText = document.getElementById("comic-title").innerText;
+
+        JSON.parse(localStorage.getItem('imageUrls')).forEach(url => {
+            const panel = document.createElement("div");
+            panel.classList.add("comic-panel");
+            panel.innerHTML = `<img src="${url}" alt="Comic Panel" class="panel-image">`;
+            comicGrid.appendChild(panel);
+        });
+
+        comicBackground.classList.remove("hidden");
+        console.log('animating');
+        comicBackground.animate([
+            { top: '100%' },
+            { top: '90%' },
+            { top: '50%' },
+            { top: '10%' },
+            { top: '0%' }
+          ], {
+            duration: 1000,
+          });
+    }
+
+    function closeComicPanels() {
+        const comicGrid = document.querySelector(".comic-grid");
+
+        document.getElementById("comic-background").classList.add("hidden");
+        
+        let currentPanels = document.getElementsByClassName('comic-panel');
+        if(currentPanels.length > 0) {
+            document.querySelectorAll('.comic-panel').forEach(item => {
+                comicGrid.removeChild(item);
+            }); // Clear existing panels
+        }
+    }
 
     // Add click event listeners to each grid item with an image
     const gridItems = document.querySelectorAll('.generated-image');
@@ -30,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function() {
         item.addEventListener('click', function () {
             const imageUrl = item.src;
             const description = JSON.parse(localStorage.getItem('imageDescriptions'))[imageIndex];
-            openModal(imageUrl, description);
+            openModal(imageUrl, description, title);
         });
         imageIndex++;
     });
@@ -78,6 +128,19 @@ document.addEventListener("DOMContentLoaded", function() {
         plusButtons.forEach(button => button.remove());
         plusButtons = [];
         addPanelMode = false;
+        addPanelBtn.innerText = "Add Panel";  // Revert button text
+    }
+
+    // Function to close modal
+    closeBtn.onclick = function () {
+        modal.style.display = "none";
+    }
+    
+    // Function to open modal
+    openModal = (imageUrl, description) => {
+        modal.style.display = "block";
+        modalImg.src = imageUrl;
+        captionText.innerHTML = description;
     }
 
     // Toggle add panel mode on "Add Panel" button click
@@ -213,21 +276,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // Function to create a new panel at a specified position
 function createPanel(src, image, position) {
-    const modal = document.getElementById("imageModal");
-    const modalImg = document.getElementById("modalImage");
-    const captionText = document.getElementById("caption");
-    const closeBtn = document.getElementsByClassName("close")[0];
-    // Function to close modal
-    closeBtn.onclick = function () {
-        modal.style.display = "none";
-    }
-    // Function to open modal
-    function openModal(imageUrl, description) {
-        modal.style.display = "block";
-        modalImg.src = imageUrl;
-        captionText.innerHTML = description;
-    }
-
     const newGridItem = document.createElement("div");
     newGridItem.classList.add("grid-item");
 
@@ -306,6 +354,7 @@ async function fillData(userID) {
         // Fetch user data from the backend
         const response = await fetch(`/getUserData?userID=${userID}`);
         const userData = await response.json();
+
         // Fill in the #comic-title input tag with the comicTitle attribute value
         const comicTitle = document.getElementById('comic-title');
         if (comicTitle && userData.comicTitle) {
@@ -315,7 +364,12 @@ async function fillData(userID) {
         // Get images from the datatable's image urls list attribute
         let imageUrls;
         if(localStorage.getItem('imageUrls') && localStorage.getItem('imageUrls') !== 'undefined' && localStorage.getItem('imageUrls') !== undefined) {
-            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
+            if(userData.resetImages == true) {
+                localStorage.setItem('imageUrls', JSON.stringify([]));
+                imageUrls = [];
+            }else {
+                imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
+            }
         }else{
             imageUrls = userData.imageUrls;
             localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
@@ -323,7 +377,12 @@ async function fillData(userID) {
 
         let imageDescriptions = [];
         if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
-            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
+            if(userData.resetImages == true) {
+                localStorage.setItem('imageDescriptions', JSON.stringify([]));
+                imageDescriptions = [];
+            }else {
+                imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
+            }
         }else{
             imageDescriptions = userData.imageDescriptions;
             localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
@@ -380,8 +439,8 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         },
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme, a person with the following attributes:{${attributes} and casual clothing\n} is doing this: ${description} ${description} ${description} ${description} ${description}`,
-            negative_prompt: "nsfw",
+            prompt: `In a superhero comic book theme showing a whole hero with the following attributes:{${attributes} and casual clothing\n} is doing this: ${description} ${description} ${description} ${description} ${description}`,
+            negative_prompt: "nsfw, superman, crooked fingers, partial body",
             width: 512,
             height: 512,
             sampler_name: "DPM++ 2S a Karras",
@@ -441,7 +500,10 @@ async function generateImage(imgElement, progressDisplay, description, attribute
                 
                 saveImage(localStorage.getItem('userID'));
 
-                imgElement.parentElement.innerHTML = `<img class="generated-image" src=${imageUrl}>`
+                let gridItem = imgElement.parentElement;
+                gridItem.innerHTML = `<img class="generated-image" src=${imageUrl}>`
+                console.log(gridItem);
+                gridItem.addEventListener('click', () => openModal(imageUrl, description));
 
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
                 // Still processing, retry after some time

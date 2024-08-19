@@ -25,7 +25,7 @@ exports.handler = async (event) => {
                 const updateParams = {
                     TableName: TABLE_NAME,
                     Key: { userId: user.userId },
-                    UpdateExpression: 'set imageUrls = :emptyList',
+                    UpdateExpression: 'set imageUrls = :emptyList, imageDescriptions = :emptyList',
                     ExpressionAttributeValues: {
                         ':emptyList': []
                     }

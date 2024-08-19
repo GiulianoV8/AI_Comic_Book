@@ -54,6 +54,10 @@ function authenticate(username, password) {
             localStorage.setItem('userID', data.userID);
             window.location.replace("/home.html");
         } else {
+            const usernameInput = document.getElementById('username');
+            usernameInput.value = "Wrong Username Or Password!";
+            usernameInput.style.color = "red";
+            usernameInput.addEventListener('click', () => usernameInput.style.color = "black");
             alert('Invalid username or password.');
         }
     })
