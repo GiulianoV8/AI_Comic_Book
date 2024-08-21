@@ -382,14 +382,10 @@ async function fillData(userID) {
             createPanel(imageUrl, true, insertIndex);
             insertIndex++;
         }
-        
+        saveImage(userData.userID);
         // Set user's attributes
-        let attributes;
-        if(localStorage.getItem('attributes')){
-            attributes = JSON.parse(localStorage.getItem('attributes'));
-        }else{
-            attributes = userData.attributes;
-            localStorage.setItem('attributes', JSON.stringify(attributes));
+        if(!localStorage.getItem('attributes')){
+            localStorage.setItem('attributes', JSON.stringify(userData.attributes));
         }
     } catch (error) {
         console.error('Error fetching user data:', error);
@@ -422,10 +418,13 @@ async function generateImage(imgElement, progressDisplay, description, attribute
 
     const data = {
         extra: {
-            test_mode: {
-                enabled: true,
-                return_task_status: "TASK_STATUS_SUCCEED",
-            },
+            custom_storage: {
+                aws_s3: {
+                  region: "us-east-1",
+                  bucket: "comicbookimages",
+                  path: "/"
+                }
+              }
         },
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
