@@ -19,8 +19,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const modal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImage");
-    const captionText = document.getElementById("caption");
+    const captionText = document.getElementById("imageCaption");
     const closeBtn = document.getElementsByClassName("close")[0];
+
+    const tutorialModal = document.getElementById("tutorialModal");
+    const closeTutorialBtn = document.getElementsByClassName("close")[1];
+    const tutorialBtn = document.getElementById("tutorial");
+    const tutorialImage = document.getElementById("tutorialImage");
+    const tutorialImages = ['imgs/tutorial_images/home_page.png', 'imgs/tutorial_images/add_panel.png', 'imgs/tutorial_images/delete_panel.png', 'imgs/tutorial_images/create_comic.png'];
+    const tutorialCaptions = [
+        'This is the home page. Your drawing board. This is where you’ll write your story and create your comic',
+        'To add an event to your comic, click “Add Panel”. Choose where to add your panel. Once added, choose where to add your panel by clicking one of the plus buttons. You will see that an empty panel has been created with an input field. Input your event and you will soon have your superhero doing it',
+        'To delete an event, click the “Delete Panel” button. Select which events you want to delete by clicking on the red circle on each panel. Once selected, press the “Delete Selected” button to delete the selected panels. To cancel, click the “Delete Panel” button once more. Alternatively, you can click the “Rewrite” button and then “Confirm Delete All” to delete all panels.',
+        'You’ve done a lot today. You’re a hero for doing such. To view your finalized comic, click the “Create” button and enjoy!'
+    ];
+    const leftTutorial = document.getElementById('leftTutorial');
+    const rightTutorial = document.getElementById('rightTutorial');
+    const tutorialCaption = document.getElementById('tutorialCaption');
+    let tutorialImageIndex = 0;
+
     
 
     if(!localStorage.getItem('userID')){
@@ -29,6 +46,31 @@ document.addEventListener("DOMContentLoaded", function() {
     userID = localStorage.getItem("userID");
     fillData(userID);    
 
+    function updateTutorial(index) {
+        tutorialImage.src = tutorialImages[index];
+        tutorialCaption.innerHTML = tutorialCaptions[index]
+    }
+    tutorialBtn.addEventListener("click", () => {
+        tutorialImageIndex = 0;
+        tutorialModal.style.display = "flex";
+        updateTutorial(tutorialImageIndex);
+    });
+    leftTutorial.onclick = () => {
+        if(tutorialImageIndex > 0){
+            tutorialImageIndex--;
+            updateTutorial(tutorialImageIndex);
+        }
+    }
+    rightTutorial.onclick = () => {
+        if(tutorialImageIndex < 3){
+            tutorialImageIndex++;
+            updateTutorial(tutorialImageIndex);
+        }
+    }
+    
+    closeTutorialBtn.onclick = function () {
+        tutorialModal.style.display = "none";
+    }
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
@@ -61,19 +103,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }); // Clear existing panels
         }
     }
-
-    // Add click event listeners to each grid item with an image
-    const gridItems = document.querySelectorAll('.generated-image');
-
-    let imageIndex = 0;
-    gridItems.forEach(item => {
-        item.addEventListener('click', function () {
-            const imageUrl = item.src;
-            const description = JSON.parse(localStorage.getItem('imageDescriptions'))[imageIndex];
-            openModal(imageUrl, description, title);
-        });
-        imageIndex++;
-    });
 
     let previousTitle = comicTitle.innerText;
 
@@ -127,10 +156,12 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
     // Function to open modal
-    openModal = (imageUrl, description) => {
-        modal.style.display = "block";
-        modalImg.src = imageUrl;
-        captionText.innerHTML = description;
+    openModal = (imageUrl, description, event) => {
+        if(!event.target.classList.contains("circle")){
+            modal.style.display = "block";
+            modalImg.src = imageUrl;
+            captionText.innerHTML = description;
+        }
     }
 
     // Toggle add panel mode on "Add Panel" button click
@@ -228,13 +259,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // Confirm deletion of selected panels
     deleteConfirmBtn.addEventListener("click", async function() {
         deleteConfirmDropdown.classList.add('hidden');
-        for (let item of selectedItems) {
-            let img = item.querySelector('.generated-image');
-            if (img && img.src) {
-                await deleteImageUrl(img.src);
-            }
+        for (let item of selectedItems) { 
             item.remove();
         }
+        localStorage.setItem("imageDescripions", JSON.stringify([]));
+        await saveImage(localStorage.getItem('userID'));
         document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
         document.querySelectorAll(".highlight").forEach(highlight => highlight.classList.remove("highlight"));
         // Reset delete mode
@@ -253,10 +282,10 @@ document.addEventListener("DOMContentLoaded", function() {
         for (let item of gridItems) {
             let img = item.querySelector('.generated-image');
             if (img && img.src) {
-                await deleteImageUrl(img.src);
+                item.remove();
             }
-            item.remove();
         }
+        await saveImage(localStorage.getItem('userID'));
     });
 
     // Prevent default form submission
@@ -273,7 +302,7 @@ function createPanel(src, image, position) {
         newGridItem.innerHTML = `<img class="generated-image" src=${src}>`;
         const imageUrl = src;
         const description = JSON.parse(localStorage.getItem('imageDescriptions'))[position];
-        newGridItem.addEventListener('click', () => openModal(imageUrl, description));
+        newGridItem.addEventListener('click', event => openModal(imageUrl, description, event));
 
     } else {
         newGridItem.innerHTML = `
@@ -316,7 +345,7 @@ async function deleteImageUrl(imgSrc) {
             body: JSON.stringify({
                 userID: localStorage.getItem('userID'),
                 imageUrl: imgSrc,
-                imgDescription: imgDescription
+                imgDescription: imageDescription
             })
         });
         const result = await response.json();
@@ -344,48 +373,50 @@ async function fillData(userID) {
         // Fetch user data from the backend
         const response = await fetch(`/getUserData?userID=${userID}`);
         const userData = await response.json();
+        const data = userData.item;
 
         // Fill in the #comic-title input tag with the comicTitle attribute value
         const comicTitle = document.getElementById('comic-title');
-        if (comicTitle && userData.comicTitle) {
-            comicTitle.innerText = userData.comicTitle;
-            localStorage.setItem('comicTitle', userData.comicTitle);
+        if (comicTitle && data.comicTitle) {
+            comicTitle.innerText = data.comicTitle;
+            localStorage.setItem('comicTitle', data.comicTitle);
         }
         // Get images from the datatable's image urls list attribute
         let imageUrls;
         if(localStorage.getItem('imageUrls') && localStorage.getItem('imageUrls') !== 'undefined' && localStorage.getItem('imageUrls') !== undefined) {
-            if(userData.resetImages == true) {
-                localStorage.setItem('imageUrls', JSON.stringify([]));
-                imageUrls = [];
-            }else {
-                imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
-            }
+            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
         }else{
-            imageUrls = userData.imageUrls;
-            localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
+            imageUrls = data.imageUrls;
         }
 
-        let imageDescriptions = [];
+        let imageDescriptions;
         if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
-            if(userData.resetImages == true) {
-                localStorage.setItem('imageDescriptions', JSON.stringify([]));
-                imageDescriptions = [];
-            }else {
-                imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
-            }
+            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
         }else{
-            imageDescriptions = userData.imageDescriptions;
+            imageDescriptions = data.imageDescriptions;
+        }
+        
+        let resetImages = userData.firstLogin;
+        if(resetImages == true){
+            localStorage.setItem('imageUrls', JSON.stringify([]));
+            localStorage.setItem('imageDescriptions', JSON.stringify([]));
+            imageUrls = [];
+            imageDescriptions = [];
+            console.log('Reset attribute updated to false');
+        }else{
+            localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
             localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
         }
+
         let insertIndex = 0;
         for(const imageUrl of imageUrls) {
             createPanel(imageUrl, true, insertIndex);
             insertIndex++;
         }
-        saveImage(userData.userID);
+        await saveImage(data.userID);
         // Set user's attributes
         if(!localStorage.getItem('attributes')){
-            localStorage.setItem('attributes', JSON.stringify(userData.attributes));
+            localStorage.setItem('attributes', JSON.stringify(data.attributes));
         }
     } catch (error) {
         console.error('Error fetching user data:', error);

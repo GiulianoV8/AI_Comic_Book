@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/signup', async (req, res) => {
-    const { username, email, password, attributes, comicTitle, timeZone } = req.body;
+    const { username, email, password, attributes, comicTitle, lastLogin } = req.body;
     console.log('Signup request body:', req.body); // Log the request body for debugging
     if (!username || !email || !password || !attributes) {
         return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -58,10 +58,9 @@ app.post('/signup', async (req, res) => {
                 password: password,
                 attributes: attributes,
                 comicTitle: comicTitle,
-                timeZone: timeZone,
+                lastLogin: lastLogin,
                 imageUrls: [],
-                imageDescriptions: [],
-                resetImages: false
+                imageDescriptions: []
             }
         };
 
@@ -121,21 +120,29 @@ app.get('/getUserData', async (req, res) => {
         if (!data.Item) {
             return res.status(404).json({ error: 'User not found' });
         }
-        console.log('User Data: ', data)
-        res.json(data.Item);
+        console.log('User Data: ', data);
+        
+        const today = new Date().toISOString().split('T')[0];
+        const lastLogin = data.Item.lastLogin;
+        let firstLogin = false;
+        if (!lastLogin || lastLogin < today) {
+            firstLogin = true;
+            console.log("First login of the day!");
 
-         // After sending the response, update the reset value to false
-         const updateParams = {
-            TableName: TABLE_NAME,
-            Key: { userID: userID },
-            UpdateExpression: 'SET resetImages = :resetVal',
-            ExpressionAttributeValues: {
-                ':resetVal': false
-            }
-        };
+            // Update the last login date in DynamoDB
+            const updateParams = {
+                TableName: TABLE_NAME,
+                Key: { userID: userID },
+                UpdateExpression: "SET lastLogin = :date",
+                ExpressionAttributeValues: {
+                    ":date": today
+                }
+            };
+            await docClient.update(updateParams).promise();
+        }
 
-        await docClient.update(updateParams).promise();
-        console.log('Reset attribute updated to false');
+        res.json({ item: data.Item, firstLogin: firstLogin });
+
     } catch (error) {
         console.error('Error fetching data from DynamoDB:', error);
         res.status(500).json({ error: 'Internal Server Error' });

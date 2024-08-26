@@ -1,56 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('loaded');
-    // Change title
+    
+    // Cache DOM elements
     const editTitleBtn = document.getElementById('editTitleBtn');
     const titleInputContainer = document.getElementById('titleInputContainer');
     const titleInput = document.getElementById('titleInput');
     const submitTitleBtn = document.getElementById('submitTitleBtn');
-    // Logout
     const logoutBtn = document.getElementById('logoutBtn');
-    // Change hero attributes
     const modal = document.getElementById('editAttributesModal');
     const editHeroBtn = document.getElementById('editAttributesBtn');
-    const span = document.getElementsByClassName('close')[0];
     const attributeForm = document.getElementById('editAttributesForm');
     const attributesContainer = document.getElementById('attributesContainer');
     const addAttributeBtn = document.getElementById('addAttributeBtn');
-
-    // Change username/password
     const changeUsernameModal = document.getElementById('changeUsernameModal');
     const changePasswordModal = document.getElementById('changePasswordModal');
     const changeUsernameBtn = document.getElementById('changeUsernameBtn');
     const changePasswordBtn = document.getElementById('changePasswordBtn');
     const closeButtons = document.getElementsByClassName('close');
 
-
     let userID = localStorage.getItem('userID'); // Replace with the actual userID
 
-    // Open Change Username Modal
-    changeUsernameBtn.onclick = function() {
-        changeUsernameModal.style.display = 'block';
+    // Utility function to close all modals
+    function closeModals() {
+        [changeUsernameModal, changePasswordModal, modal, document.getElementById("titleModal")].forEach(modal => modal.classList.add('hidden'));
     }
+
+    // Open Change Username Modal
+    changeUsernameBtn.onclick = () => changeUsernameModal.classList.remove('hidden');
 
     // Open Change Password Modal
-    changePasswordBtn.onclick = function() {
-        changePasswordModal.style.display = 'block';
-    }
+    changePasswordBtn.onclick = () => changePasswordModal.classList.remove('hidden');
 
     // Close modals
-    Array.from(closeButtons).forEach(button => {
-        button.onclick = function() {
-            changeUsernameModal.style.display = 'none';
-            changePasswordModal.style.display = 'none';
-        }
-    });
+    Array.from(closeButtons).forEach(button => button.onclick = closeModals);
 
-    window.onclick = function(event) {
-        if (event.target == changeUsernameModal) {
-            changeUsernameModal.style.display = 'none';
+    window.onclick = event => {
+        if ([changeUsernameModal, changePasswordModal, modal, document.getElementById("titleModal")].includes(event.target)) {
+            closeModals();
         }
-        if (event.target == changePasswordModal) {
-            changePasswordModal.style.display = 'none';
-        }
-    }
+    };
 
     // Handle Change Username Form Submission
     document.getElementById('changeUsernameForm').addEventListener('submit', async function(event) {
@@ -59,15 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changeUsername', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userID: userID, newUsername: newUsername })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userID, newUsername })
             });
-
             if (response.ok) {
                 alert('Username updated successfully! Make sure your comic title is what you would like.');
-                changeUsernameModal.style.display = 'none';
+                closeModals();
             } else {
                 alert('Error updating username');
             }
@@ -83,15 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changePassword', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userID: userID, newPassword: newPassword })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userID, newPassword })
             });
-
             if (response.ok) {
                 alert('Password updated successfully!');
-                changePasswordModal.style.display = 'none';
+                closeModals();
             } else {
                 alert('Error updating password');
             }
@@ -100,77 +82,39 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Open Edit Attributes Modal and fetch user attributes
     editHeroBtn.onclick = async function() {
-        modal.style.display = 'block';
-        
-        // Fetch user's current attributes
-        let attributes;
-        if(localStorage.getItem('attributes')) {
-            attributes = JSON.parse(localStorage.getItem('attributes'));
-            // Clear existing attributes
-            attributesContainer.innerHTML = '';
-
-            // Populate form with current attributes
-            for (const attribute of attributes) {
-                addAttributeInput(attribute);
-            }
-        }else{
+        modal.classList.remove('hidden');
+        let attributes = JSON.parse(localStorage.getItem('attributes')) || [];
+        if (attributes.length === 0) {
             try {
                 const response = await fetch(`/getUserAttributes?userID=${userID}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                const data = await response.json();
-
-                // Clear existing attributes
-                attributesContainer.innerHTML = '';
-
-                // Populate form with current attributes
-                for (const attribute of data) {
-                    addAttributeInput(attribute);
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
+                attributes = await response.json();
             } catch (error) {
                 console.error('Error fetching user attributes:', error);
             }
+            localStorage.setItem('attributes', JSON.stringify(attributes));
         }
-    }
-
-    span.onclick = function() {
-        modal.style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
-        }
+        attributesContainer.innerHTML = '';
+        attributes.forEach(attribute => addAttributeInput(attribute));
     }
 
     addAttributeBtn.onclick = () => addAttributeInput('');
 
     attributeForm.onsubmit = async function(event) {
         event.preventDefault();
-
-        const attributes = [];
-        const inputs = attributesContainer.querySelectorAll('.attribute-input');
-
-        inputs.forEach(input => {
-            attributes.push(input.querySelector('.attribute').value)
-        });
-        
-        localSStorage.setItem('attributes', attributes);
-
+        const attributes = Array.from(attributesContainer.querySelectorAll('.attribute-input .attribute')).map(input => input.value);
+        localStorage.setItem('attributes', JSON.stringify(attributes));
         try {
             const response = await fetch('/editAttributes', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userID, attributes })
             });
-
             if (response.ok) {
                 alert('Attributes updated successfully!');
-                modal.style.display = 'none';
+                closeModals();
             } else {
                 alert('Error updating attributes');
             }
@@ -180,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function addAttributeInput(value) {
-        console.log(value);
         const div = document.createElement('div');
         div.className = 'form-group attribute-input';
 
@@ -203,42 +146,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     logoutBtn.addEventListener('click', () => localStorage.clear());
 
-    document.getElementById("editTitleBtn").onclick = function() {
-        document.getElementById("titleModal").style.display = "block";
-        document.getElementById("titleInput").value = localStorage.getItem("comicTitle") || '';
+    editTitleBtn.onclick = function() {
+        document.getElementById("titleModal").classList.remove('hidden');
+        titleInput.value = localStorage.getItem("comicTitle") || '';
     }
 
-    document.getElementById("closeTitleModal").onclick = function() {
-        document.getElementById("titleModal").style.display = "none";
-    };
+    document.getElementById("closeTitleModal").onclick = () => document.getElementById("titleModal").classList.add('hidden');
     
-    document.getElementById("cancelTitleBtn").onclick = function() {
-        document.getElementById("titleModal").style.display = "none";
-    };
-    
-    window.onclick = function(event) {
-        if (event.target == document.getElementById("titleModal")) {
-            document.getElementById("titleModal").style.display = "none";
-        }
-    };
+    document.getElementById("cancelTitleBtn").onclick = () => document.getElementById("titleModal").classList.add('hidden');
 
     submitTitleBtn.addEventListener('click', async () => {
         const newTitle = titleInput.value.trim();
         if (newTitle) {
-            // Update the comic title in DynamoDB
-            const response = await fetch('/setComicTitle', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ userID: userID, comicTitle: newTitle })
-            });
-
-            if (response.ok) {
-                alert('Title updated successfully');
-                titleInputContainer.classList.remove('visible');
-            } else {
-                alert('Error updating title');
+            try {
+                const response = await fetch('/setComicTitle', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userID, comicTitle: newTitle })
+                });
+                if (response.ok) {
+                    alert('Title updated successfully');
+                    titleInputContainer.classList.remove('visible');
+                } else {
+                    alert('Error updating title');
+                }
+            } catch (error) {
+                console.error('Error:', error);
             }
         } else {
             alert('Please enter a title');

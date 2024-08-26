@@ -117,7 +117,7 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
                                 password: newPassword, 
                                 attributes: attributes, 
                                 comicTitle: `${newUsername}'s Great Adventure`,
-                                timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone  })
+                                lastLogin: new Date().toISOString().split('T')[0]  })
     })
     .then(response => response.json())
     .then(data => {

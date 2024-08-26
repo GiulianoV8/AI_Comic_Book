@@ -156,7 +156,6 @@ nav a button:hover {
 
 /* Modal Styles */
 .modal {
-    display: none;
     position: fixed;
     z-index: 1;
     left: 0;
@@ -222,4 +221,8 @@ button {
 button:hover {
     transform: scale(1.1);
     box-shadow: 0px 0px 10px 2px #ffcc00;
+}
+
+.hidden {
+    display: none !important;
 }
