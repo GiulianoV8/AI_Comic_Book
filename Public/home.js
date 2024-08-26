@@ -381,23 +381,13 @@ async function fillData(userID) {
             comicTitle.innerText = data.comicTitle;
             localStorage.setItem('comicTitle', data.comicTitle);
         }
-        // Get images from the datatable's image urls list attribute
-        let imageUrls;
-        if(localStorage.getItem('imageUrls') && localStorage.getItem('imageUrls') !== 'undefined' && localStorage.getItem('imageUrls') !== undefined) {
-            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
-        }else{
-            imageUrls = data.imageUrls;
-        }
-
-        let imageDescriptions;
-        if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
-            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
-        }else{
-            imageDescriptions = data.imageDescriptions;
-        }
+        // Get images from the datatable
+        let imageUrls = data.imageUrls;
+        let imageDescriptions = data.imageDescriptions
         
-        let resetImages = userData.firstLogin;
-        if(resetImages == true){
+        if(userData.firstLogin){
+            localStorage.clear();
+            localStorage.setItem('userID', userID);
             localStorage.setItem('imageUrls', JSON.stringify([]));
             localStorage.setItem('imageDescriptions', JSON.stringify([]));
             imageUrls = [];
