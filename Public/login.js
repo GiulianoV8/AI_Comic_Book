@@ -1,4 +1,3 @@
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener("DOMContentLoaded", function() {
     document.querySelector('.login-container').style.display = 'block';
         setTimeout(() => {
@@ -43,8 +42,7 @@ function authenticate(username, password) {
     fetch('/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({ username, password })
     })
@@ -58,7 +56,6 @@ function authenticate(username, password) {
             usernameInput.value = "Wrong Username Or Password!";
             usernameInput.style.color = "red";
             usernameInput.addEventListener('click', () => usernameInput.style.color = "black");
-            alert('Invalid username or password.');
         }
     })
     .catch(error => {
@@ -110,8 +107,7 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     fetch('/signup', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({  username: newUsername, 
                                 email: newEmail, 
@@ -123,10 +119,8 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('User created successfully!');
             document.querySelector('.signup-container').style.display = 'none';
             document.querySelector('.login-container').style.display = 'block';
-        } else {alert('Error creating user.');
         }
     })
     .catch(error => {

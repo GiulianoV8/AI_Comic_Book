@@ -1,6 +1,4 @@
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener('DOMContentLoaded', () => {
-    
     // Cache DOM elements
     const editTitleBtn = document.getElementById('editTitleBtn');
     const titleInputContainer = document.getElementById('titleInputContainer');
@@ -47,17 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changeUsername', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userID, newUsername })
             });
             if (response.ok) {
-                alert('Username updated successfully! Make sure your comic title is what you would like.');
                 closeModals();
             } else {
-                alert('Error updating username');
+                newUsername.value = 'Error updating username';
             }
         } catch (error) {
             console.error('Error:', error);
@@ -71,17 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changePassword', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userID, newPassword })
             });
             if (response.ok) {
-                alert('Password updated successfully!');
                 closeModals();
             } else {
-                alert('Error updating password');
+                newPassword.value = 'Error updating password';
             }
         } catch (error) {
             console.error('Error:', error);
@@ -115,17 +105,11 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/editAttributes', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-Token': csrfToken
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userID, attributes })
             });
             if (response.ok) {
-                alert('Attributes updated successfully!');
                 closeModals();
-            } else {
-                alert('Error updating attributes');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -170,23 +154,19 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/setComicTitle', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': csrfToken
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userID, comicTitle: newTitle })
                 });
                 if (response.ok) {
-                    alert('Title updated successfully');
                     titleInputContainer.classList.remove('visible');
                 } else {
-                    alert('Error updating title');
+                    newTitle.value = 'Error updating title';
                 }
             } catch (error) {
                 console.error('Error:', error);
             }
         } else {
-            alert('Please enter a title');
+            newTitle.value = 'Please enter a title';
         }
     });
 });

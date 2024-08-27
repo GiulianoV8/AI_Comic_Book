@@ -1,5 +1,4 @@
 let openModal;
-const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener("DOMContentLoaded", function() {
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -204,25 +203,23 @@ document.addEventListener("DOMContentLoaded", function() {
             const response = await fetch('/setComicTitle', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ userID: userID, comicTitle: newTitle })
             });
 
             if (response.ok) {
-                alert('Title updated successfully');
                 previousTitle = newTitle;
                 comicTitle.contentEditable = false;
                 editTitleBtn.style.display = "inline-block";
                 saveTitleBtn.style.display = "none";
                 cancelTitleBtn.style.display = "none";
             } else {
-                alert('Error updating title');
+                newTitle.innerText = 'Error updating title';
             }
             localStorage.setItem('comicTitle', newTitle);
         } else {
-            alert('Please enter a title');
+            newTitle.innerText = 'Please enter a title';
         }
     });
 
@@ -341,8 +338,7 @@ async function deleteImageUrl(imgSrc) {
         const response = await fetch('/deleteImage', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userID: localStorage.getItem('userID'),
@@ -380,13 +376,23 @@ async function fillData(userID) {
             comicTitle.innerText = data.comicTitle;
             localStorage.setItem('comicTitle', data.comicTitle);
         }
-        // Get images from the datatable
-        let imageUrls = data.imageUrls;
-        let imageDescriptions = data.imageDescriptions
+        // Get images from the datatable's image urls list attribute
+        let imageUrls;
+        if(localStorage.getItem('imageUrls') && localStorage.getItem('imageUrls') !== 'undefined' && localStorage.getItem('imageUrls') !== undefined) {
+            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
+        }else{
+            imageUrls = data.imageUrls;
+        }
+
+        let imageDescriptions;
+        if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
+            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
+        }else{
+            imageDescriptions = data.imageDescriptions;
+        }
         
-        if(userData.firstLogin){
-            localStorage.clear();
-            localStorage.setItem('userID', userID);
+        let resetImages = userData.firstLogin;
+        if(resetImages == true){
             localStorage.setItem('imageUrls', JSON.stringify([]));
             localStorage.setItem('imageDescriptions', JSON.stringify([]));
             imageUrls = [];
@@ -514,7 +520,8 @@ async function generateImage(imgElement, progressDisplay, description, attribute
                 setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
             } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
                 // Task failed
-                console.error("Task did not succeed:", statusResult.task.reason);
+                let gridItem = imgElement.parentElement;
+                gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`
             }
         };
 
@@ -537,8 +544,7 @@ async function saveImage(userID) {
         const response = await fetch('/saveImage', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
                 userID: userID,

@@ -87,6 +87,7 @@ nav a button:hover {
     border: 4px solid #000;
     background-color: #00bfff;
     color: white;
+    width: 30%;
     border-radius: 10px;
     cursor: pointer;
     text-shadow: 2px 2px #000;
