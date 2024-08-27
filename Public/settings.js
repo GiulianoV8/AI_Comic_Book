@@ -1,5 +1,5 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('loaded');
     
     // Cache DOM elements
     const editTitleBtn = document.getElementById('editTitleBtn');
@@ -47,7 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changeUsername', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify({ userID, newUsername })
             });
             if (response.ok) {
@@ -68,7 +71,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/changePassword', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify({ userID, newPassword })
             });
             if (response.ok) {
@@ -109,7 +115,10 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch('/editAttributes', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-Token': csrfToken
+                },
                 body: JSON.stringify({ userID, attributes })
             });
             if (response.ok) {
@@ -161,7 +170,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch('/setComicTitle', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': csrfToken
+                    },
                     body: JSON.stringify({ userID, comicTitle: newTitle })
                 });
                 if (response.ok) {

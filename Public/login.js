@@ -1,3 +1,4 @@
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener("DOMContentLoaded", function() {
     document.querySelector('.login-container').style.display = 'block';
         setTimeout(() => {
@@ -33,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const newUsername = document.getElementById('newUsername').value;
         const newPassword = document.getElementById('newPassword').value;
         const newEmail = document.getElementById('newEmail').value;
-        console.log(newUsername);
         submitSignUp(newUsername, newEmail, newPassword, attributes);
         transitionForms('.attributes-container', '.login-container');
     });
@@ -43,14 +43,14 @@ function authenticate(username, password) {
     fetch('/login', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify({ username, password })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log(data.userID);
             localStorage.setItem('userID', data.userID);
             window.location.replace("/home.html");
         } else {
@@ -110,7 +110,8 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     fetch('/signup', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
         },
         body: JSON.stringify({  username: newUsername, 
                                 email: newEmail, 

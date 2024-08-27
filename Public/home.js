@@ -1,4 +1,5 @@
 let openModal;
+const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 document.addEventListener("DOMContentLoaded", function() {
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -203,7 +204,8 @@ document.addEventListener("DOMContentLoaded", function() {
             const response = await fetch('/setComicTitle', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
                 },
                 body: JSON.stringify({ userID: userID, comicTitle: newTitle })
             });
@@ -335,12 +337,12 @@ async function deleteImageUrl(imgSrc) {
     let imageDescription = JSON.parse(localStorage.getItem('imageDescriptions'))[JSON.parse(localStorage.getItem('imageUrls')).indexOf(imgSrc)];
     
     try {
-        console.log('deleting image ' + imgSrc);
         // Send a request to delete the image URL from DynamoDB
         const response = await fetch('/deleteImage', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
             },
             body: JSON.stringify({
                 userID: localStorage.getItem('userID'),
@@ -351,12 +353,10 @@ async function deleteImageUrl(imgSrc) {
         const result = await response.json();
         if (result.success) {
             let imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
-            console.log(imageUrls); 
             updatedImageUrls = imageUrls.filter(url => !imgSrc.includes(url));
             localStorage.setItem('imageUrls', JSON.stringify(updatedImageUrls));
 
             let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-            console.log(imageDescriptions); 
             updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
             localStorage.setItem('imageDescriptions', JSON.stringify(updatedImageDescriptions));
         } else {
@@ -368,7 +368,6 @@ async function deleteImageUrl(imgSrc) {
 }
 
 async function fillData(userID) {
-    console.log('Filling Data');
     try {
         // Fetch user data from the backend
         const response = await fetch(`/getUserData?userID=${userID}`);
@@ -392,7 +391,6 @@ async function fillData(userID) {
             localStorage.setItem('imageDescriptions', JSON.stringify([]));
             imageUrls = [];
             imageDescriptions = [];
-            console.log('Reset attribute updated to false');
         }else{
             localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
             localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
@@ -415,7 +413,6 @@ async function fillData(userID) {
 
 function submitEvent(form, description){
     event.preventDefault()
-    console.log(description);
 
     const progressDisplay = document.createElement('span');
     progressDisplay.classList.add('progress-display', 'hidden');
@@ -490,13 +487,11 @@ async function generateImage(imgElement, progressDisplay, description, attribute
             });
             const statusResult = await statusResponse.json();
 
-            console.log("ETA", statusResult.task.eta);
             progressDisplay.classList.remove('hidden');
             progressDisplay.innerHTML = `${statusResult.task.progress_percent}%`;
 
             if (statusResult.task.status === "TASK_STATUS_SUCCEED") {
                 // Image successfully received
-                console.log("Received image");
                 const imageUrl = statusResult.images[0].image_url;
                 imgElement.src = imageUrl;
 
@@ -512,12 +507,10 @@ async function generateImage(imgElement, progressDisplay, description, attribute
 
                 let gridItem = imgElement.parentElement;
                 gridItem.innerHTML = `<img class="generated-image" src=${imageUrl}>`
-                console.log(gridItem);
                 gridItem.addEventListener('click', () => openModal(imageUrl, description));
 
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
                 // Still processing, retry after some time
-                console.log("Task is still processing", statusResult.task.status);
                 setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
             } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
                 // Task failed
@@ -544,7 +537,8 @@ async function saveImage(userID) {
         const response = await fetch('/saveImage', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken  // Include the CSRF token in the headers
             },
             body: JSON.stringify({
                 userID: userID,

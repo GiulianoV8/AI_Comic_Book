@@ -2,10 +2,36 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 const path = require('path');
+const crypto = require('crypto');
+const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 
 const app = express();
-const PORT = 3001;
+require('dotenv').config();
 
+// Set up session handling
+app.use(session({
+    secret: process.env.SESSION_SECRET, // Use environment variable for session secret
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false }
+}));
+
+// Set up the cookie parser
+app.use(cookieParser());
+
+// Set up CSRF protection
+const csrfProtection = csrf({
+    cookie: {
+        httpOnly: true,
+        secure: false,
+        maxAge: 3600000 // 1 hour
+    }
+});
+app.use(csrfProtection);
+
+// AWS configuration
 AWS.config.update({
     region: 'us-east-1'
     // Use environment variables or AWS CLI configuration for credentials
@@ -15,6 +41,7 @@ const docClient = new AWS.DynamoDB.DocumentClient();
 const TABLE_NAME = 'ComicUsers';
 const COUNTER_TABLE_NAME = 'UserIDCounter';
 
+// Middleware for parsing JSON bodies
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -35,14 +62,15 @@ async function generateUserID() {
     return result.Attributes.userID;
 }
 
-// Define a route for the root URL to serve starting page
+// Route for the root URL to serve the starting page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
+// Route for signup
 app.post('/signup', async (req, res) => {
     const { username, email, password, attributes, comicTitle, lastLogin } = req.body;
-    console.log('Signup request body:', req.body); // Log the request body for debugging
+    console.log('Signup request body:', req.body);
     if (!username || !email || !password || !attributes) {
         return res.status(400).json({ success: false, message: 'All fields are required.' });
     }
@@ -72,16 +100,17 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+// Route for login
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
-    console.log('Login request body:', req.body); // Log the request body for debugging
+    console.log('Login request body:', req.body);
     if (!username || !password) {
         return res.status(400).json({ success: false, message: 'Username and password are required.' });
     }
 
     const params = {
         TableName: TABLE_NAME,
-        IndexName: 'username', // Using GSI (secondary index)
+        IndexName: 'username',
         KeyConditionExpression: 'username = :username',
         ExpressionAttributeValues: {
             ':username': username
@@ -90,7 +119,10 @@ app.post('/login', async (req, res) => {
 
     try {
         const data = await docClient.query(params).promise();
-        if (data.Items.length > 0 && data.Items[0].password === password) {
+        const passwordBuffer = Buffer.from(password);
+        const storedPasswordBuffer = Buffer.from(data.Items[0].password);
+
+        if (data.Items.length > 0 && passwordBuffer.length === storedPasswordBuffer.length && crypto.timingSafeEqual(passwordBuffer, storedPasswordBuffer)) {
             const userID = data.Items[0].userID;
             return res.status(200).json({ success: true, userID: userID });
         } else {
@@ -102,6 +134,7 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Route to get user data
 app.get('/getUserData', async (req, res) => {
     const userID = req.query.userID;
     console.log(userID);
@@ -149,6 +182,7 @@ app.get('/getUserData', async (req, res) => {
     }
 });
 
+// Route to set comic title
 app.post('/setComicTitle', async (req, res) => {
     const { userID, comicTitle } = req.body;
 
@@ -172,6 +206,7 @@ app.post('/setComicTitle', async (req, res) => {
     }
 });
 
+// Route to get user attributes
 app.get('/getUserAttributes', async (req, res) => {
     const userID = req.query.userID;
 
@@ -200,6 +235,7 @@ app.get('/getUserAttributes', async (req, res) => {
     }
 });
 
+// Route to edit attributes
 app.post('/editAttributes', async (req, res) => {
     const { userID, attributes } = req.body;
 
@@ -223,7 +259,7 @@ app.post('/editAttributes', async (req, res) => {
     }
 });
 
-// Endpoint to change username
+// Route to change username
 app.post('/changeUsername', async (req, res) => {
     const { userID, newUsername } = req.body;
 
@@ -243,7 +279,7 @@ app.post('/changeUsername', async (req, res) => {
     }
 });
 
-// Endpoint to change password
+// Route to change password
 app.post('/changePassword', async (req, res) => {
     const { userID, newPassword } = req.body;
 
@@ -258,97 +294,19 @@ app.post('/changePassword', async (req, res) => {
         await docClient.update(params).promise();
         res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
+        console.log('Error changing password: ', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-app.post('/deleteImage', async (req, res) => {
-    const { userID, imageUrl, imageDescription } = req.body;
-
-    if (!userID || !imageUrl || !imageDescription) {
-        return res.status(400).json({ success: false, message: 'User ID and image are required.' });
-    }
-
-    // Fetch the user's data from DynamoDB
-    const getParams = {
-        TableName: TABLE_NAME,
-        Key: { userID: userID }
-    };
-
-    try {
-        const data = await docClient.get(getParams).promise();
-        if (!data.Item) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        // Remove the image URL from the user's imageUrls list
-        const imageUrls = data.Item.imageUrls;
-        const updatedImageUrls = imageUrls.filter(url => !imageUrl.includes(url));
-
-        let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-        updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
-
-        // Update the user's data in DynamoDB
-        const updateParams = {
-            TableName: TABLE_NAME,
-            Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
-            ExpressionAttributeValues: {
-                ":urls": updatedImageUrls,
-                ":descriptions": updatedImageDescriptions
-            },
-            ReturnValues: "UPDATED_NEW"
-        };
-
-        await docClient.update(updateParams).promise();
-
-        return res.status(200).json({ success: true, message: 'Image removed successfully.' });
-    } catch (err) {
-        console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error image URL.' });
-    }
+// Route to logout
+app.post('/logout', (req, res) => {
+    res.clearCookie('csrfToken');
+    res.status(200).json({ message: 'Logged out successfully' });
 });
 
-app.post('/saveImage', async (req, res) => {
-    const { userID, updatedImageUrls, updatedImageDescriptions } = req.body;
-
-    if (!userID || !updatedImageUrls || !updatedImageDescriptions) {
-        return res.status(400).json({ success: false, message: `User ID and image are required: userID: ${userID}, image Urls: ${updatedImageUrls}, image descriptions: ${imageDescriptions}` });
-    }
-
-    // Fetch the user's data from DynamoDB
-    const getParams = {
-        TableName: TABLE_NAME,
-        Key: { userID: userID }
-    };
-
-    try {
-        const data = await docClient.get(getParams).promise();
-        if (!data.Item) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        // Update the user's data in DynamoDB
-        const updateParams = {
-            TableName: TABLE_NAME,
-            Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
-            ExpressionAttributeValues: {
-                ":urls": updatedImageUrls,
-                ":descriptions": updatedImageDescriptions
-            },
-            ReturnValues: "UPDATED_NEW"
-        };
-
-        await docClient.update(updateParams).promise();
-
-        return res.status(200).json({ success: true, message: 'Image URLs saved successfully.' });
-    } catch (err) {
-        console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error saving image URLs.' });
-    }
-});
-
+// Start the server
+const PORT = 3001;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
