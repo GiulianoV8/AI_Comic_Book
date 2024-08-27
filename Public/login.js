@@ -59,6 +59,7 @@ function authenticate(username, password) {
         }
     })
     .catch(error => {
+        // Did not work
         console.error('Error:', error);
     });
 }
