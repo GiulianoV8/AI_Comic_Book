@@ -91,10 +91,7 @@ app.post('/login', async (req, res) => {
 
     try {
         const data = await docClient.query(params).promise();
-
-        const passwordBuffer = Buffer.from(password);
-        const storedPasswordBuffer = Buffer.from(data.Items[0].password);
-        if (data.Items.length > 0 && passwordBuffer.length === storedPasswordBuffer.length && crypto.timingSafeEqual(passwordBuffer, storedPasswordBuffer)) {
+        if (data.Items.length > 0 && data.Items[0].password == password) {
             const userID = data.Items[0].userID;
             return res.status(200).json({ success: true, userID: userID });
         } else {
