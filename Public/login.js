@@ -50,7 +50,7 @@ function authenticate(username, password) {
     .then(data => {
         if (data.success) {
             localStorage.setItem('userID', data.userID);
-            window.location.replace("/home.html");
+            window.location.replace("https://giulianov8.github.io/AI_Comic_Book/Public/home.html");
         } else {
             const usernameInput = document.getElementById('username');
             usernameInput.value = "Wrong Username Or Password!";
