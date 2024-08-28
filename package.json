@@ -11,15 +11,12 @@
         "aws-sdk": "^2.1665.0",
         "axios": "^1.7.3",
         "body-parser": "^1.20.2",
-        "crypto": "^1.0.1",
         "express": "^4.19.2",
         "novita-sdk": "^1.0.44",
         "path": "^0.12.7"
     },
     "author": "Giuliano Vitale",
     "devDependencies": {
-        "@aws-amplify/backend": "^1.0.4",
-        "@aws-amplify/backend-cli": "^1.2.1",
         "aws-cdk": "^2.150.0",
         "aws-cdk-lib": "^2.150.0",
         "constructs": "^10.3.0",
