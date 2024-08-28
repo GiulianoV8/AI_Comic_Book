@@ -36,7 +36,7 @@ async function generateUserID() {
 
 // Define a route for the root URL to serve starting page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+    res.sendFile(path.join(__dirname, 'Public', 'login.html'));
 });
 
 app.post('/signup', async (req, res) => {
