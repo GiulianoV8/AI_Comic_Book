@@ -15,7 +15,7 @@ const TABLE_NAME = 'ComicUsers';
 const COUNTER_TABLE_NAME = 'UserIDCounter';
 
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'Public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Generate a new userID using an atomic counter
 async function generateUserID() {
