@@ -1,10 +1,10 @@
 {
     "name": "comic-book-project",
     "version": "1.0.0",
-    "description": "A comic book project with user authentication",
-    "main": "server.js",
+    "description": "Webapp that uses AI to record events in a comic book",
+    "main": "app.js",
     "scripts": {
-        "start": "node server.js"
+        "start": "node app.js"
     },
     "dependencies": {
         "aws-amplify": "^6.4.3",

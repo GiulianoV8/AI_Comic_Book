@@ -2,10 +2,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 const path = require('path');
-const crypto = require("crypto");
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3000;
 
 AWS.config.update({
     region: 'us-east-1'
