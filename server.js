@@ -9,7 +9,6 @@ const PORT = 3001;
 
 AWS.config.update({
     region: 'us-east-1'
-    // Use environment variables or AWS CLI configuration for credentials
 });
 
 const docClient = new AWS.DynamoDB.DocumentClient();
