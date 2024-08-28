@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
 
     if(!localStorage.getItem('userID')){
-        window.location.replace("https://giulianov8.github.io/AI_Comic_Book/Public/login.html");
+        window.location.replace("/login.html");
     }
     userID = localStorage.getItem("userID");
     fillData(userID);    
