@@ -521,7 +521,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
 
                 let gridItem = imgElement.parentElement;
                 gridItem.innerHTML = `<img class="generated-image" src=${imageUrl}>`
-                gridItem.addEventListener('click', () => openModal(imageUrl, description));
+                gridItem.addEventListener('click', (event) => openModal(imageUrl, description, event));
 
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
                 // Still processing, retry after some time
