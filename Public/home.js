@@ -506,15 +506,8 @@ async function generateImage(imgElement, progressDisplay, description, attribute
                 localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
 
                 let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-                let pos = 0;
-                for(let imageElement of document.getElementsByClassName('.generated-image')) {
-                    if(imgElement.src == imageElement.src) {
-                        break;
-                    }else {
-                        pos++;
-                    }
-                }
-                imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(imageUrl), pos, description);
+
+                imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(imageUrl), 0, description);
                 localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
                 
                 saveImage(localStorage.getItem('userID'));
