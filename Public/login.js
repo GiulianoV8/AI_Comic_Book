@@ -24,7 +24,35 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelector('form#signUpForm').addEventListener('submit', event => {
         event.preventDefault();
-        transitionForms('.signup-container', '.attributes-container');
+        fetch('/check-username', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                username: document.getElementById('newUsername').value,
+                newEmail: document.getElementById('newEmail').value
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.emailExists) {
+                const emailField = document.getElementById('newEmail');
+                emailField.style.color = 'red';
+                emailField.onclick = () => emailField.style.color = 'black';
+                emailField.value = 'Email Already In Use!';
+            }
+            if (data.usernameExists) {
+                const usernameField = document.getElementById('newUsername');
+                usernameField.style.color = 'red';
+                usernameField.onclick = () => usernameField.style.color = 'black';
+                usernameField.value = 'Username Already In Use!';
+            }
+            if (!data.usernameExists && !data.emailExists) {
+                transitionForms('.signup-container', '.attributes-container');
+            }
+        });
+        
     });
 
     document.querySelector('form#attributesForm').addEventListener('submit', event => {
@@ -74,7 +102,7 @@ function addAttribute() {
     newAttribute.setAttribute('id', `attribute-${attributeCount}`);
     newAttribute.innerHTML = `
         <label for="attributeInput-${attributeCount}">Attribute ${attributeCount}:</label>
-        <input type="text" id="attributeInput-${attributeCount}" name="attributes[]">
+        <input type="text" id="attributeInput-${attributeCount}" name="attributes[]" required>
         <button type="button" class="delete-attribute" onclick="deleteAttribute(${attributeCount})">Delete</button>
     `;
     container.appendChild(newAttribute);
@@ -120,8 +148,7 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            document.querySelector('.signup-container').style.display = 'none';
-            document.querySelector('.login-container').style.display = 'block';
+            transitionForms('.signup-container', '.login-container')
         }
     })
     .catch(error => {

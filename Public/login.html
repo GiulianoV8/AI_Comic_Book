@@ -11,7 +11,7 @@
         <h1 class="title">Login</h1>
         <form id="loginForm">
             <div class="input-group">
-                <label for="username">Username</label>
+                <label for="username">Username/Email</label>
                 <input type="text" id="username" name="username" required>
             </div>
             <div class="input-group">
@@ -50,7 +50,7 @@
             <div id="attributes-container">
                 <div class="attribute" id="attribute-1">
                     <label for="attributeInput-1">Attribute 1:</label>
-                    <input type="text" id="attributeInput-1" name="attributes[]">
+                    <input type="text" id="attributeInput-1" name="attributes[]" required>
                     <button type="button" class="delete-attribute" onclick="deleteAttribute(1)">Delete</button>
                 </div>
             </div>

@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
 const path = require('path');
+const {QueryCommand} = require('@aws-sdk/client-dynamodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,13 @@ const COUNTER_TABLE_NAME = 'UserIDCounter';
 
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'Public')));
+
+const isValidEmail = email => {
+    // Regular expression for validating an email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    return emailRegex.test(email);
+}
 
 // Generate a new userID using an atomic counter
 async function generateUserID() {
@@ -71,6 +79,46 @@ app.post('/signup', async (req, res) => {
     }
 });
 
+app.post('/check-username', async (req, res) => {
+    const { username, newEmail } = req.body;
+
+    const emailParams = {
+        TableName: 'ComicUsers',
+        IndexName: 'email',
+        KeyConditionExpression: 'email = :email',
+        ExpressionAttributeValues: {
+            ':email': newEmail
+        },
+        Limit: 1
+    };
+
+    const usernameParams = {
+        TableName: 'ComicUsers',
+        IndexName: 'username',
+        KeyConditionExpression: 'username = :username',
+        ExpressionAttributeValues: {
+            ':username': username
+        },
+        Limit: 1
+    };
+
+    try {
+        const [emailData, usernameData] = await Promise.all([
+            docClient.query(emailParams).promise(),
+            docClient.query(usernameParams).promise()
+        ]);
+
+        const emailExists = emailData.Items.length > 0;
+        const usernameExists = usernameData.Items.length > 0;
+
+        res.json({ emailExists: emailExists, usernameExists: usernameExists });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+
 app.post('/login', async (req, res) => {
     const { username, password } = req.body;
     console.log('Login request body:', req.body); // Log the request body for debugging
@@ -78,14 +126,25 @@ app.post('/login', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Username and password are required.' });
     }
 
-    const params = {
-        TableName: TABLE_NAME,
-        IndexName: 'username', // Using GSI (secondary index)
-        KeyConditionExpression: 'username = :username',
-        ExpressionAttributeValues: {
-            ':username': username
-        }
-    };
+    if(isValidEmail(username)){
+        var params = {
+            TableName: TABLE_NAME,
+            IndexName: 'email', // Using GSI (secondary index)
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: {
+                ':email': username
+            }
+        };
+    }else{
+        var params = {
+            TableName: TABLE_NAME,
+            IndexName: 'username', // Using GSI (secondary index)
+            KeyConditionExpression: 'username = :username',
+            ExpressionAttributeValues: {
+                ':username': username
+            }
+        };
+    }
 
     try {
         const data = await docClient.query(params).promise();
