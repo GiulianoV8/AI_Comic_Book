@@ -14,7 +14,7 @@ body {
     padding: 20px;
     box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
     text-align: center;
-    width: 50%;
+    width: 60%;
     max-width: 300px;
     position: absolute;
     opacity: 0;
@@ -61,7 +61,7 @@ input {
 .login-button, .signup-button {
     background-color: #ff0000;
     color: #fff;
-    font-size: 1.2em;
+    font-size: 0.9em;
     padding: 10px;
     border: 2px solid #000;
     cursor: pointer;
@@ -80,7 +80,7 @@ input {
 }
 
 .attribute input {
-    flex: 1;
+    flex: 2;
 }
 
 .attribute button {
@@ -97,6 +97,7 @@ input {
     justify-content: space-between;
     margin-top: 20px;
     background-color: #ff0000;
+    font-size: 1em;
 }
 
 button{
@@ -104,7 +105,30 @@ button{
     border: 2px solid #000;
     cursor: pointer;
     color: white;
+    font-size: 0.8em;
 }
 button:hover{
     background-color: #cc0000;
+}
+
+@media (max-width: 400px) {
+    .attribute {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .attribute label {
+        margin-bottom: 5px;
+    }
+    
+    .attribute input {
+        width: 100%;
+        flex: none; /* Remove the flex property to allow the input to take up the full width */
+    }
+    
+    .attribute button {
+        margin-top: 10px; /* Adjust the spacing of the button for better layout */
+        margin-left: 0; /* Remove left margin to align with input */
+    }
 }
