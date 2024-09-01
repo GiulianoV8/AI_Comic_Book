@@ -8,6 +8,7 @@
     },
     "dependencies": {
         "@aws-sdk/client-dynamodb": "^3.637.0",
+        "@aws-sdk/lib-dynamodb": "^3.637.0",
         "aws-amplify": "^6.4.3",
         "aws-sdk": "^2.1665.0",
         "axios": "^1.7.3",

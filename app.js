@@ -1,8 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const AWS = require('aws-sdk');
+
+const { DynamoDBDocument } = require('@aws-sdk/lib-dynamodb');
+
 const path = require('path');
-const {QueryCommand} = require('@aws-sdk/client-dynamodb');
+const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,7 +14,7 @@ AWS.config.update({
     region: 'us-east-1'
 });
 
-const docClient = new AWS.DynamoDB.DocumentClient();
+const docClient = DynamoDBDocument.from(new DynamoDB());
 const TABLE_NAME = 'ComicUsers';
 const COUNTER_TABLE_NAME = 'UserIDCounter';
 
@@ -38,7 +41,7 @@ async function generateUserID() {
         ReturnValues: 'UPDATED_NEW'
     };
 
-    const result = await docClient.update(params).promise();
+    const result = await docClient.update(params);
     return result.Attributes.userID;
 }
 
@@ -71,7 +74,7 @@ app.post('/signup', async (req, res) => {
             }
         };
 
-        await docClient.put(user).promise();
+        await docClient.put(user);
         return res.status(201).json({ success: true, message: 'User signed up successfully.' });
     } catch (err) {
         console.error('Error adding user:', JSON.stringify(err, null, 2));
@@ -104,8 +107,8 @@ app.post('/check-username', async (req, res) => {
 
     try {
         const [emailData, usernameData] = await Promise.all([
-            docClient.query(emailParams).promise(),
-            docClient.query(usernameParams).promise()
+            docClient.query(emailParams),
+            docClient.query(usernameParams)
         ]);
 
         const emailExists = emailData.Items.length > 0;
@@ -147,7 +150,7 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const data = await docClient.query(params).promise();
+        const data = await docClient.query(params);
         if (data.Items.length > 0 && data.Items[0].password == password) {
             const userID = data.Items[0].userID;
             return res.status(200).json({ success: true, userID: userID });
@@ -174,7 +177,7 @@ app.get('/getUserData', async (req, res) => {
     };
 
     try {
-        const data = await docClient.get(params).promise();
+        const data = await docClient.get(params);
         if (!data.Item) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -196,7 +199,7 @@ app.get('/getUserData', async (req, res) => {
                     ":date": today
                 }
             };
-            await docClient.update(updateParams).promise();
+            await docClient.update(updateParams);
         }
 
         res.json({ item: data.Item, firstLogin: firstLogin });
@@ -222,7 +225,7 @@ app.post('/setComicTitle', async (req, res) => {
     };
 
     try {
-        await docClient.update(params).promise();
+        await docClient.update(params);
         res.status(200).json({ message: 'Comic title updated successfully' });
     } catch (err) {
         console.log('Error setting comicTitle: ', err);
@@ -245,7 +248,7 @@ app.get('/getUserAttributes', async (req, res) => {
     };
 
     try {
-        const data = await docClient.get(params).promise();
+        const data = await docClient.get(params);
         if (!data.Item) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -273,7 +276,7 @@ app.post('/editAttributes', async (req, res) => {
     };
 
     try {
-        await docClient.update(params).promise();
+        await docClient.update(params);
         res.status(200).json({ message: 'Attributes updated successfully' });
     } catch (err) {
         console.log('Error updating attributes: ', err);
@@ -293,7 +296,7 @@ app.post('/changeUsername', async (req, res) => {
     };
 
     try {
-        await docClient.update(params).promise();
+        await docClient.update(params);
         res.status(200).json({ message: 'Username updated successfully' });
     } catch (error) {
         console.log('Error changing username: ', error);
@@ -313,7 +316,7 @@ app.post('/changePassword', async (req, res) => {
     };
 
     try {
-        await docClient.update(params).promise();
+        await docClient.update(params);
         res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Internal Server Error' });
@@ -334,7 +337,7 @@ app.post('/deleteImage', async (req, res) => {
     };
 
     try {
-        const data = await docClient.get(getParams).promise();
+        const data = await docClient.get(getParams);
         if (!data.Item) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
@@ -358,7 +361,7 @@ app.post('/deleteImage', async (req, res) => {
             ReturnValues: "UPDATED_NEW"
         };
 
-        await docClient.update(updateParams).promise();
+        await docClient.update(updateParams);
 
         return res.status(200).json({ success: true, message: 'Image removed successfully.' });
     } catch (err) {
@@ -381,7 +384,7 @@ app.post('/saveImage', async (req, res) => {
     };
 
     try {
-        const data = await docClient.get(getParams).promise();
+        const data = await docClient.get(getParams);
         if (!data.Item) {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
@@ -398,7 +401,7 @@ app.post('/saveImage', async (req, res) => {
             ReturnValues: "UPDATED_NEW"
         };
 
-        await docClient.update(updateParams).promise();
+        await docClient.update(updateParams);
 
         return res.status(200).json({ success: true, message: 'Image URLs saved successfully.' });
     } catch (err) {

@@ -453,7 +453,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
             prompt: `In a superhero comic book theme showing a whole hero with the following attributes:{${attributes} and casual clothing\n} is doing this: ${description} ${description} ${description} ${description} ${description}`,
-            negative_prompt: "nsfw, superman, crooked fingers, partial body",
+            negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face",
             width: 512,
             height: 512,
             sampler_name: "DPM++ 2S a Karras",
