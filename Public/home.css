@@ -252,8 +252,18 @@ input#comic-title {
     background-color: #d0f0d0;
     width: 100%;
     height: 100%;
+    font-family: "Comic Sans MS", sans-serif;
+    font-size: 1em;
+    color: black;
+    transition: background-color 0.2s, ease-in-out;
 }
-
+#createBtn:hover{
+    text-decoration: underline;
+    background-color: #b3f2b3;
+}
+#createBtn:active{
+    background-color: #8eed8e;
+}
 .grid-item.create:hover {
     transform: scale(1.05);
     box-shadow: 4px 4px 0 #333;
