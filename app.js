@@ -8,7 +8,7 @@ const path = require('path');
 const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 80;
 
 AWS.config.update({
     region: 'us-east-1'
