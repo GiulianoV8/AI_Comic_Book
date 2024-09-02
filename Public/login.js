@@ -39,14 +39,20 @@ document.addEventListener("DOMContentLoaded", function() {
             if (data.emailExists) {
                 const emailField = document.getElementById('newEmail');
                 emailField.style.color = 'red';
-                emailField.onclick = () => emailField.style.color = 'black';
                 emailField.value = 'Email Already In Use!';
+                emailField.onclick = () => {
+                    emailField.style.color = 'black';
+                    emailField.value = '';
+                }
             }
             if (data.usernameExists) {
                 const usernameField = document.getElementById('newUsername');
                 usernameField.style.color = 'red';
-                usernameField.onclick = () => usernameField.style.color = 'black';
                 usernameField.value = 'Username Already In Use!';
+                usernameField.onclick = () => {
+                    usernameField.style.color = 'black';
+                    usernameField.value = '';
+                }
             }
             if (!data.usernameExists && !data.emailExists) {
                 transitionForms('.signup-container', '.attributes-container');
@@ -83,7 +89,10 @@ function authenticate(username, password) {
             const usernameInput = document.getElementById('username');
             usernameInput.value = "Wrong Username Or Password!";
             usernameInput.style.color = "red";
-            usernameInput.addEventListener('click', () => usernameInput.style.color = "black");
+            usernameInput.addEventListener('click', () => {
+                usernameInput.style.color = "black"
+                usernameInput.value = '';
+            });
         }
     })
     .catch(error => {

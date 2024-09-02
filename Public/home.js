@@ -22,22 +22,76 @@ document.addEventListener("DOMContentLoaded", function() {
     const captionText = document.getElementById("imageCaption");
     const closeBtn = document.getElementsByClassName("close")[0];
 
-    const tutorialModal = document.getElementById("tutorialModal");
-    const closeTutorialBtn = document.getElementsByClassName("close")[1];
-    const tutorialBtn = document.getElementById("tutorial");
-    const tutorialImage = document.getElementById("tutorialImage");
-    const tutorialImages = ['imgs/tutorial_images/home_page.png', 'imgs/tutorial_images/add_panel.png', 'imgs/tutorial_images/delete_panel.png', 'imgs/tutorial_images/create_comic.png'];
-    const tutorialCaptions = [
-        'This is the home page. Your drawing board. This is where you’ll write your story and create your comic',
-        'To add an event to your comic, click “Add Panel”. Choose where to add your panel. Once added, choose where to add your panel by clicking one of the plus buttons. You will see that an empty panel has been created with an input field. Input your event and you will soon have your superhero doing it',
-        'To delete an event, click the “Delete Panel” button. Select which events you want to delete by clicking on the red circle on each panel. Once selected, press the “Delete Selected” button to delete the selected panels. To cancel, click the “Delete Panel” button once more. Alternatively, you can click the “Rewrite” button and then “Confirm Delete All” to delete all panels.',
-        'You’ve done a lot today. You’re a hero for doing such. To view your finalized comic, click the “Create” button and enjoy!'
-    ];
-    const leftTutorial = document.getElementById('leftTutorial');
-    const rightTutorial = document.getElementById('rightTutorial');
-    const tutorialCaption = document.getElementById('tutorialCaption');
-    let tutorialImageIndex = 0;
+    // const tutorialModal = document.getElementById("tutorialModal");
+    // const closeTutorialBtn = document.getElementsByClassName("close")[1];
+    // const tutorialBtn = document.getElementById("tutorial");
+    // const tutorialImage = document.getElementById("tutorialImage");
+    // const tutorialImages = ['imgs/tutorial_images/home_page.png', 'imgs/tutorial_images/add_panel.png', 'imgs/tutorial_images/delete_panel.png', 'imgs/tutorial_images/create_comic.png'];
+    // const tutorialCaptions = [
+    //     'This is the home page. Your drawing board. This is where you’ll write your story and create your comic',
+    //     'To add an event to your comic, click “Add Panel”. Choose where to add your panel. Once added, choose where to add your panel by clicking one of the plus buttons. You will see that an empty panel has been created with an input field. Input your event and you will soon have your superhero doing it',
+    //     'To delete an event, click the “Delete Panel” button. Select which events you want to delete by clicking on the red circle on each panel. Once selected, press the “Delete Selected” button to delete the selected panels. To cancel, click the “Delete Panel” button once more. Alternatively, you can click the “Rewrite” button and then “Confirm Delete All” to delete all panels.',
+    //     'You’ve done a lot today. You’re a hero for doing such. To view your finalized comic, click the “Create” button and enjoy!'
+    // ];
+    // const leftTutorial = document.getElementById('leftTutorial');
+    // const rightTutorial = document.getElementById('rightTutorial');
+    // const tutorialCaption = document.getElementById('tutorialCaption');
+    // let tutorialImageIndex = 0;
 
+    const steps = [
+        { element: '#questionBtn', content: 'Click here to start your superhero journey!' },
+        { element: '#step2', content: 'This is step 2: Explain this feature.' },
+        { element: '#step3', content: 'This is step 3: Highlight another feature.' }
+    ];
+
+    let currentStep = 0;
+    
+    const tutorialPopup = document.getElementById('tutorialPopup');
+    const tutorialContent = document.getElementById('tutorialContent');
+    const tutorialOverlay = document.getElementById('tutorialOverlay');
+    const nextStepButton = document.getElementById('nextStep');
+    const prevStepButton = document.getElementById('prevStep');
+    const skipButton = document.getElementById('skipTutorial');
+
+    function showStep(stepIndex) {
+        const step = steps[stepIndex];
+        const targetElement = document.querySelector(step.element);
+        
+        tutorialContent.textContent = step.content;
+        tutorialPopup.style.display = 'block';
+        tutorialOverlay.style.display = 'block';
+        
+        // Position the popup near the target element
+        const rect = targetElement.getBoundingClientRect();
+        tutorialPopup.style.top = `${rect.top + window.scrollY - tutorialPopup.offsetHeight - 10}px`;
+        tutorialPopup.style.left = `${rect.left + window.scrollX}px`;
+        
+        // Enable or disable navigation buttons
+        prevStepButton.disabled = stepIndex === 0;
+        nextStepButton.disabled = stepIndex === steps.length - 1;
+    }
+
+    function hideTutorial() {
+        tutorialPopup.style.display = 'none';
+        tutorialOverlay.style.display = 'none';
+    }
+
+    nextStepButton.addEventListener('click', () => {
+        currentStep++;
+        showStep(currentStep);
+    });
+
+    prevStepButton.addEventListener('click', () => {
+        currentStep--;
+        showStep(currentStep);
+    });
+
+    skipButton.addEventListener('click', hideTutorial);
+
+    document.getElementById('questionBtn').addEventListener('click', () => {
+        currentStep = 0;
+        showStep(currentStep);
+    });
     
 
     if(!localStorage.getItem('userID')){
@@ -46,31 +100,31 @@ document.addEventListener("DOMContentLoaded", function() {
     userID = localStorage.getItem("userID");
     fillData(userID);    
 
-    function updateTutorial(index) {
-        tutorialImage.src = tutorialImages[index];
-        tutorialCaption.innerHTML = tutorialCaptions[index]
-    }
-    tutorialBtn.addEventListener("click", () => {
-        tutorialImageIndex = 0;
-        tutorialModal.style.display = "flex";
-        updateTutorial(tutorialImageIndex);
-    });
-    leftTutorial.onclick = () => {
-        if(tutorialImageIndex > 0){
-            tutorialImageIndex--;
-            updateTutorial(tutorialImageIndex);
-        }
-    }
-    rightTutorial.onclick = () => {
-        if(tutorialImageIndex < 3){
-            tutorialImageIndex++;
-            updateTutorial(tutorialImageIndex);
-        }
-    }
+    // function updateTutorial(index) {
+    //     tutorialImage.src = tutorialImages[index];
+    //     tutorialCaption.innerHTML = tutorialCaptions[index]
+    // }
+    // tutorialBtn.addEventListener("click", () => {
+    //     tutorialImageIndex = 0;
+    //     tutorialModal.style.display = "flex";
+    //     updateTutorial(tutorialImageIndex);
+    // });
+    // leftTutorial.onclick = () => {
+    //     if(tutorialImageIndex > 0){
+    //         tutorialImageIndex--;
+    //         updateTutorial(tutorialImageIndex);
+    //     }
+    // }
+    // rightTutorial.onclick = () => {
+    //     if(tutorialImageIndex < 3){
+    //         tutorialImageIndex++;
+    //         updateTutorial(tutorialImageIndex);
+    //     }
+    // }
     
-    closeTutorialBtn.onclick = function () {
-        tutorialModal.style.display = "none";
-    }
+    // closeTutorialBtn.onclick = function () {
+    //     tutorialModal.style.display = "none";
+    // }
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
@@ -261,7 +315,7 @@ document.addEventListener("DOMContentLoaded", function() {
         for (let item of selectedItems) { 
             item.remove();
         }
-        localStorage.setItem("imageDescripions", JSON.stringify([]));
+        localStorage.setItem("imageDescriptions", JSON.stringify([]));
         await saveImage(localStorage.getItem('userID'));
         document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
         document.querySelectorAll(".highlight").forEach(highlight => highlight.classList.remove("highlight"));
