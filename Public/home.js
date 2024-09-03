@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const captionText = document.getElementById("imageCaption");
     const closeBtn = document.getElementsByClassName("close")[0];
 
+    const createBtn = document.getElementById("createBtn-container");
+
     // const tutorialModal = document.getElementById("tutorialModal");
     // const closeTutorialBtn = document.getElementsByClassName("close")[1];
     // const tutorialBtn = document.getElementById("tutorial");
@@ -37,11 +39,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // const rightTutorial = document.getElementById('rightTutorial');
     // const tutorialCaption = document.getElementById('tutorialCaption');
     // let tutorialImageIndex = 0;
-
     const steps = [
-        { element: '#questionBtn', content: 'Click here to start your superhero journey!' },
-        { element: '#step2', content: 'This is step 2: Explain this feature.' },
-        { element: '#step3', content: 'This is step 3: Highlight another feature.' }
+        { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, as everything you do is a daily heroic.' },
+        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },
+        { element: '#deletePanelBtn', content: 'If you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
+        { element: '#createBtn-container', content: 'At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
     ];
 
     let currentStep = 0;
@@ -52,7 +54,25 @@ document.addEventListener("DOMContentLoaded", function() {
     const nextStepButton = document.getElementById('nextStep');
     const prevStepButton = document.getElementById('prevStep');
     const skipButton = document.getElementById('skipTutorial');
+    const comicBackground = document.getElementById('comic-background');
 
+    hideTutorial();
+    function resetTutorials() {
+        addPanelBtn.removeEventListener('click', addPlusClickEvent);
+        addPanelBtn.style.zIndex = '';
+        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '');
+        deletePanelBtn.style.zIndex = '';
+        document.getElementById("deleteConfirmDropdown").style.zIndex = '';
+        comicBackground.style.zIndex = '2';
+        createBtn.style.zIndex = '';
+    }
+    function showPanelsEvent() {
+        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '1000');
+    }
+    function addPlusClickEvent() {
+        document.querySelectorAll('.plus-button').forEach((element) => element.style.zIndex = '1000');
+        document.querySelectorAll('.plus-button').forEach((element) => element.addEventListener('click', showPanelsEvent));
+    }
     function showStep(stepIndex) {
         const step = steps[stepIndex];
         const targetElement = document.querySelector(step.element);
@@ -61,24 +81,75 @@ document.addEventListener("DOMContentLoaded", function() {
         tutorialPopup.style.display = 'block';
         tutorialOverlay.style.display = 'block';
         
-        // Position the popup near the target element
-        const rect = targetElement.getBoundingClientRect();
-        tutorialPopup.style.top = `${rect.top + window.scrollY - tutorialPopup.offsetHeight - 10}px`;
-        tutorialPopup.style.left = `${rect.left + window.scrollX}px`;
+        // // Position the popup directly on top of the target element
+        // const rect = targetElement.getBoundingClientRect();
+        // const popupHeight = tutorialPopup.offsetHeight;
+        // const popupWidth = tutorialPopup.offsetWidth;
+        // const viewportHeight = window.innerHeight;
+        // const viewportWidth = window.innerWidth;
+
+        // let topPosition = rect.top + window.scrollY - popupHeight - 10;
+        // let leftPosition = rect.left + window.scrollX;
+
+        // // Adjust to stay within the viewport vertically
+        // if (topPosition < 0) {
+        //     topPosition = rect.bottom + window.scrollY + 10;
+        // } else if (topPosition + popupHeight > viewportHeight) {
+        //     topPosition = viewportHeight - popupHeight - 10;
+        // }
+
+        // // Adjust to stay within the viewport horizontally
+        // if (leftPosition + popupWidth > viewportWidth) {
+        //     leftPosition = viewportWidth - popupWidth - 10;
+        // } else if (leftPosition < 0) {
+        //     leftPosition = 10;
+        // }
+
+        // tutorialPopup.style.top = `${topPosition}px`;
+        // tutorialPopup.style.left = `${leftPosition}px`;
+
+        switch(stepIndex) {
+            case 0: // intro
+                resetTutorials();
+                break;
+            case 1: // add panel
+                resetTutorials();
+                targetElement.onclick = addPlusClickEvent;
+                break;
+            case 2: // delete panel
+                resetTutorials();
+                showPanelsEvent();
+                document.getElementById("deleteConfirmDropdown").style.zIndex = '1000';
+                break;
+            case 3: // create buttom
+                resetTutorials();
+                targetElement.style.zIndex = '1000';
+                comicBackground.style.zIndex = '1001';
+                break;
+        }
+        targetElement.style.zIndex = '1000';
         
         // Enable or disable navigation buttons
         prevStepButton.disabled = stepIndex === 0;
-        nextStepButton.disabled = stepIndex === steps.length - 1;
+        if(stepIndex === steps.length - 1) {
+            nextStepButton.innerText = "Let's Go!";
+        }
     }
 
     function hideTutorial() {
         tutorialPopup.style.display = 'none';
         tutorialOverlay.style.display = 'none';
+        currentStep = 0;
+        nextStepButton.innerText = 'Next';
     }
 
     nextStepButton.addEventListener('click', () => {
-        currentStep++;
-        showStep(currentStep);
+        if(nextStepButton.innerText === "Let's Go!") {
+            hideTutorial();
+        } else {
+            currentStep++;
+            showStep(currentStep);
+        }
     });
 
     prevStepButton.addEventListener('click', () => {
@@ -219,7 +290,9 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Toggle add panel mode on "Add Panel" button click
-    addPanelBtn.addEventListener("click", function() {
+    addPanelBtn.addEventListener("click", addPanelClickEvent);
+
+    function addPanelClickEvent(){
         addPanelMode = !addPanelMode;
         if (addPanelMode) {
             showPlusButtons();
@@ -228,7 +301,7 @@ document.addEventListener("DOMContentLoaded", function() {
             hidePlusButtons();
             addPanelBtn.innerText = "Add Panel";  // Revert button text
         }
-    });
+    }
 
     // Function to enable editing
     editTitleBtn.addEventListener("click", function() {

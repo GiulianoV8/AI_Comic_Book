@@ -497,6 +497,77 @@ input#comic-title {
     height: 15px;
 }
 
+/* Tutorial Popup Style */
+/* General Style */
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Tutorial Popup Style */
+.tutorial-popup {
+    position: absolute;
+    width: 94.5%;
+    padding: 2.5%;
+    background-color: #ffffff;
+    border: 3px solid #000000;
+    box-shadow: 10px 10px 0px #ff0000;
+    border-radius: 8px;
+    z-index: 1000;
+    display: none;
+    left: 0;
+    bottom: 0;
+}
+
+.tutorial-popup h2 {
+    margin-top: 0;
+    color: #ff0000;
+    text-shadow: 2px 2px 0px #000;
+}
+
+.tutorial-popup p {
+    font-size: 14px;
+}
+
+.tutorial-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.tutorial-navigation button {
+    background-color: #000000;
+    color: #ffffff;
+    border: 2px solid #ff0000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 20%;
+}
+
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.tutorial-popup h2 {
+    margin-top: 0;
+    color: #ff0000;
+    text-shadow: 2px 2px 0px #000;
+}
+
+.tutorial-popup p {
+    font-size: 14px;
+}
+
 /* Modal */
 .modal {
     display: none; /* Hidden by default */

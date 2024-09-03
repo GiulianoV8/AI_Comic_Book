@@ -110,6 +110,62 @@ button{
 button:hover{
     background-color: #cc0000;
 }
+#title {
+    text-align: center;
+    padding: 20px;
+    background-color: #ff0000;
+    color: #ffffff;
+    border: 5px solid #000000;
+    box-shadow: 10px 10px 0px #ffffff;
+    border-radius: 10px;
+    max-width: 90%;
+    margin-top: 2%;
+    align-self: flex-start;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    transition: all 0.3s ease-in-out;
+}
+
+#title-text {
+    font-size: 2.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 3px 3px #000000;
+    display: block;
+}
+
+#subtitle-text {
+    font-size: 1.2em;
+    font-weight: normal;
+    text-shadow: 2px 2px #000000;
+    display: block;
+    margin-top: 10px;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    #title-text {
+        font-size: 2em;
+    }
+
+    #subtitle-text {
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    #title-text {
+        font-size: 1.5em;
+    }
+
+    #subtitle-text {
+        font-size: 0.9em;
+    }
+
+    #title {
+        padding: 10px;
+        box-shadow: 5px 5px 0px #ffffff;
+    }
+}
 
 @media (max-width: 400px) {
     .attribute {
