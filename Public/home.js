@@ -65,9 +65,16 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("deleteConfirmDropdown").style.zIndex = '';
         comicBackground.style.zIndex = '2';
         createBtn.style.zIndex = '';
+        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
+            elem.style.zIndex = '';
+            elem.style.pointerEvents = 'auto';
+        });
     }
     function showPanelsEvent() {
-        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '1000');
+        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
+            elem.style.zIndex = '1000'
+            elem.style.pointerEvents = 'none'; 
+        });
     }
     function addPlusClickEvent() {
         document.querySelectorAll('.plus-button').forEach((element) => element.style.zIndex = '1000');
@@ -80,33 +87,6 @@ document.addEventListener("DOMContentLoaded", function() {
         tutorialContent.textContent = step.content;
         tutorialPopup.style.display = 'block';
         tutorialOverlay.style.display = 'block';
-        
-        // // Position the popup directly on top of the target element
-        // const rect = targetElement.getBoundingClientRect();
-        // const popupHeight = tutorialPopup.offsetHeight;
-        // const popupWidth = tutorialPopup.offsetWidth;
-        // const viewportHeight = window.innerHeight;
-        // const viewportWidth = window.innerWidth;
-
-        // let topPosition = rect.top + window.scrollY - popupHeight - 10;
-        // let leftPosition = rect.left + window.scrollX;
-
-        // // Adjust to stay within the viewport vertically
-        // if (topPosition < 0) {
-        //     topPosition = rect.bottom + window.scrollY + 10;
-        // } else if (topPosition + popupHeight > viewportHeight) {
-        //     topPosition = viewportHeight - popupHeight - 10;
-        // }
-
-        // // Adjust to stay within the viewport horizontally
-        // if (leftPosition + popupWidth > viewportWidth) {
-        //     leftPosition = viewportWidth - popupWidth - 10;
-        // } else if (leftPosition < 0) {
-        //     leftPosition = 10;
-        // }
-
-        // tutorialPopup.style.top = `${topPosition}px`;
-        // tutorialPopup.style.left = `${leftPosition}px`;
 
         switch(stepIndex) {
             case 0: // intro
@@ -137,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function hideTutorial() {
+        resetTutorials();
         tutorialPopup.style.display = 'none';
         tutorialOverlay.style.display = 'none';
         currentStep = 0;

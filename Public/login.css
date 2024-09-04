@@ -121,7 +121,7 @@ button:hover{
     max-width: 90%;
     margin-top: 2%;
     align-self: flex-start;
-    font-family: 'Comic Sans MS', cursive, sans-serif;
+    font-family: 'Comic Sans MS', sans-serif;
     transition: all 0.3s ease-in-out;
 }
 
