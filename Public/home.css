@@ -444,8 +444,8 @@ input#comic-title {
 
 /* Tutorial Popup Style */
 .tutorial-popup {
-    position: absolute;
-    width: 94.5%;
+    position: sticky;
+    width: 92.5%;
     padding: 2.5%;
     background-color: #ffffff;
     border: 3px solid #000000;
