@@ -246,12 +246,14 @@ input#comic-title {
 }
 
 #create-svg {
+    cursor: pointer;
     box-shadow: 3px 3px 0 #333; /* Comic book-style shadow */
     background-color: #ffffff00; 
     transition: transform 0.2s, filter 0.2s ease-in-out;
     fill: #ff7b00;
 }
 #createBtn{
+    cursor: pointer;
     border: none;
     background-color: #ffffff00;
     color: #000000;
@@ -600,7 +602,6 @@ input#comic-title {
     align-items: center;
     z-index: 5;
     overflow: scroll;
-    padding: 2%;
     border: 10px solid #fff;
     border-radius: 15px;
     box-shadow: 0 0 10px #000000ee;
@@ -638,8 +639,8 @@ input#comic-title {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    width: 99%;
-    height: 99%;
+    width: 100%;
+    height: 100%;
 }
 
 .panel-image {

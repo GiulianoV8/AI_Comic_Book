@@ -1,4 +1,5 @@
 let openModal;
+let modalDisabled = false;
 document.addEventListener("DOMContentLoaded", function() {
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -49,10 +50,10 @@ document.addEventListener("DOMContentLoaded", function() {
         deletePanelBtn.style.zIndex = '';
         document.getElementById("deleteConfirmDropdown").style.zIndex = '';
         comicBackground.style.zIndex = '2';
-        createBtn.style.zIndex = '';
+        createBtn.style.zIndex = '1';
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
             elem.style.zIndex = '';
-            elem.querySelector('img').style.pointerEvents = 'auto';
+            modalDisabled = false;
         });
         document.querySelectorAll('.plus-button').forEach((element) => {
             element.style.zIndex = '';
@@ -62,8 +63,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     function showPanelsEvent() {
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
-            elem.style.zIndex = '1000'
-            elem.querySelector('img').style.pointerEvents = 'none'; 
+            elem.style.zIndex = '1000';
+            modalDisabled = true;
         });
     }
     function showPlusClickEvent() {
@@ -146,31 +147,6 @@ document.addEventListener("DOMContentLoaded", function() {
     userID = localStorage.getItem("userID");
     fillData(userID);    
 
-    // function updateTutorial(index) {
-    //     tutorialImage.src = tutorialImages[index];
-    //     tutorialCaption.innerHTML = tutorialCaptions[index]
-    // }
-    // tutorialBtn.addEventListener("click", () => {
-    //     tutorialImageIndex = 0;
-    //     tutorialModal.style.display = "flex";
-    //     updateTutorial(tutorialImageIndex);
-    // });
-    // leftTutorial.onclick = () => {
-    //     if(tutorialImageIndex > 0){
-    //         tutorialImageIndex--;
-    //         updateTutorial(tutorialImageIndex);
-    //     }
-    // }
-    // rightTutorial.onclick = () => {
-    //     if(tutorialImageIndex < 3){
-    //         tutorialImageIndex++;
-    //         updateTutorial(tutorialImageIndex);
-    //     }
-    // }
-    
-    // closeTutorialBtn.onclick = function () {
-    //     tutorialModal.style.display = "none";
-    // }
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
@@ -257,10 +233,12 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Function to open modal
     openModal = (imageUrl, description, event) => {
-        if(!event.target.classList.contains("circle")){
-            modal.style.display = "block";
-            modalImg.src = imageUrl;
-            captionText.innerHTML = description;
+        if(!modalDisabled){
+            if(!event.target.classList.contains("circle")){
+                modal.style.display = "block";
+                modalImg.src = imageUrl;
+                captionText.innerHTML = description;
+            }
         }
     }
 
