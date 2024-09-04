@@ -24,21 +24,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const createBtn = document.getElementById("createBtn-container");
 
-    // const tutorialModal = document.getElementById("tutorialModal");
-    // const closeTutorialBtn = document.getElementsByClassName("close")[1];
-    // const tutorialBtn = document.getElementById("tutorial");
-    // const tutorialImage = document.getElementById("tutorialImage");
-    // const tutorialImages = ['imgs/tutorial_images/home_page.png', 'imgs/tutorial_images/add_panel.png', 'imgs/tutorial_images/delete_panel.png', 'imgs/tutorial_images/create_comic.png'];
-    // const tutorialCaptions = [
-    //     'This is the home page. Your drawing board. This is where you’ll write your story and create your comic',
-    //     'To add an event to your comic, click “Add Panel”. Choose where to add your panel. Once added, choose where to add your panel by clicking one of the plus buttons. You will see that an empty panel has been created with an input field. Input your event and you will soon have your superhero doing it',
-    //     'To delete an event, click the “Delete Panel” button. Select which events you want to delete by clicking on the red circle on each panel. Once selected, press the “Delete Selected” button to delete the selected panels. To cancel, click the “Delete Panel” button once more. Alternatively, you can click the “Rewrite” button and then “Confirm Delete All” to delete all panels.',
-    //     'You’ve done a lot today. You’re a hero for doing such. To view your finalized comic, click the “Create” button and enjoy!'
-    // ];
-    // const leftTutorial = document.getElementById('leftTutorial');
-    // const rightTutorial = document.getElementById('rightTutorial');
-    // const tutorialCaption = document.getElementById('tutorialCaption');
-    // let tutorialImageIndex = 0;
     const steps = [
         { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, as everything you do is a daily heroic.' },
         { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },

@@ -1,9 +1,9 @@
 /* General Body Styling */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Comic Sans MS', sans-serif;
+    background-color: #f0f0f0;
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
 }
 
 /* Navigation Bar */
@@ -442,70 +442,6 @@ input#comic-title {
     top: 0;
 }
 
-/* Modal Container */
-#tutorialModal {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.9);
-    padding: 0;
-}
-
-/* Modal Content (the image) */
-#tutorialImage {
-    width: 80%;
-    height: 70%;
-    max-width: 700px;
-    margin: 0 auto;
-    object-fit: scale-down;
-}
-
-/* Caption of Modal Image */
-#tutorialCaption {
-    width: 80%;
-    max-width: 700px;
-    text-align: center;
-    padding: 10px 0;
-    border: 2px solid black;
-    border-radius: 10px;
-    color: black;
-}
-
-/* Tutorial Navigation */
-#tutorialNav {
-    position: fixed;
-    bottom: 1%;
-    right: 1%;
-    background-color: #fda5a5;
-    padding: 5px;
-    border-radius: 5%;
-    display: flex;
-
-}
-
-#tutorialNav > img {
-    cursor: pointer;
-    width: 15px;
-    height: 15px;
-}
-
-/* Tutorial Popup Style */
-/* General Style */
-body {
-    font-family: 'Comic Sans MS', sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 0;
-}
-
 /* Tutorial Popup Style */
 .tutorial-popup {
     position: absolute;
@@ -689,7 +625,8 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1%;
     width: 100%;
-    overflow: auto;
+    height: 100%;
+    overflow: scroll;
 }
 
 .comic-panel {
@@ -701,6 +638,8 @@ body {
     justify-content: center;
     align-items: center;
     overflow: hidden;
+    width: 99%;
+    height: 99%;
 }
 
 .panel-image {
