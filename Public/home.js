@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     hideTutorial();
     function resetTutorials() {
-        addPanelBtn.removeEventListener('click', addPlusClickEvent);
+        addPanelBtn.removeEventListener('click', showPlusClickEvent);
         addPanelBtn.style.zIndex = '';
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '');
         deletePanelBtn.style.zIndex = '';
@@ -67,18 +67,25 @@ document.addEventListener("DOMContentLoaded", function() {
         createBtn.style.zIndex = '';
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
             elem.style.zIndex = '';
-            elem.style.pointerEvents = 'auto';
+            elem.querySelector('img').style.pointerEvents = 'auto';
         });
+        document.querySelectorAll('.plus-button').forEach((element) => {
+            element.style.zIndex = '';
+            element.removeEventListener('click', showPanelsEvent);
+        });
+        nextStepButton.innerText = "Next";
     }
     function showPanelsEvent() {
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
             elem.style.zIndex = '1000'
-            elem.style.pointerEvents = 'none'; 
+            elem.querySelector('img').style.pointerEvents = 'none'; 
         });
     }
-    function addPlusClickEvent() {
-        document.querySelectorAll('.plus-button').forEach((element) => element.style.zIndex = '1000');
-        document.querySelectorAll('.plus-button').forEach((element) => element.addEventListener('click', showPanelsEvent));
+    function showPlusClickEvent() {
+        document.querySelectorAll('.plus-button').forEach((element) => {
+            element.style.zIndex = '1000';
+            element.addEventListener('click', showPanelsEvent);
+        });
     }
     function showStep(stepIndex) {
         const step = steps[stepIndex];
@@ -94,7 +101,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 break;
             case 1: // add panel
                 resetTutorials();
-                targetElement.onclick = addPlusClickEvent;
+                showPanelsEvent();
+                showPlusClickEvent();
+                targetElement.onclick = showPlusClickEvent;
                 break;
             case 2: // delete panel
                 resetTutorials();
