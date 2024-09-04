@@ -567,8 +567,8 @@ input#comic-title {
     position: absolute;
     display: flex;
     justify-self: center;
-    top: 5%;
-    left: 5%;
+    top: 2%;
+    left: 2%;
     padding: 10px 15px;
     background-color: rgb(255, 68, 0);
     border: 5px solid #fff;
