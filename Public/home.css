@@ -566,11 +566,11 @@ input#comic-title {
 }
 
 .comic-title-box {
-    position: absolute;
+    position: sticky;
     display: flex;
     justify-self: center;
-    top: 2%;
-    left: 2%;
+    top: 0.25%;
+    left: 1%;
     padding: 10px 15px;
     background-color: rgb(255, 68, 0);
     border: 5px solid #fff;
@@ -594,8 +594,8 @@ input#comic-title {
     position: fixed;
     top: 100%;
     left: 100%;
-    width: 85%;
-    height: 80%;
+    width: 100%;
+    height: 100%;
     background-color: rgb(0, 0, 0);
     display: flex;
     justify-content: center;
@@ -611,8 +611,8 @@ input#comic-title {
 
 .close-overlay {
     position: absolute;
-    top: 2%;
-    right: 2%;
+    top: 1%;
+    right: 1%;
     color: #ff0000;
     background-color: #ffffff00;
     border: none;
@@ -623,8 +623,8 @@ input#comic-title {
 
 .comic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1%;
+    grid-template-columns: repeat(auto-fit, minmax(40%, 1fr)); /* Smaller min-width allows more items per row */
+    gap: 1%; /* Space between images */
     width: 100%;
     height: 100%;
     overflow: scroll;
@@ -639,8 +639,6 @@ input#comic-title {
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    width: 100%;
-    height: 100%;
 }
 
 .panel-image {
@@ -649,8 +647,8 @@ input#comic-title {
     border-radius: 5px;
 }
 
-#comic-background{
-    position: absolute;
+#comic-background {
+    position: fixed;
     top: 100%;
     left: 100%;
     height: 100%;
@@ -672,12 +670,13 @@ input#comic-title {
         transform: translate(-50%, -50%);
     }
 }
+
 @keyframes slideComicUp {
-    from{
+    from {
         top: 100%;
-        left: 100%
+        left: 100%;
     }
-    to{
+    to {
         top: 0%;
         left: 0%;
     }
