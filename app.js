@@ -182,10 +182,11 @@ app.get('/getUserData', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
         console.log('User Data: ', data);
-        
+
         const today = new Date().toISOString().split('T')[0];
         const lastLogin = data.Item.lastLogin;
         let firstLogin = false;
+
         if (!lastLogin || lastLogin < today) {
             firstLogin = true;
             console.log("First login of the day!");
@@ -209,6 +210,7 @@ app.get('/getUserData', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
+
 
 app.post('/setComicTitle', async (req, res) => {
     const { userID, comicTitle } = req.body;

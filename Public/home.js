@@ -456,40 +456,45 @@ async function fillData(userID) {
             comicTitle.innerText = data.comicTitle;
             localStorage.setItem('comicTitle', data.comicTitle);
         }
-        // Get images from the datatable's image urls list attribute
-        let imageUrls;
-        if(localStorage.getItem('imageUrls') && localStorage.getItem('imageUrls') !== 'undefined' && localStorage.getItem('imageUrls') !== undefined) {
-            imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
-        }else{
-            imageUrls = data.imageUrls;
+
+        // Handle imageUrls and imageDescriptions
+        let imageUrls = localStorage.getItem('imageUrls');
+        if (!imageUrls || imageUrls === 'undefined' || imageUrls === null) {
+            imageUrls = data.imageUrls || [];
+        } else {
+            imageUrls = JSON.parse(imageUrls);
         }
 
-        let imageDescriptions;
-        if(localStorage.getItem('imageDescriptions') && localStorage.getItem('imageDescriptions') !== 'undefined' && localStorage.getItem('imageDescriptions') !== undefined) {
-            imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions'));
-        }else{
-            imageDescriptions = data.imageDescriptions;
+        let imageDescriptions = localStorage.getItem('imageDescriptions');
+        if (!imageDescriptions || imageDescriptions === 'undefined' || imageDescriptions === null) {
+            imageDescriptions = data.imageDescriptions || [];
+        } else {
+            imageDescriptions = JSON.parse(imageDescriptions);
         }
-        
-        let resetImages = userData.firstLogin;
-        if(resetImages == true){
+
+        // Check if it's the first login of the day and reset images if true
+        const resetImages = userData.firstLogin;
+        if (resetImages === true) {
             localStorage.setItem('imageUrls', JSON.stringify([]));
             localStorage.setItem('imageDescriptions', JSON.stringify([]));
             imageUrls = [];
             imageDescriptions = [];
-        }else{
+        } else {
             localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
             localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
         }
 
+        // Populate the page with images
         let insertIndex = 0;
-        for(const imageUrl of imageUrls) {
+        for (const imageUrl of imageUrls) {
             createPanel(imageUrl, true, insertIndex);
             insertIndex++;
         }
+
         await saveImage(data.userID);
-        // Set user's attributes
-        if(!localStorage.getItem('attributes')){
+
+        // Set user's attributes in localStorage
+        if (!localStorage.getItem('attributes')) {
             localStorage.setItem('attributes', JSON.stringify(data.attributes));
         }
     } catch (error) {
@@ -497,24 +502,24 @@ async function fillData(userID) {
     }
 }
 
-function submitEvent(form, description){
-    event.preventDefault()
+function submitEvent(form, description) {
+    event.preventDefault();
 
     const progressDisplay = document.createElement('span');
     progressDisplay.classList.add('progress-display', 'hidden');
     form.parentElement.appendChild(progressDisplay);
-    
+
     const selectedPanel = form.parentElement.querySelector('.generated-image');
-    
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
-    let stringedAttributes = "";
-    for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
-        stringedAttributes += `${attribute},\n`;
-    }
+    // Retrieve user attributes and prepare them for image generation
+    const attributes = JSON.parse(localStorage.getItem('attributes')) || [];
+    const stringedAttributes = attributes.join(',\n');
+    
     generateImage(selectedPanel, progressDisplay, description.trim(), stringedAttributes);
 }
+
 
 async function generateImage(imgElement, progressDisplay, description, attributes) {
     const url = "https://api.novita.ai/v3/async/txt2img";
