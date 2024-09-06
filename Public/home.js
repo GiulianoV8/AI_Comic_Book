@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const steps = [
         { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, as everything you do is a daily heroic.' },
         { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },
-        { element: '#deletePanelBtn', content: 'If you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
+        { element: '#deletePanelBtn', content: 'AI is not perfect, and will therefore not produce a perfect image every time. So, iff you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
         { element: '#createBtn-container', content: 'At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
     ];
 
@@ -480,6 +480,7 @@ async function fillData(userID) {
         // Populate the page with images
         let insertIndex = 0;
         for (const imageUrl of imageUrls) {
+            if(imageUrl)
             createPanel(imageUrl, true, insertIndex);
             insertIndex++;
         }
@@ -532,7 +533,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         },
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme showing a whole hero with the following attributes:{${attributes} and casual clothing\n} is doing this: ${description} ${description} ${description} ${description} ${description}`,
+            prompt: `In a superhero comic book theme showing a hero doing this action: ${description}, has the following attributes:{${attributes} and casual clothing\n}`,
             negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face",
             width: 512,
             height: 512,
