@@ -611,8 +611,8 @@ input#comic-title {
 
 .close-overlay {
     position: absolute;
-    top: 1%;
-    right: 1%;
+    top: 0%;
+    right: 0%;
     color: #ff0000;
     background-color: #ffffff00;
     border: none;
