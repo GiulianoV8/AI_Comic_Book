@@ -514,8 +514,10 @@ function submitEvent(form, description) {
     pencil.classList.remove('hidden');
 
     // Retrieve user attributes and prepare them for image generation
-    const attributes = JSON.parse(localStorage.getItem('attributes')) || [];
-    const stringedAttributes = attributes.join(',\n');
+    let stringedAttributes = "";
+    for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
+        stringedAttributes += `${attribute},\n`;
+    }
     
     generateImage(selectedPanel, progressDisplay, description.trim(), stringedAttributes);
 }
