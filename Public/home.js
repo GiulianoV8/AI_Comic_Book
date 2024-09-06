@@ -485,7 +485,7 @@ async function fillData(userID) {
             insertIndex++;
         }
 
-        await saveImage(data.userID);
+        await saveImage(userID);
 
         // Set user's attributes in localStorage
         if (!localStorage.getItem('attributes')) {
