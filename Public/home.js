@@ -445,12 +445,16 @@ async function deleteImageUrl(imgSrc) {
 
 async function fillData(userID) {
     try {
+        // Clear current data
+        localStorage.clear()
+        localStorage.setItem('userID', userID);
+
         // Fetch user data from the backend
         const response = await fetch(`/getUserData?userID=${userID}`);
         const userData = await response.json();
         const data = userData.item;
 
-        // Fill in the #comic-title input tag with the comicTitle attribute value
+        // Fill in the #comic-title input tag with the comicTitle attrigbute value
         const comicTitle = document.getElementById('comic-title');
         if (comicTitle && data.comicTitle) {
             comicTitle.innerText = data.comicTitle;
@@ -458,27 +462,16 @@ async function fillData(userID) {
         }
 
         // Handle imageUrls and imageDescriptions
-        let imageUrls = localStorage.getItem('imageUrls');
-        if (!imageUrls || imageUrls === 'undefined' || imageUrls === null) {
-            imageUrls = data.imageUrls || [];
-        } else {
-            imageUrls = JSON.parse(imageUrls);
-        }
-
-        let imageDescriptions = localStorage.getItem('imageDescriptions');
-        if (!imageDescriptions || imageDescriptions === 'undefined' || imageDescriptions === null) {
-            imageDescriptions = data.imageDescriptions || [];
-        } else {
-            imageDescriptions = JSON.parse(imageDescriptions);
-        }
+        let imageUrls = data.imageUrls || [];
+        let imageDescriptions = data.imageDescriptions || [];
 
         // Check if it's the first login of the day and reset images if true
         const resetImages = userData.firstLogin;
         if (resetImages === true) {
-            localStorage.setItem('imageUrls', JSON.stringify([]));
-            localStorage.setItem('imageDescriptions', JSON.stringify([]));
             imageUrls = [];
             imageDescriptions = [];
+            localStorage.setItem('imageUrls', JSON.stringify([]));
+            localStorage.setItem('imageDescriptions', JSON.stringify([]));
         } else {
             localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
             localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
