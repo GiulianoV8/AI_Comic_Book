@@ -303,8 +303,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    let deletePanelMode = false;
     // Delete selected panels on "Delete Panel" button click
     deletePanelBtn.addEventListener("click", function() {
+        if(!deletePanelMode) {
+            deletePanelBtn.innerText = 'Exit delete panel mode';
+        } else {
+            deletePanelBtn.innerText = 'Delete Panel';
+        }
+        deletePanelMode = !deletePanelMode;
         deleteConfirmDropdown.classList.toggle('hidden');
         if (!deleteMode) {
             deleteMode = true;
