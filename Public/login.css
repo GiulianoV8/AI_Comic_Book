@@ -141,12 +141,41 @@ button:hover{
     margin-top: 10px;
 }
 
+#novita-logo {
+    position: fixed;
+    bottom: 5px;
+    right: 5px;
+    z-index: 1000; /* Ensures it stays on top of other elements */
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8); /* Slight background to make it visible */
+    padding: 5px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#novita-logo img {
+    width: 75px; /* Adjust size as needed */
+    height: auto;
+}
+
+#novita-logo a {
+    text-decoration: none;
+    color: black;
+}
+
+#novita-logo-title {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+
 /* Responsive Styling */
 @media (max-width: 768px) {
     #title-text {
         font-size: 2em;
     }
-
     #subtitle-text {
         font-size: 1em;
     }
