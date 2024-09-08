@@ -549,19 +549,21 @@ input#comic-title {
 /* The Close Button */
 .close {
     position: fixed;
-    top: 1%;
+    top: 2%;
     right: 1%;
     color: #ff0000;
     font-size: 40px;
     font-weight: bold;
     transition: 0.3s;
+    cursor: pointer;
+    text-decoration: none;
+    background-color: rgb(213, 213, 213);
 }
 
 .close:hover,
 .close:focus {
-    color: #bbb;
-    text-decoration: none;
-    cursor: pointer;
+    color: #9e0000;
+    background-color: #959595;
 }
 
 .comic-title-box {
@@ -610,8 +612,8 @@ input#comic-title {
 
 .close-overlay {
     position: absolute;
-    top: 0%;
-    right: 0%;
+    top: 2%;
+    right: 1%;
     color: #ff0000;
     background-color: #ffffff00;
     border: none;
