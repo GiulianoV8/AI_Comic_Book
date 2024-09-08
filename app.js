@@ -1,18 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const AWS = require('aws-sdk');
-
 const { DynamoDBDocument } = require('@aws-sdk/lib-dynamodb');
-
 const path = require('path');
 const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
+const { AWS, S3Client, PutObjectCommand} = require('@aws-sdk/client-s3'); // AWS SDK v3
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-AWS.config.update({
-    region: 'us-east-1'
-});
+// Configure AWS S3 Client
+const s3 = new S3Client();
+
 
 const docClient = DynamoDBDocument.from(new DynamoDB());
 const TABLE_NAME = 'ComicUsers';
@@ -369,6 +367,44 @@ app.post('/deleteImage', async (req, res) => {
     } catch (err) {
         console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
         return res.status(500).json({ success: false, message: 'Error image URL.' });
+    }
+});
+
+app.post('/save-image-s3', async (req, res) => {
+    const { imageUrl } = req.body;
+
+    try {
+        // Dynamically import node-fetch
+        const fetch = (await import('node-fetch')).default;
+
+        // Download the image from the temporary URL
+        const imageResponse = await fetch(imageUrl);
+        const arrayBuffer = await imageResponse.arrayBuffer();
+        const imageBuffer = Buffer.from(arrayBuffer);
+
+        // Generate a unique filename
+        const imageFileName = `comic_image_${Date.now()}.png`;
+
+        // S3 upload parameters
+        const s3Params = {
+            Bucket: 'comicbookimages',
+            Key: imageFileName,
+            Body: imageBuffer,
+            ContentType: 'image/png',
+            ACL: 'public-read'
+        };
+
+        // Upload image to S3 using AWS SDK v3
+        const command = new PutObjectCommand(s3Params);
+        const data = await s3.send(command);
+
+        // Return the S3 URL back to the frontend
+        const s3ImageUrl = `https://${s3Params.Bucket}.s3.amazonaws.com/${s3Params.Key}`;
+        res.json({ success: true, s3ImageUrl });
+        
+    } catch (error) {
+        console.error("Error:", error);
+        res.status(500).json({ success: false, message: "Image upload failed" });
     }
 });
 

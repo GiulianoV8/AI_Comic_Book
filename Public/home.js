@@ -1,6 +1,29 @@
 let openModal;
 let modalDisabled = false;
 document.addEventListener("DOMContentLoaded", function() {
+    function isLocalStorageEnabled() {
+        const testKey = "testkey";
+    
+        try {
+            // Try setting an item in localStorage
+            localStorage.setItem(testKey, "test");
+    
+            // Try reading the item back
+            const value = localStorage.getItem(testKey);
+    
+            // Remove the item after testing
+            localStorage.removeItem(testKey);
+    
+            return value === "test";
+        } catch (e) {
+            return false;
+        }
+    }
+
+    if(!isLocalStorageEnabled) {
+        document.getElementById("noLocalStorageBackground").classList.add('hidden');
+    }
+
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
     const dropdown = document.getElementById('deleteDropdown');
@@ -529,18 +552,9 @@ async function generateImage(imgElement, progressDisplay, description, attribute
     const key = "df06b948-2b6d-465f-b997-c6cb900bd551";
 
     const data = {
-        extra: {
-            custom_storage: {
-                aws_s3: {
-                  region: "us-east-1",
-                  bucket: "comicbookimages",
-                  path: "/"
-                }
-              }
-        },
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme showing a hero doing this action: ${description}, has the following attributes:{${attributes} and casual clothing\n}`,
+            prompt: `In a superhero comic book theme showing a hero doing this action: ${description}, has the following attributes:{${attributes}}`,
             negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face",
             width: 512,
             height: 512,
@@ -551,7 +565,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
             clip_skip: 1,
             seed: -1,
             loras: [],
-        },
+        }
     };
 
     const options = {
@@ -569,7 +583,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         const result = await response.json();
         const task_id = result.task_id;
 
-        // Function to poll the task status
+        // Polling function for task status
         const checkTaskStatus = async () => {
             const imageFetchUrl = `https://api.novita.ai/v3/async/task-result?task_id=${task_id}`;
             const statusResponse = await fetch(imageFetchUrl, {
@@ -585,41 +599,51 @@ async function generateImage(imgElement, progressDisplay, description, attribute
             progressDisplay.innerHTML = `${statusResult.task.progress_percent}%`;
 
             if (statusResult.task.status === "TASK_STATUS_SUCCEED") {
-                // Image successfully received
                 const imageUrl = statusResult.images[0].image_url;
-                imgElement.src = imageUrl;
 
-                let imageUrls = JSON.parse(localStorage.getItem('imageUrls'));
-                imageUrls.push(imageUrl);
-                localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
+                // Send the temporary image URL to the backend to save to S3
+                const saveImageResponse = await fetch("/save-image-s3", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ imageUrl }),  // Send the image URL and description
+                });
 
-                let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-
-                imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(imageUrl), 0, description);
-                localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+                const saveImageResult = await saveImageResponse.json();
                 
-                saveImage(localStorage.getItem('userID'));
+                if (saveImageResult.success) {
+                    const s3ImageUrl = saveImageResult.s3ImageUrl;  // S3 URL returned by the backend
+                    imgElement.src = s3ImageUrl;
 
-                let gridItem = imgElement.parentElement;
-                gridItem.innerHTML = `<img class="generated-image" src=${imageUrl}>`
-                gridItem.addEventListener('click', (event) => openModal(imageUrl, description, event));
+                    // Store the new S3 URL
+                    let imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
+
+                    let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
+                    imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(s3ImageUrl), 0, description);
+                    localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+
+                    saveImage(localStorage.getItem('userID'));
+
+                    let gridItem = imgElement.parentElement;
+                    gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
+                    gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
+                }
 
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
-                // Still processing, retry after some time
                 setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
             } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
-                // Task failed
                 let gridItem = imgElement.parentElement;
-                gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`
+                gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
             }
         };
 
-        // Start polling the task status
         checkTaskStatus();
     } catch (error) {
         console.error("Error:", error);
     }
 }
+
 
 async function saveImage(userID) {
     try {

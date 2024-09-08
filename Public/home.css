@@ -657,6 +657,24 @@ input#comic-title {
     animation: slideComicUp 1s ease forwards;
 }
 
+#noLocalStorage {
+    position: fixed;
+    left: 35%;
+    top: 40%;
+    font-size: 4rem;
+}
+
+#noLocalStorageBackground {
+    height: 100%;
+    width: 100%;
+    z-index: 5;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #00ffc8;
+}
+
+
 @keyframes slideOverlayUp {
     from {
         top: 100%;
