@@ -22,6 +22,52 @@ document.addEventListener("DOMContentLoaded", function() {
         transitionForms('.attributes-container', '.signup-container');
     });
 
+    document.querySelector('.forgot-password-link').addEventListener('click', function() {
+        transitionForms('.login-container', '.recover-password-container');
+    });
+    
+    document.getElementById('backToLoginFromRecover').addEventListener('click', function() {
+        transitionForms('.recover-password-container', '.login-container');
+    });
+    
+
+    document.getElementById('recoverPasswordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const recoveryEmail = document.getElementById('recoveryEmail').value;
+    
+        // Simulate showing the success message
+        const recoveryMessage = document.getElementById('recoveryMessage');
+        recoveryMessage.textContent = `Password will be sent to ${recoveryEmail}`;
+        recoveryMessage.style.display = 'block';
+
+        try {
+            const response = await fetch('/recover-password', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: recoveryEmail }),
+            });
+
+            const recoveryMessage = document.getElementById('recoveryMessage');
+    
+            const result = await response.json();
+            if (response.ok) {
+                // Show success message
+                recoveryMessage.textContent = result.message;
+                
+            } else {
+                // Show error message
+                recoveryMessage.textContent = `Error sending recovery email to ${recoveryEmail}.`;
+            }
+            recoveryMessage.style.display = 'block';
+        } catch (error) {
+            console.error('Error:', error);
+        }
+
+    });
+    
+
     document.querySelector('form#signUpForm').addEventListener('submit', event => {
         event.preventDefault();
         fetch('/check-username', {

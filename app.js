@@ -4,6 +4,7 @@ const { DynamoDBDocument } = require('@aws-sdk/lib-dynamodb');
 const path = require('path');
 const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
 const { AWS, S3Client, PutObjectCommand} = require('@aws-sdk/client-s3'); // AWS SDK v3
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -46,6 +47,61 @@ async function generateUserID() {
 // Define a route for the root URL to serve starting page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Public', 'login.html'));
+});
+
+// Nodemailer configuration
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'heroics.daily@gmail.com',
+        pass: process.env.GMAIL_APP_PASSWORD,
+    },
+});
+
+app.post('/recover-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required' });
+    }
+
+    console.log(email);
+    try {
+        // Query DynamoDB using email as the GSI
+        const params = {
+            TableName: TABLE_NAME,  // Your DynamoDB table name
+            IndexName: 'email', // Your GSI index name
+            KeyConditionExpression: 'email = :email',
+            ExpressionAttributeValues: {
+                ':email': email,
+            },
+        };
+
+        const result = await docClient.query(params);
+        if (result.Items.length === 0) {
+            return res.status(404).json({ error: 'Email not found' });
+        }
+
+        const user = result.Items[0];
+        const username = user.username;
+        const password = user.password;
+
+        // Send the email
+        const mailOptions = {
+            from: 'heroics.daily@gmail.com',
+            to: email,
+            subject: 'Password Recovery',
+            text: `Here is your password ${username}: ${password} \nDon't forget it this time! :)`,
+        };
+
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ message: 'Password recovery email sent successfully.' });
+
+    } catch (error) {
+        console.error('Error retrieving password:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
 });
 
 app.post('/signup', async (req, res) => {
