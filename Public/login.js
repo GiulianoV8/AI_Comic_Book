@@ -38,6 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Simulate showing the success message
         const recoveryMessage = document.getElementById('recoveryMessage');
         recoveryMessage.textContent = `Password will be sent to ${recoveryEmail}`;
+        recoveryMessage.style.color = 'green';
         recoveryMessage.style.display = 'block';
 
         try {
@@ -54,10 +55,12 @@ document.addEventListener("DOMContentLoaded", function() {
             const result = await response.json();
             if (response.ok) {
                 // Show success message
+                recoveryMessage.style.color = 'green';
                 recoveryMessage.textContent = result.message;
                 
             } else {
                 // Show error message
+                recoveryMessage.style.color = 'red';
                 recoveryMessage.textContent = `Error sending recovery email to ${recoveryEmail}.`;
             }
             recoveryMessage.style.display = 'block';
