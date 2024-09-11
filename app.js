@@ -430,9 +430,6 @@ app.post('/save-image-s3', async (req, res) => {
     const { imageUrl } = req.body;
 
     try {
-        // Dynamically import node-fetch
-        const fetch = (await import('node-fetch')).default;
-
         // Download the image from the temporary URL
         const imageResponse = await fetch(imageUrl);
         const arrayBuffer = await imageResponse.arrayBuffer();
