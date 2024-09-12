@@ -227,6 +227,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const createItem = document.querySelector('.create');
         gridContainer.insertBefore(lastPlusBtn, createItem);
         plusButtons.push(lastPlusBtn);
+
+        deletePanelBtn.style.pointerEvents = "auto";
     }
 
     // Function to create a plus button
@@ -266,18 +268,18 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Toggle add panel mode on "Add Panel" button click
-    addPanelBtn.addEventListener("click", addPanelClickEvent);
-
-    function addPanelClickEvent(){
+    addPanelBtn.addEventListener("click", function() {
         addPanelMode = !addPanelMode;
         if (addPanelMode) {
+            deletePanelBtn.style.pointerEvents = "none";
             showPlusButtons();
             addPanelBtn.innerText = "Exit Add Panel Mode";  // Change button text
         } else {
+            deletePanelBtn.style.pointerEvents = "auto";
             hidePlusButtons();
             addPanelBtn.innerText = "Add Panel";  // Revert button text
         }
-    }
+    });
 
     // Function to enable editing
     editTitleBtn.addEventListener("click", function() {
@@ -329,15 +331,12 @@ document.addEventListener("DOMContentLoaded", function() {
     let deletePanelMode = false;
     // Delete selected panels on "Delete Panel" button click
     deletePanelBtn.addEventListener("click", function() {
-        if(!deletePanelMode) {
-            deletePanelBtn.innerText = 'Exit delete panel mode';
-        } else {
-            deletePanelBtn.innerText = 'Delete Panel';
-        }
         deletePanelMode = !deletePanelMode;
         deleteConfirmDropdown.classList.toggle('hidden');
         if (!deleteMode) {
             deleteMode = true;
+            addPanelBtn.style.pointerEvents = 'none';
+            deletePanelBtn.innerText = 'Exit delete panel mode';
             document.querySelectorAll(".grid-item").forEach(item => {
                 if (!item.classList.contains("create")) {
                     let circle = document.createElement("div");
@@ -358,12 +357,17 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         } else {
-            document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
-            document.querySelectorAll(".grid-item").forEach(item => item.classList.remove("highlight"));
-            deleteMode = false;
-            selectedItems = [];
+            hideDeletePanels();
+            deletePanelBtn.innerText = 'Delete Panel';
+            addPanelBtn.style.pointerEvents = 'auto';
         }
     });
+    function hideDeletePanels() {
+        document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
+        document.querySelectorAll(".grid-item").forEach(item => item.classList.remove("highlight"));
+        deleteMode = false;
+        selectedItems = [];
+    }
 
     // Confirm deletion of selected panels
     deleteConfirmBtn.addEventListener("click", async function() {
@@ -378,6 +382,9 @@ document.addEventListener("DOMContentLoaded", function() {
         // Reset delete mode
         deleteMode = false;
         selectedItems = [];
+
+        deletePanelBtn.innerText = 'Delete Panel';
+        addPanelBtn.style.pointerEvents = 'auto';
     });
 
     // Delete all panels except "Create" on "Rewrite" button click
