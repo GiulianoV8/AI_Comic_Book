@@ -227,8 +227,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const createItem = document.querySelector('.create');
         gridContainer.insertBefore(lastPlusBtn, createItem);
         plusButtons.push(lastPlusBtn);
-
-        deletePanelBtn.style.pointerEvents = "auto";
     }
 
     // Function to create a plus button
@@ -249,6 +247,7 @@ document.addEventListener("DOMContentLoaded", function() {
         plusButtons = [];
         addPanelMode = false;
         addPanelBtn.innerText = "Add Panel";  // Revert button text
+        deletePanelBtn.style.pointerEvents = "auto";
     }
 
     // Function to close modal
