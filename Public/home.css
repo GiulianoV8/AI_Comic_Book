@@ -548,31 +548,38 @@ input#comic-title {
 
 /* The Close Button */
 .close {
+    text-align: center;
+    line-height: 0.75em;
     position: fixed;
     top: 2%;
     right: 1%;
-    color: #ff0000;
-    font-size: 40px;
+    color: #e10000;
     font-weight: bold;
     transition: 0.3s;
     cursor: pointer;
+    height: 1em;
+    width: 1em;
+    font-size: 2.5em;
+    border-radius: 50%;
     text-decoration: none;
+    transition: background-color, border, 0.1s ease-in-out;
     background-color: rgb(213, 213, 213);
 }
 
 .close:hover,
 .close:focus {
-    color: #9e0000;
+    color: #ff0b0b;
     background-color: #959595;
+    border: 2px solid white;
 }
 
 .comic-title-box {
-    position: sticky;
+    position: absolute;
     display: flex;
     justify-self: center;
     top: 0.25%;
     left: 1%;
-    padding: 10px 15px;
+    padding: 5px 5px;
     background-color: rgb(255, 68, 0);
     border: 5px solid #fff;
     border-radius: 15px;
@@ -611,14 +618,6 @@ input#comic-title {
 }
 
 .close-overlay {
-    position: absolute;
-    top: 2%;
-    right: 1%;
-    color: #ff0000;
-    background-color: #ffffff00;
-    border: none;
-    cursor: pointer;
-    font-size: 3em;
     z-index: 15; /* Higher than the title box */
 }
 
