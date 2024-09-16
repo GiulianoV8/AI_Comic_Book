@@ -4,6 +4,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     height: 100vh;
     margin: 0;
 }
@@ -16,10 +17,10 @@ body {
     text-align: center;
     width: 60%;
     max-width: 300px;
-    position: absolute;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
     display: none;
+    margin-bottom: 2%;
 }
 
 .login-container.show, .signup-container.show, .attributes-container.show {
@@ -112,7 +113,7 @@ button:hover{
 }
 #title {
     text-align: center;
-    padding: 20px;
+    padding: 15px;
     background-color: #ff0000;
     color: #ffffff;
     border: 5px solid #000000;
@@ -120,7 +121,7 @@ button:hover{
     border-radius: 10px;
     max-width: 90%;
     margin-top: 2%;
-    align-self: flex-start;
+    margin-bottom: 2%;
     font-family: 'Comic Sans MS', sans-serif;
     transition: all 0.3s ease-in-out;
 }
