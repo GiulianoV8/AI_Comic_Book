@@ -4,6 +4,7 @@ body {
     background-color: #f0f0f0;
     margin: 0;
     padding: 0;
+    overflow: auto;
 }
 
 /* Navigation Bar */
@@ -574,9 +575,9 @@ input#comic-title {
 }
 
 .comic-title-box {
-    position: absolute;
-    top: 0.25%;
-    left: 1%;
+    position: fixed; /* Keep title box fixed at the top */
+    top: 0;
+    left: 0;
     padding: 5px 5px;
     background-color: rgb(255, 68, 0);
     border: 5px solid #fff;
@@ -587,6 +588,7 @@ input#comic-title {
     text-align: center;
     z-index: 10; /* Higher than the overlay */
     pointer-events: none; /* Makes the title box non-interactive */
+    width: calc(100% - 5%); /* Ensure the title box adjusts with screen size */
 }
 
 .comic-title-box span {
@@ -599,32 +601,40 @@ input#comic-title {
 }
 
 .comic-overlay {
-    position: fixed ;
-    left: 0%;
+    position: fixed;
+    top: 50px; /* Leave space for the title box */
+    left: 0;
     width: 100%;
-    padding-top: 2%;
-    padding-bottom: 2%;
+    height: calc(100% - 50px); /* Calculate the height to fit below the title box */
     background-color: rgb(0, 0, 0);
     z-index: 5;
-    overflow: scroll;
     border: 10px solid #fff;
     border-radius: 15px;
     box-shadow: 0 0 10px #000000ee;
     color: #fff;
     animation: slideOverlayUp 1s ease-in-out forwards;
+    overflow: hidden; /* Prevent page scrolling */
 }
 
 .close-overlay {
-    z-index: 15; /* Higher than the title box */
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 2rem;
+    color: #ff1111;
+    z-index: 15; /* Ensure it stays above everything */
+    cursor: pointer;
 }
 
 .comic-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(40%, 1fr)); /* Smaller min-width allows more items per row */
-    gap: 1%; /* Space between images */
+    grid-template-columns: repeat(auto-fit, minmax(40%, 1fr));
+    gap: 1%;
     width: 100%;
-    height: 100%;
-    overflow: scroll;
+    height: calc(100% - 50px); /* Ensure the grid occupies the rest of the space below the title */
+    padding-top: 10px; /* Add padding to avoid overlap with the title box */
+    overflow-y: scroll; /* Allow scrolling only in the comic grid */
+    overflow-x: hidden;
 }
 
 .comic-panel {
@@ -646,10 +656,10 @@ input#comic-title {
 
 #comic-background {
     position: fixed;
-    top: 100%;
-    left: 100%;
-    height: 115%;
+    top: 0;
+    left: 0;
     width: 100%;
+    height: 100%;
     z-index: 2;
     background: linear-gradient(#e66465, #9198e5);
     animation: slideComicUp 1s ease forwards;

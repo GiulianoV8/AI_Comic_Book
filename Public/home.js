@@ -201,6 +201,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 comicGrid.removeChild(item);
             }); // Clear existing panels
         }
+
+        document.body.style.overflow = 'auto'; // Enable page scrolling
     }
 
     let previousTitle = comicTitle.innerText;
