@@ -115,7 +115,7 @@ a {
     border-radius: 10px;
     box-shadow: 3px 3px 0px #000;
     font-family: 'Comic Sans MS', sans-serif;
-    display: inline-block;
+    display: flex;
     margin-bottom: 5%;
 }
 
@@ -576,7 +576,7 @@ input#comic-title {
 
 .comic-title-box {
     position: fixed; /* Keep title box fixed at the top */
-    top: 0;
+    top: 1px;
     left: 0;
     padding: 5px 5px;
     background-color: rgb(255, 68, 0);
@@ -588,38 +588,40 @@ input#comic-title {
     text-align: center;
     z-index: 10; /* Higher than the overlay */
     pointer-events: none; /* Makes the title box non-interactive */
-    width: calc(100% - 5%); /* Ensure the title box adjusts with screen size */
+    box-sizing: border-box;
+    width: 100%; /* Ensure the title box adjusts with screen size */
 }
 
 .comic-title-box span {
     display: inline-block;
     max-height: 10%;
     overflow: scroll;
-    font-size: 110%; /* Slightly larger font size */
+    font-size: 120%; /* Slightly larger font size */
     color: #000; /* Black color for emphasis */
     text-transform: uppercase; /* Uppercase text for a bolder look */
 }
 
 .comic-overlay {
     position: fixed;
-    top: 50px; /* Leave space for the title box */
+    bottom: 10px; /* Leave space for the title box */
+    padding: 2%;
     left: 0;
     width: 100%;
-    height: calc(100% - 50px); /* Calculate the height to fit below the title box */
-    background-color: rgb(0, 0, 0);
+    height: 90%;
+    background-color: white;
     z-index: 5;
-    border: 10px solid #fff;
-    border-radius: 15px;
+    border: 2px solid black;
     box-shadow: 0 0 10px #000000ee;
     color: #fff;
     animation: slideOverlayUp 1s ease-in-out forwards;
-    overflow: hidden; /* Prevent page scrolling */
+    overflow-y: scroll;
+    box-sizing: border-box;
 }
 
 .close-overlay {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    top: 1px;
+    right: 1px;
     font-size: 2rem;
     color: #ff1111;
     z-index: 15; /* Ensure it stays above everything */
@@ -627,31 +629,82 @@ input#comic-title {
 }
 
 .comic-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(40%, 1fr));
-    gap: 1%;
-    width: 100%;
-    height: calc(100% - 50px); /* Ensure the grid occupies the rest of the space below the title */
-    padding-top: 10px; /* Add padding to avoid overlap with the title box */
-    overflow-y: scroll; /* Allow scrolling only in the comic grid */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 5px; /* Avoid overlap with title box */
+    overflow-y: scroll; /* Allow scrolling vertically */
     overflow-x: hidden;
+    box-sizing: border-box;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: space-around; /* Spread out the 3 panels equally */
+}
+
+.row-3 {
+    grid-template-columns: repeat(3, 1fr); /* 3 panels per row */
+}
+
+.row-2 {
+    grid-template-columns: repeat(2, 1fr); /* 2 panels per row */
 }
 
 .comic-panel {
-    border: 5px solid white;
-    border-radius: 10px;
-    box-shadow: 0 0 5px #000;
+    flex: 1; /* Ensure all panels take equal width */
+    border: 2px solid black;
+    box-shadow: 0 0 1px #000;
     background-color: #111;
+    position: relative;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    overflow: hidden;
+    background-size: cover;
+    background-repeat: no-repeat;
+}
+
+.panel-content {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    background-color: #f0f0f0; /* Consistent background */
+    flex-grow: 1; /* Allow to grow to fill available space */
+}
+
+.panel-caption {
+    width: 100%;
+    text-align: center;
+    background-color: #f0f0f0;
+    color: #000;
+    font-family: 'Comic Sans MS', sans-serif;
+    font-size: 1em;
+    padding: 5px;
+    margin-top: auto; /* Pushes the caption to the bottom */
+    box-sizing: border-box;
+    flex-shrink: 0; /* Prevents shrinking */
+}
+
+.panel-caption.top {
+    margin-top: 1px;
+}
+
+.panel-caption.bottom {
+    margin-bottom: 1px;
 }
 
 .panel-image {
     max-width: 100%;
     max-height: 100%;
     border-radius: 5px;
+    transform: rotate(-1deg); /* Slight comic-like rotation */
 }
 
 #comic-background {
@@ -687,12 +740,10 @@ input#comic-title {
     from {
         top: 100%;
         left: 100%;
-        transform: 100%;
     }
     to {
-        top: 55%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        top: 8%;
+        left: 0%;
     }
 }
 

@@ -20,9 +20,10 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    if(!isLocalStorageEnabled) {
-        document.getElementById("noLocalStorageBackground").classList.add('hidden');
+    for(let i = 0; i < 22; i++) {
+        // createPanel('https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png', true, i);
     }
+    
 
     const xBtn = document.getElementById("xBtn");
     const deleteBtn = document.getElementById("deleteBtn");
@@ -170,6 +171,11 @@ document.addEventListener("DOMContentLoaded", function() {
     userID = localStorage.getItem("userID");
     fillData(userID);    
 
+    if(!isLocalStorageEnabled) {
+        document.getElementById("noLocalStorageBackground").classList.add('hidden');
+        console.log('storage not enabled');
+    }
+
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
@@ -177,31 +183,89 @@ document.addEventListener("DOMContentLoaded", function() {
         const comicBackground = document.getElementById("comic-background");
         const comicGrid = document.querySelector(".comic-grid");
         const comicDisplayTitle = document.getElementById("comic-display-title");
-        
+    
         comicDisplayTitle.innerText = document.getElementById("comic-title").innerText;
+        
+        const imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
+        const imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
 
-        JSON.parse(localStorage.getItem('imageUrls')).forEach(url => {
-            const panel = document.createElement("div");
-            panel.classList.add("comic-panel");
-            panel.innerHTML = `<img src="${url}" alt="Comic Panel" class="panel-image">`;
-            comicGrid.appendChild(panel);
-        });
+        let currentIndex = 0;
+        let previousRow;
 
+        while (currentIndex < imageUrls.length) {
+            // Randomly decide whether the row will have 2 or 3 panels
+            let numPanelsInRow = Math.random() < 0.55 ? 2 : 3;
+
+            // Check if it's the second-to-last row and only one image remains
+            if (imageUrls.length - currentIndex === 3 && previousRow) {
+                numPanelsInRow = 3; // Force the last row to have 3 panels if 3 images remain
+            }
+
+            // Create a new row
+            const row = document.createElement('div');
+            row.classList.add('row');
+            row.classList.add(`row-${numPanelsInRow}`); // Add class to style appropriately
+
+            // Add panels to the row
+            for (let i = 0; i < numPanelsInRow && currentIndex < imageUrls.length; i++) {
+                const imageUrl = imageUrls[currentIndex];
+                const captionText = imageDescriptions[currentIndex];
+
+                // Create the panel with random caption positioning
+                const panel = createComicPanel(imageUrl, captionText);
+                row.appendChild(panel);
+
+                currentIndex++;
+            }
+
+            // Add the row to the grid
+            comicGrid.appendChild(row);
+
+            // Keep track of the previous row for special case handling
+            previousRow = row;
+        }
+        
         comicBackground.classList.remove("hidden");
+    }
+    
+    function createComicPanel(imageUrl, captionText) {
+        const panel = document.createElement('div');
+        panel.classList.add('comic-panel');
+    
+        const content = document.createElement('div');
+        content.classList.add('panel-content');
+    
+        // Randomly decide whether to put caption above or below
+        const isCaptionOnTop = Math.random() < 0.5; // 50% chance
+    
+        const caption = document.createElement('div');
+        caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom'); // Add top or bottom class
+        caption.textContent = captionText;
+    
+        const image = document.createElement('img');
+        image.src = imageUrl;
+        image.alt = "Comic Image";
+        image.classList.add('panel-image');
+    
+        // Append elements based on caption position
+        if (isCaptionOnTop) {
+            content.appendChild(caption); // Add caption first
+            content.appendChild(image); // Add image second
+        } else {
+            content.appendChild(image); // Add image first
+            content.appendChild(caption); // Add caption second
+        }
+    
+        panel.appendChild(content);
+        return panel;
     }
 
     function closeComicPanels() {
         const comicGrid = document.querySelector(".comic-grid");
+        comicGrid.innerHTML = "";
 
         document.getElementById("comic-background").classList.add("hidden");
         
-        let currentPanels = document.getElementsByClassName('comic-panel');
-        if(currentPanels.length > 0) {
-            document.querySelectorAll('.comic-panel').forEach(item => {
-                comicGrid.removeChild(item);
-            }); // Clear existing panels
-        }
-
         document.body.style.overflow = 'auto'; // Enable page scrolling
     }
 
@@ -563,7 +627,7 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
             prompt: `In a superhero comic book theme showing a hero doing this action: ${description}, has the following attributes:{${attributes}}`,
-            negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face",
+            negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face, words, weapons",
             width: 512,
             height: 512,
             sampler_name: "DPM++ 2S a Karras",
