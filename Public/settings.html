@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="imgs/DailyHeroics.png">
     <title>Settings Page</title>
     <link rel="stylesheet" href="settings.css">
 </head>
@@ -42,9 +43,35 @@
             <span class="close">&times;</span>
             <h2>Edit Hero</h2>
             <form id="editAttributesForm">
-                <div id="attributesContainer"></div>
-                <button type="button" id="addAttributeBtn">Add Attribute</button>
-                <button type="submit">Save Changes</button>
+                <div class="input-group">
+                    <label for="gender">What is your gender?</label>
+                    <select id="gender" name="gender" required>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="age">What is your age?</label>
+                    <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
+                </div>
+                <div class="input-group">
+                    <label for="height">What is your height?</label>
+                    <input type="text" id="height" name="height" placeholder="5'7, 1.7 metres, 70 inches" required>
+                </div>
+                <div class="input-group">
+                    <label for="skinColor">What is your skin color?</label>
+                    <input type="text" id="skinColor" name="skinColor" placeholder="tan" required>
+                </div>
+                <div class="input-group">
+                    <label for="hair">Describe your hair</label>
+                    <input type="text" id="hair" name="hair" placeholder="Brown, long, curly" required>
+                </div>
+                <div class="input-group">
+                    <label for="otherFeatures">Is there any other defining features you would like to add?</label>
+                    <textarea id="otherFeatures" placeholder="blue eyes, black glasses" name="otherFeatures"></textarea>
+                </div>
+                <button id='save-changes-btn' type="submit">Save Changes</button>
             </form>
         </div>
     </div>

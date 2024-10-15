@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('editAttributesModal');
     const editHeroBtn = document.getElementById('editAttributesBtn');
     const attributeForm = document.getElementById('editAttributesForm');
-    const attributesContainer = document.getElementById('attributesContainer');
-    const addAttributeBtn = document.getElementById('addAttributeBtn');
     const changeUsernameModal = document.getElementById('changeUsernameModal');
     const changePasswordModal = document.getElementById('changePasswordModal');
     const changeUsernameBtn = document.getElementById('changeUsernameBtn');
@@ -81,8 +79,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Open Edit Attributes Modal and fetch user attributes
     editHeroBtn.onclick = async function() {
         modal.classList.remove('hidden');
-        let attributes = JSON.parse(localStorage.getItem('attributes')) || [];
-        if (attributes.length === 0) {
+        let attributes = JSON.parse(localStorage.getItem('attributes')) || {};
+        if (Object.keys(attributes).length === 0 && attributes.constructor === Object) {
             try {
                 const response = await fetch(`/getUserAttributes?userID=${userID}`);
                 if (!response.ok) throw new Error('Network response was not ok');
@@ -92,15 +90,35 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             localStorage.setItem('attributes', JSON.stringify(attributes));
         }
-        attributesContainer.innerHTML = '';
-        attributes.forEach(attribute => addAttributeInput(attribute));
-    }
 
-    addAttributeBtn.onclick = () => addAttributeInput('');
+        for(const [key, value] of Object.entries(attributes)) {
+            if(key == 'gender'){
+                if(value.length < 3){
+                    document.getElementById('gender').value = "Non-binary";
+                }
+            }else{
+                document.getElementById(key).value = value;
+            }
+        }
+    }
 
     attributeForm.onsubmit = async function(event) {
         event.preventDefault();
-        const attributes = Array.from(attributesContainer.querySelectorAll('.attribute-input .attribute')).map(input => input.value);
+
+        let gender = document.getElementById('gender').value;
+        if(gender == "Non-binary"){
+            gender = "";
+        }
+        
+        const attributes = {
+            gender: gender,
+            age: document.getElementById('age').value,
+            height: document.getElementById('height').value,
+            skinColor: document.getElementById('skinColor').value,
+            hair: document.getElementById('hair').value,
+            otherFeatures: document.getElementById('otherFeatures').value
+        };
+        
         localStorage.setItem('attributes', JSON.stringify(attributes));
         try {
             const response = await fetch('/editAttributes', {
@@ -116,27 +134,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function addAttributeInput(value) {
-        const div = document.createElement('div');
-        div.className = 'form-group attribute-input';
-
-        const valueInput = document.createElement('input');
-        valueInput.type = 'text';
-        valueInput.className = 'attribute';
-        valueInput.placeholder = 'Attribute';
-        valueInput.value = value;
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.type = 'button';
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => div.remove();
-
-        div.appendChild(valueInput);
-        div.appendChild(deleteBtn);
-
-        attributesContainer.appendChild(div);
-    }
-
     logoutBtn.addEventListener('click', () => localStorage.clear());
 
     editTitleBtn.onclick = function() {
@@ -150,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     submitTitleBtn.addEventListener('click', async () => {
         const newTitle = titleInput.value.trim();
-        if (newTitle) {
+        if (newTitle.length > 0) {
             try {
                 const response = await fetch('/setComicTitle', {
                     method: 'POST',
@@ -158,7 +155,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     body: JSON.stringify({ userID, comicTitle: newTitle })
                 });
                 if (response.ok) {
-                    titleInputContainer.classList.remove('visible');
+                    closeModals();
+                    localStorage.setItem("comicTitle", newTitle);
                 } else {
                     newTitle.value = 'Error updating title';
                 }

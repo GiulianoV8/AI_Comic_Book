@@ -556,7 +556,7 @@ async function fillData(userID) {
         const userData = await response.json();
         const data = userData.item;
 
-        // Fill in the #comic-title input tag with the comicTitle attrigbute value
+        // Fill in the #comic-title input tag with the comicTitle attribute value
         const comicTitle = document.getElementById('comic-title');
         if (comicTitle && data.comicTitle) {
             comicTitle.innerText = data.comicTitle;
@@ -609,24 +609,37 @@ function submitEvent(form, description) {
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
-    // Retrieve user attributes and prepare them for image generation
-    let stringedAttributes = "";
-    for (const attribute of JSON.parse(localStorage.getItem('attributes'))) {
-        stringedAttributes += `${attribute},\n`;
-    }
     
-    generateImage(selectedPanel, progressDisplay, description.trim(), stringedAttributes);
+    generateImage(selectedPanel, progressDisplay, description.trim(), JSON.parse(localStorage.getItem('attributes')));
 }
 
 
 async function generateImage(imgElement, progressDisplay, description, attributes) {
     const url = "https://api.novita.ai/v3/async/txt2img";
-    const key = "df06b948-2b6d-465f-b997-c6cb900bd551";
+    let key = "";
+    try {
+        const response = await fetch('/get-api-key', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        
+        key = await response.json();
+        key = key.apiKey
+        
+      } catch (error) {
+        console.error('Error fetching API key:', error);
+      }
 
     const data = {
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme showing a hero doing this action: ${description}, has the following attributes:{${attributes}}`,
+            prompt: `In a superhero comic book theme showing a ${attributes.gender} ${attributes.height} tall ${attributes.age} years old ${attributes.skinColor}-skinned superhero with ${attributes.hair} and ${attributes.otherFeatures} is doing this action: ${description}.`,
             negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face, words, weapons",
             width: 512,
             height: 512,

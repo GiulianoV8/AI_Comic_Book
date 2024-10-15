@@ -237,8 +237,11 @@ app.get('/getUserData', async (req, res) => {
         }
         console.log('User Data: ', data);
 
-        const today = new Date().toISOString().split('T')[0];
-        const lastLogin = data.Item.lastLogin;
+        // Get today's date in the user's local time zone
+        const today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
+        // Convert lastLogin to the same format as today
+        const lastLogin = new Date(data.Item.lastLogin).toLocaleDateString('en-CA'); // Ensure same format and timezone
+
         let firstLogin = false;
 
         if (!lastLogin || lastLogin < today) {
@@ -425,6 +428,12 @@ app.post('/deleteImage', async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error image URL.' });
     }
 });
+
+app.get('/get-api-key', (req, res) => {
+    const apiKey = process.env.NOVITA_KEY;
+    console.log(apiKey);
+    res.json({ apiKey });
+  });
 
 app.post('/save-image-s3', async (req, res) => {
     const { imageUrl } = req.body;

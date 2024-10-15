@@ -45,8 +45,8 @@ body {
     text-align: left;
 }
 
-.label {
-    font-size: 1.2em;
+label {
+    font-size: 1.6em;
     display: block;
     margin-bottom: 5px;
 }
@@ -62,7 +62,7 @@ input {
 .login-button, .signup-button, .forgot-password-link {
     background-color: #ff0000;
     color: #fff;
-    font-size: 0.9em;
+    font-size: 1.2em;
     padding: 10px;
     border: 2px solid #000;
     cursor: pointer;
@@ -111,6 +111,12 @@ button{
 button:hover{
     background-color: #cc0000;
 }
+#title-novita-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
 #title {
     text-align: center;
     padding: 15px;
@@ -143,19 +149,15 @@ button:hover{
 }
 
 #novita-logo {
-    position: fixed;
-    bottom: 5px;
-    right: 5px;
-    z-index: 1000; /* Ensures it stays on top of other elements */
     text-align: center;
     background-color: rgba(255, 255, 255, 0.8); /* Slight background to make it visible */
-    padding: 5px;
+    padding: 2px;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 #novita-logo img {
-    width: 75px; /* Adjust size as needed */
+    width: 50px; /* Adjust size as needed */
     height: auto;
 }
 
@@ -166,7 +168,7 @@ button:hover{
 
 #novita-logo-title {
     display: block;
-    font-size: 12px;
+    font-size: 10px;
     margin-bottom: 5px;
     color: #333;
 }
@@ -220,20 +222,20 @@ button:hover{
 /* Responsive Styling */
 @media (max-width: 768px) {
     #title-text {
-        font-size: 2em;
+        font-size: 2.4em;
     }
     #subtitle-text {
-        font-size: 1em;
+        font-size: 1.2em;
     }
 }
 
 @media (max-width: 480px) {
     #title-text {
-        font-size: 1.5em;
+        font-size: 2.1em;
     }
 
     #subtitle-text {
-        font-size: 0.9em;
+        font-size: 1.1em;
     }
 
     #title {

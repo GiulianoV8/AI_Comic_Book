@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="imgs/DailyHeroics.png">
     <title>Comic Book Login</title>
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
     <div id="title">
-        <span id="title-text">DailyHeroics</span>
+        <div id="title-novita-row">
+            <span id="title-text">DailyHeroics</span>
+            <div id="novita-logo">
+                <a href="https://bscxv.r.ag.d.sendibm3.com/mk/cl/f/sh/1t6Af4OiGsE8LNl6b5BKiZM8sF0fl0/OypxoAc8bMmM"><span id="novita-logo-title">Powered By</span></a>
+                <a href="https://bscxv.r.ag.d.sendibm3.com/mk/cl/f/sh/1t6Af4OiGsE8LNl6b5BKiZM8sF0fl0/OypxoAc8bMmM"><img id="novita-logo-img" src="imgs/generalnovitalogo.png"></a>    
+            </div>
+        </div>
         <span id="subtitle-text">Because everything you do makes you a hero!</span>
     </div>
     <div class="login-container">
@@ -52,17 +59,37 @@
         <h1 class="title">Create Your Hero</h1>
         <h2 class="subtitle">Physical Attributes</h2>
         <form id="attributesForm">
-            <div id="attributes-container">
-                <div class="attribute" id="attribute-1">
-                    <label for="attributeInput-1">Attribute 1:</label>
-                    <input type="text" id="attributeInput-1" name="attributes[]" required>
-                    <button type="button" class="delete-attribute" onclick="deleteAttribute(1)">Delete</button>
-                </div>
+            <div class="input-group">
+                <label for="gender">What is your gender?</label>
+                <select id="gender" name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-binary">Non-binary</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="age">What is your age?</label>
+                <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
+            </div>
+            <div class="input-group">
+                <label for="height">What is your height?</label>
+                <input type="text" id="height" name="height" placeholder="5'7, 1.7 metres, 70 inches" required>
+            </div>
+            <div class="input-group">
+                <label for="skinColor">What is your skin color?</label>
+                <input type="text" id="skinColor" name="skinColor" placeholder="tan" required>
+            </div>
+            <div class="input-group">
+                <label for="hair">Describe your hair</label>
+                <input type="text" id="hair" name="hair" placeholder="brown, long, curly" required>
+            </div>
+            <div class="input-group">
+                <label for="otherFeatures">Is there any other defining features you would like to add?</label>
+                <textarea id="otherFeatures" placeholder="blue eyes, black glasses" name="otherFeatures"></textarea>
             </div>
             <div class="buttons">
                 <button type="button" id="backToSignUp-button" class="login-button">Back to Sign Up</button>
-                <button type="button" onclick="addAttribute()">Add Attribute</button>
-                <button type="submit">Submit</button>
+                <button type="submit" class="submit-button">Submit</button>
             </div>
         </form>
     </div>
@@ -75,17 +102,9 @@
                 <input type="email" id="recoveryEmail" name="recoveryEmail" required>
             </div>
             <button type="submit" class="recover-button">Recover Password</button>
-            <!-- Back to login button -->
             <button type="button" id="backToLoginFromRecover" class="login-button">Back to Login</button>
         </form>
         <p id="recoveryMessage" class="recovery-message" style="display: none;">Password recovery instructions will be sent to your email.</p>
-    </div>
-    
-    
-
-    <div id="novita-logo">
-        <a href="https://bscxv.r.ag.d.sendibm3.com/mk/cl/f/sh/1t6Af4OiGsE8LNl6b5BKiZM8sF0fl0/OypxoAc8bMmM"><span id="novita-logo-title">Powered By</span></a>
-        <a href="https://bscxv.r.ag.d.sendibm3.com/mk/cl/f/sh/1t6Af4OiGsE8LNl6b5BKiZM8sF0fl0/OypxoAc8bMmM"><img id="novita-logo-img"src="imgs/generalnovitalogo.png"></a>    
     </div>
 
     <script src="login.js"></script>

@@ -112,7 +112,20 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelector('form#attributesForm').addEventListener('submit', event => {
         event.preventDefault();
-        const attributes = Array.from(document.querySelectorAll('[name="attributes[]"]')).map(input => input.value);
+        let gender = "";
+        let genderField = document.getElementById('gender').value;
+        if(genderField == "Non-binary"){
+            gender = "";
+        }
+        
+        const attributes = {
+            gender: gender,
+            age: document.getElementById('age').value,
+            height: document.getElementById('height').value,
+            skinColor: document.getElementById('skinColor').value,
+            hair: document.getElementById('hair').value,
+            otherFeatures: document.getElementById('otherFeatures').value
+        };
         const newUsername = document.getElementById('newUsername').value;
         const newPassword = document.getElementById('newPassword').value;
         const newEmail = document.getElementById('newEmail').value;
@@ -148,46 +161,6 @@ function authenticate(username, password) {
         // Did not work
         console.error('Error:', error);
     });
-}
-
-let attributeCount = 1;
-
-function addAttribute() {
-    attributeCount++;
-    const container = document.getElementById('attributes-container');
-    const newAttribute = document.createElement('div');
-    newAttribute.classList.add('attribute');
-    newAttribute.setAttribute('id', `attribute-${attributeCount}`);
-    newAttribute.innerHTML = `
-        <label for="attributeInput-${attributeCount}">Attribute ${attributeCount}:</label>
-        <input type="text" id="attributeInput-${attributeCount}" name="attributes[]" required>
-        <button type="button" class="delete-attribute" onclick="deleteAttribute(${attributeCount})">Delete</button>
-    `;
-    container.appendChild(newAttribute);
-}
-
-function deleteAttribute(id) {
-    const attributeElement = document.getElementById(`attribute-${id}`);
-    if (attributeElement) {
-        attributeElement.remove();
-    }
-
-    const attributes = document.querySelectorAll('.attribute');
-    attributes.forEach((attribute, index) => {
-        const label = attribute.querySelector('label');
-        const input = attribute.querySelector('input');
-        const button = attribute.querySelector('button');
-        
-        if (label && input && button) {
-            label.setAttribute('for', `attributeInput-${index + 1}`);
-            label.textContent = `Attribute ${index + 1}:`;
-            input.setAttribute('id', `attributeInput-${index + 1}`);
-            button.setAttribute('onclick', `deleteAttribute(${index + 1})`);
-            attribute.setAttribute('id', `attribute-${index + 1}`);
-        }
-    });
-
-    attributeCount = attributes.length;
 }
 
 function submitSignUp(newUsername, newEmail, newPassword, attributes) {

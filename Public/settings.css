@@ -64,6 +64,11 @@ nav a button:hover {
     box-shadow: 0px 0px 15px 3px #ffcc00;
 }
 
+form > button:active {
+    transform: scale(0.9);
+    box-shadow: 0px 0px 15px 3px #b08d00;
+}
+
 #logoutBtn {
     background-color: #ff6666;
 }
