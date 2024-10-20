@@ -207,6 +207,7 @@ input#comic-title {
     gap: 20px;
     padding: 5%;
     margin: auto;
+    overflow-y: scroll;
 }
 
 /* Grid Items */
@@ -248,7 +249,6 @@ input#comic-title {
 
 #create-svg {
     cursor: pointer;
-    box-shadow: 3px 3px 0 #333; /* Comic book-style shadow */
     background-color: #ffffff00; 
     transition: transform 0.2s, filter 0.2s ease-in-out;
     fill: #ff7b00;
@@ -525,6 +525,7 @@ input#comic-title {
 /* Modal Content (the image) */
 .modal-content {
     margin: auto;
+    margin-top: 20%;
     display: block;
     width: 75%;
     max-width: 700px;
@@ -620,7 +621,7 @@ input#comic-title {
 
 .close-overlay {
     position: absolute;
-    top: 1px;
+    top: 0px;
     right: 1px;
     font-size: 2rem;
     color: #ff1111;
@@ -665,7 +666,9 @@ input#comic-title {
     justify-content: center;
     align-items: center;
     background-size: cover;
+    box-sizing: border-box;
     background-repeat: no-repeat;
+    clip-path: polygon(5% 0, 95% 0, 100% 20%, 100% 80%, 95% 100%, 5% 100%, 0 80%, 0 20%);
 }
 
 .panel-content {

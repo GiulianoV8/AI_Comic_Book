@@ -174,7 +174,7 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
                                 password: newPassword, 
                                 attributes: attributes, 
                                 comicTitle: `${newUsername}'s Great Adventure`,
-                                lastLogin: new Date().toISOString().split('T')[0]  })
+                                lastLogin: parseInt(new Date().toLocaleDateString('en-CA').replace(/-/g, ''))  })
     })
     .then(response => response.json())
     .then(data => {

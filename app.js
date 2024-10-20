@@ -238,12 +238,12 @@ app.get('/getUserData', async (req, res) => {
         console.log('User Data: ', data);
 
         // Get today's date in the user's local time zone
-        const today = new Date().toLocaleDateString('en-CA'); // Format: YYYY-MM-DD
+        const today = parseInt(new Date().toLocaleDateString('en-CA').replace(/-/g, '')); // Format: YYYYMMDD
         // Convert lastLogin to the same format as today
-        const lastLogin = new Date(data.Item.lastLogin).toLocaleDateString('en-CA'); // Ensure same format and timezone
+        const lastLogin = parseInt(data.Item.lastLogin);
 
         let firstLogin = false;
-
+        console.log(today, lastLogin);
         if (!lastLogin || lastLogin < today) {
             firstLogin = true;
             console.log("First login of the day!");
@@ -431,7 +431,6 @@ app.post('/deleteImage', async (req, res) => {
 
 app.get('/get-api-key', (req, res) => {
     const apiKey = process.env.NOVITA_KEY;
-    console.log(apiKey);
     res.json({ apiKey });
   });
 

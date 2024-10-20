@@ -50,8 +50,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const createBtn = document.getElementById("createBtn-container");
 
     const steps = [
-        { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, as everything you do is a daily heroic.' },
-        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },
+        { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, because everything you do is a daily heroic.' },
+        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event (I cooked breakfast, ran in the park, etc.) in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },
         { element: '#deletePanelBtn', content: 'Deleting an event: AI is not perfect, and will therefore not produce a perfect image every time. So, if you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
         { element: '#createBtn-container', content: 'Viewing your comic: At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
     ];
@@ -200,6 +200,9 @@ document.addEventListener("DOMContentLoaded", function() {
             if (imageUrls.length - currentIndex === 3 && previousRow) {
                 numPanelsInRow = 3; // Force the last row to have 3 panels if 3 images remain
             }
+            if(currentIndex == 0){
+                numPanelsInRow = 2; // Force the first row to have 2 panels
+            }
 
             // Create a new row
             const row = document.createElement('div');
@@ -240,7 +243,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
         const caption = document.createElement('div');
         caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom'); // Add top or bottom class
-        caption.textContent = captionText;
+        caption.textContent = !captionText ? '' : captionText;
     
         const image = document.createElement('img');
         image.src = imageUrl;
@@ -327,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if(!event.target.classList.contains("circle")){
                 modal.style.display = "block";
                 modalImg.src = imageUrl;
-                captionText.innerHTML = description;
+                captionText.innerHTML = description ? description : "";
             }
         }
     }
@@ -393,64 +396,75 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    let deletePanelMode = false;
-    // Delete selected panels on "Delete Panel" button click
+    // Toggle delete panel mode
     deletePanelBtn.addEventListener("click", function() {
-        deletePanelMode = !deletePanelMode;
+        deleteMode = !deleteMode;
         deleteConfirmDropdown.classList.toggle('hidden');
-        if (!deleteMode) {
-            deleteMode = true;
-            addPanelBtn.style.pointerEvents = 'none';
-            deletePanelBtn.innerText = 'Exit delete panel mode';
+        addPanelBtn.style.pointerEvents = deleteMode ? 'none' : 'auto';
+        deletePanelBtn.innerText = deleteMode ? 'Exit delete panel mode' : 'Delete Panel';
+
+        if (deleteMode) {
             document.querySelectorAll(".grid-item").forEach(item => {
-                if (!item.classList.contains("create")) {
+                if (!item.classList.contains("create") && !item.querySelector(".circle")) {
                     let circle = document.createElement("div");
                     circle.classList.add("circle");
-                    circle.style.display = "block";
-                    circle.addEventListener("click", function() {
-                        if (deleteMode && circle.classList.contains("circle")) {
-                            circle.classList.toggle("selected");
-                            circle.parentElement.classList.toggle("highlight");
-                            if (circle.classList.contains("selected")) {
-                                selectedItems.push(circle.parentElement);
-                            } else {
-                                selectedItems = selectedItems.filter(item => item !== circle.parentElement);
-                            }
-                        }
-                    });
+                    circle.style.display = "block"; // Make sure circle is visible
                     item.appendChild(circle);
                 }
             });
         } else {
             hideDeletePanels();
-            deletePanelBtn.innerText = 'Delete Panel';
-            addPanelBtn.style.pointerEvents = 'auto';
         }
     });
-    function hideDeletePanels() {
-        document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
-        document.querySelectorAll(".grid-item").forEach(item => item.classList.remove("highlight"));
-        deleteMode = false;
-        selectedItems = [];
-    }
+
+    // Event delegation for click events on the grid container
+    document.querySelector(".grid-container").addEventListener("click", function(event) {
+        if (deleteMode && event.target.classList.contains("circle")) {
+            let circle = event.target;
+            circle.classList.toggle("selected");
+            circle.parentElement.classList.toggle("highlight");
+
+            if (circle.classList.contains("selected")) {
+                selectedItems.push(circle.parentElement);
+            } else {
+                selectedItems = selectedItems.filter(item => item !== circle.parentElement);
+            }
+        }
+    });
 
     // Confirm deletion of selected panels
     deleteConfirmBtn.addEventListener("click", async function() {
         deleteConfirmDropdown.classList.add('hidden');
-        for (let item of selectedItems) { 
+        
+        let imageDescriptions = JSON.parse(localStorage.getItem("imageDescriptions"));
+        let imageUrls = JSON.parse(localStorage.getItem("imageUrls"));
+
+        for (let item of selectedItems) {
+            let imgUrl = item.querySelector(".generated-image").src;
+            let index = imageUrls.indexOf(imgUrl);
+            if (index > -1) {
+                imageDescriptions.splice(index, 1);
+                imageUrls.splice(index, 1);
+            }
             item.remove();
         }
-        localStorage.setItem("imageDescriptions", JSON.stringify([]));
-        await saveImage(localStorage.getItem('userID'));
-        document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
-        document.querySelectorAll(".highlight").forEach(highlight => highlight.classList.remove("highlight"));
-        // Reset delete mode
-        deleteMode = false;
-        selectedItems = [];
 
+        localStorage.setItem("imageDescriptions", JSON.stringify(imageDescriptions));
+        localStorage.setItem("imageUrls", JSON.stringify(imageUrls));
+        await saveImage(localStorage.getItem('userID'));
+
+        hideDeletePanels();
         deletePanelBtn.innerText = 'Delete Panel';
         addPanelBtn.style.pointerEvents = 'auto';
+        deleteMode = false;
     });
+
+    // Hide and reset delete panels
+    function hideDeletePanels() {
+        document.querySelectorAll(".grid-item .circle").forEach(circle => circle.remove());
+        document.querySelectorAll(".grid-item").forEach(item => item.classList.remove("highlight"));
+        selectedItems = [];
+    }
 
     // Delete all panels except "Create" on "Rewrite" button click
     xBtn.addEventListener("click", function() {
@@ -466,6 +480,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 item.remove();
             }
         }
+        localStorage.setItem('imageDescriptions', JSON.stringify([]));
         await saveImage(localStorage.getItem('userID'));
     });
 
@@ -601,6 +616,10 @@ async function fillData(userID) {
 function submitEvent(form, description) {
     event.preventDefault();
 
+    document.querySelectorAll(".event-submit").forEach(button => button.disabled = true);
+    addPanelBtn.disabled = true;
+    deletePanelBtn.disabled = true;
+
     const progressDisplay = document.createElement('span');
     progressDisplay.classList.add('progress-display', 'hidden');
     form.parentElement.appendChild(progressDisplay);
@@ -609,8 +628,7 @@ function submitEvent(form, description) {
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
-    
-    generateImage(selectedPanel, progressDisplay, description.trim(), JSON.parse(localStorage.getItem('attributes')));
+    generatedImage = generateImage(selectedPanel, progressDisplay, description.trim(), JSON.parse(localStorage.getItem('attributes')));
 }
 
 
@@ -631,9 +649,15 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         
         key = await response.json();
         key = key.apiKey
-        
+
       } catch (error) {
         console.error('Error fetching API key:', error);
+
+        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
+        addPanelBtn.disabled = false;
+        deletePanelBtn.disabled = false;
+
+        return false;
       }
 
     const data = {
@@ -699,33 +723,53 @@ async function generateImage(imgElement, progressDisplay, description, attribute
                 
                 if (saveImageResult.success) {
                     const s3ImageUrl = saveImageResult.s3ImageUrl;  // S3 URL returned by the backend
-                    imgElement.src = s3ImageUrl;
+
+                    let gridItem = imgElement.parentElement;
+                    gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
+                    gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
 
                     // Store the new S3 URL
-                    let imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
+                    let imageUrls = [];
+                    for(const image of document.querySelectorAll('.generated-image')) {
+                        if(!image.src.includes("imgs/blank_white.jpeg")){
+                            imageUrls.push(image.src);
+                        }
+                    }
 
                     let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
                     imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(s3ImageUrl), 0, description);
                     localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
 
                     saveImage(localStorage.getItem('userID'));
-
+                }else{
                     let gridItem = imgElement.parentElement;
-                    gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
-                    gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
+                    gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
+                    return false;
                 }
+
+                document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
+                addPanelBtn.disabled = false;
+                deletePanelBtn.disabled = false;
 
             } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
                 setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
             } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
                 let gridItem = imgElement.parentElement;
                 gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
+                return false;
             }
         };
 
         checkTaskStatus();
+        return true;
     } catch (error) {
         console.error("Error:", error);
+
+        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
+        addPanelBtn.disabled = false;
+        deletePanelBtn.disabled = false;
+
+        return false;
     }
 }
 
