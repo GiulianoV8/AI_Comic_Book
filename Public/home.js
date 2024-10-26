@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const steps = [
         { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, because everything you do is a daily heroic.' },
-        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event (I cooked breakfast, ran in the park, etc.) in the input field and click the pencil button. Let the image load, and you will have superhero you doing that event.' },
+        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event (I cooked breakfast, ran in the park, etc.) in the input field and click the pencil button. Alternatively, you can press the microphone button and speak into your device to record your event Let the image load, and you will have superhero you doing that event.' },
         { element: '#deletePanelBtn', content: 'Deleting an event: AI is not perfect, and will therefore not produce a perfect image every time. So, if you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
         { element: '#createBtn-container', content: 'Viewing your comic: At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
     ];
@@ -489,6 +489,8 @@ document.addEventListener("DOMContentLoaded", function() {
     forms.forEach(item => item.addEventListener("submit", e => e.preventDefault()));
 });
 
+let recognizingSpeech = false;
+
 // Function to create a new panel at a specified position
 function createPanel(src, image, position) {
     const newGridItem = document.createElement("div");
@@ -507,7 +509,10 @@ function createPanel(src, image, position) {
             </div>
             <img class="generated-image" src=${src}>
             <form class="input-container" onSubmit="submitEvent(this, description.value)">
-                <input class="event-input" type="text" name="description" placeholder="Event">
+                <textarea class="event-input" id="event-input-${position}" name="description" placeholder="Event" rows="1"></textarea>
+                <button class="mic-button" id="mic-button-${position}" type="button">
+                    <img src="imgs/mic_icon.png" alt="speak" class="mic-icon">
+                </button>
                 <button class="event-submit" type="submit">
                     <img src="imgs/pencil_icon.jpeg" alt="Submit" class="submit-image">
                 </button>
@@ -522,7 +527,60 @@ function createPanel(src, image, position) {
         const createItem = document.querySelector('.create');
         gridContainer.insertBefore(newGridItem, createItem);
     }
+
+    if (!image) {
+        const LANG = "en-US";
+        const recognition = new (window.SpeechRecognition ||
+            window.webkitSpeechRecognition ||
+            window.mozSpeechRecognition ||
+            window.msSpeechRecognition)();
+        recognition.lang = LANG;
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById(`event-input-${position}`).value += ` ${transcript}`;
+        };
+        recognition.onstart = () => {
+            recognizingSpeech = true;
+            document.getElementById(`event-input-${position}`).placeholder = "Listening...";
+            document.getElementById(`mic-button-${position}`).style.backgroundColor = "#00a6cb";
+
+            // Disable all other mic buttons
+            disableOtherMicButtons(position, true);
+        };
+        recognition.onend = () => {
+            recognizingSpeech = false;
+            document.getElementById(`event-input-${position}`).placeholder = "Event";
+            document.getElementById(`mic-button-${position}`).style.backgroundColor = "#e8e8e8"; // Reset background color
+
+            // Re-enable all mic buttons
+            disableOtherMicButtons(position, false);
+        };
+
+        // Toggle between starting and stopping recognition
+        document.getElementById(`mic-button-${position}`).addEventListener("click", () => {
+            if (recognizingSpeech) {
+                recognition.stop(); // Stop recognition if it's currently running
+            } else {
+                recognition.start(); // Start recognition if it's not running
+            }
+        });
+    }
 }
+
+// Helper function to disable or enable other mic buttons
+function disableOtherMicButtons(currentPosition, disable) {
+    const micButtons = document.querySelectorAll(".mic-button");
+
+    micButtons.forEach((button, index) => {
+        if (index !== currentPosition) {
+            button.disabled = disable; // Disable or enable the button based on the flag
+            button.style.backgroundColor = disable ? "#cccccc" : ""; // Change button color to indicate disabled state
+        }
+    });
+}
+
+
 async function deleteImageUrl(imgSrc) {
     if (imgSrc === undefined) {
         return false;

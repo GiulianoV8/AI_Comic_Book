@@ -8,7 +8,7 @@ body {
 
 nav {
     background-color: #ffcc00;
-    padding: 15px;
+    padding: 0.4rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -21,12 +21,12 @@ nav a button {
     color: white;
     border: 4px solid #000;
     border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 18px;
+    padding: 0.625rem 1.25rem;
+    font-size: 1.4rem;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
-    text-shadow: 2px 2px #000;
+    text-shadow: 1px 1px #000;
 }
 
 nav a button:hover {
@@ -38,8 +38,8 @@ nav a button:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
-    padding: 50px;
+    gap: 1.25rem;
+    padding: 5%;
     background-color: #f4f4f9;
     border: 4px solid #000;
     border-radius: 15px;
@@ -51,17 +51,12 @@ nav a button:hover {
     color: #fff;
     border: 4px solid #000;
     border-radius: 10px;
-    padding: 15px 30px;
-    font-size: 20px;
+    padding: 1rem 1rem;
+    font-size: 1.4rem;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
     text-shadow: 2px 2px #000;
-}
-
-.settings-container button:hover {
-    transform: scale(1.1);
-    box-shadow: 0px 0px 15px 3px #ffcc00;
 }
 
 form > button:active {
@@ -83,81 +78,9 @@ form > button:active {
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 600px; /* Maximum width for the container */
+    max-width: 600px;
     margin: auto;
 }
-
-#editTitleBtn {
-    padding: 10px 15px;
-    border: 4px solid #000;
-    background-color: #00bfff;
-    color: white;
-    width: 30%;
-    border-radius: 10px;
-    cursor: pointer;
-    text-shadow: 2px 2px #000;
-    position: relative;
-    z-index: 1;
-    transition: all 0.3s ease;
-}
-
-#titleInputContainer {
-    position: absolute;
-    top: 0;
-    left: 70%;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: #ffcc00;
-    padding: 10px;
-    border: 4px solid #000;
-    border-radius: 10px;
-    box-shadow: 5px 5px 0px 0px #000;
-    opacity: 0;
-    pointer-events: none;
-    white-space: nowrap; /* Prevent text wrapping */
-    transition: all 0.3s ease;
-    transform: translateX(-100%); /* Initial position to keep it hidden behind the button */
-}
-
-#titleInputContainer.visible {
-    transform: translateX(0);
-    opacity: 1;
-    pointer-events: auto;
-}
-
-#titleInput {
-    padding: 10px;
-    border: 4px solid #000;
-    border-radius: 10px;
-    font-size: 16px;
-    background-color: #fff;
-}
-
-#submitTitleBtn,
-#cancelTitleBtn {
-    padding: 10px 15px;
-    border: 4px solid #000;
-    background-color: #00bfff;
-    color: white;
-    border-radius: 10px;
-    cursor: pointer;
-    text-shadow: 1px 1px #000;
-}
-
-/* Ensure the container stays within screen boundaries */
-@media screen and (max-width: 600px) {
-    .pre-set-title-container {
-        max-width: 100%; /* Ensure the container doesn't exceed the screen width */
-    }
-
-    #titleInputContainer {
-        left: auto;
-        right: 0;
-        transform: translateX(0);
-    }
-}
-
 
 /* Modal Styles */
 .modal {
@@ -174,18 +97,18 @@ form > button:active {
 .modal-content {
     background-color: #ffcc00;
     margin: 10% auto;
-    padding: 30px; /* Increased padding for better spacing */
+    padding: 1.875rem;
     border: 4px solid #000;
     border-radius: 15px;
     width: 80%;
-    max-width: 500px; /* Adjusted max-width for consistency */
+    max-width: 500px;
     box-shadow: 10px 10px 0px 0px #000;
 }
 
 .close {
     color: #000;
     float: right;
-    font-size: 28px;
+    font-size: 1.75rem;
     font-weight: bold;
     cursor: pointer;
 }
@@ -196,13 +119,9 @@ form > button:active {
     text-decoration: none;
 }
 
-.form-group {
-    margin-bottom: 20px;
-}
-
 input[type="text"], input[type="password"] {
-    width: calc(100% - 22px); /* Ensure inputs are responsive within the modal */
-    padding: 10px;
+    width: calc(100% - 22px);
+    padding: 0.625rem;
     border: 4px solid #000;
     border-radius: 10px;
     box-shadow: 3px 3px 0px 0px #000;
@@ -210,13 +129,13 @@ input[type="text"], input[type="password"] {
 }
 
 button {
-    margin-top: 10px;
+    margin-top: 0.625rem;
     background-color: #00bfff;
     color: white;
     border: 4px solid #000;
     border-radius: 10px;
-    padding: 10px;
-    font-size: 16px;
+    padding: 0.625rem;
+    font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
@@ -230,4 +149,60 @@ button:hover {
 
 .hidden {
     display: none !important;
+}
+
+/* Media Queries */
+@media screen and (min-width: 420px) {
+    nav a button, .settings-container button, button {
+        font-size: 1.5rem;
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .modal-content {
+        padding: 2rem;
+        font-size: 1.2rem;
+    }
+
+    input[type="text"], input[type="password"] {
+        padding: 0.75rem;
+        font-size: 1.1rem;
+    }
+}
+
+@media screen and (min-width: 768px) {
+    nav {
+        padding: 0.5rem 1rem;
+    }
+
+    nav a button, .settings-container button, button {
+        font-size: 1.8rem;
+        padding: 0.875rem 1.75rem;
+    }
+
+    .modal-content {
+        padding: 2.5rem;
+        font-size: 1.4rem;
+    }
+
+    input[type="text"], input[type="password"] {
+        padding: 0.875rem;
+        font-size: 1.25rem;
+    }
+}
+
+@media screen and (min-width: 1024px) {
+    nav a button, .settings-container button, button {
+        font-size: 2rem;
+        padding: 1rem 2rem;
+    }
+
+    .modal-content {
+        padding: 3rem;
+        font-size: 1.6rem;
+    }
+
+    input[type="text"], input[type="password"] {
+        padding: 1rem;
+        font-size: 1.5rem;
+    }
 }
