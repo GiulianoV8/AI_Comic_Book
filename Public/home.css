@@ -381,11 +381,12 @@ input#comic-title {
 /* Circles for Deletion */
 .circle {
     position: absolute;
+    z-index: 3;
     margin: 5px;
     top: 5px;
     right: 5px;
-    width: 20px;
-    height: 20px;
+    width: 20%;
+    height: 20%;
     border-radius: 50%;
     background-color: white;
     border: 1px solid red;

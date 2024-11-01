@@ -75,6 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("deleteConfirmDropdown").style.zIndex = '';
         comicBackground.style.zIndex = '2';
         createBtn.style.zIndex = '1';
+        document.getElementsByClassName(".circle").forEach(elem => elem.style.zIndex = '3');
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
             elem.style.zIndex = '';
             modalDisabled = false;
