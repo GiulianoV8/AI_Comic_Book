@@ -193,6 +193,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
             deletePanelBtn.click();
         }
+        document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
 
         const comicBackground = document.getElementById("comic-background");
         const comicGrid = document.querySelector(".comic-grid");
