@@ -727,7 +727,6 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         
         key = await response.json();
         key = key.apiKey
-        console.log(apiKey);
 
       } catch (error) {
         console.error('Error fetching API key:', error);

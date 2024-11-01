@@ -431,9 +431,8 @@ app.post('/deleteImage', async (req, res) => {
 
 app.get('/get-api-key', (req, res) => {
     const apiKey = process.env.NOVITA_KEY;
-    console.log(apiKey)
     res.json({ apiKey });
-  });
+});
 
 app.post('/save-image-s3', async (req, res) => {
     const { imageUrl } = req.body;

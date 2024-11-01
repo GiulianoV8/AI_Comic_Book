@@ -523,7 +523,6 @@ input#comic-title {
 /* Modal Content (the image) */
 .modal-content {
     margin: auto;
-    margin-top: 20%;
     display: block;
     width: 75%;
     max-width: 700px;
@@ -882,6 +881,9 @@ input#comic-title {
         font-size: 20px;
         padding: 10px 15px;
     }
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(31%, 1fr));
+    }
     .title-box span, .comic-title-box span, #createBtn{
         font-size: 2.0rem;
     }
@@ -907,6 +909,9 @@ input#comic-title {
     nav button{
         font-size: 3em;
         padding: 12px;
+    }
+    .grid-container {
+        grid-template-columns: repeat(auto-fit, minmax(22%, 1fr));
     }
     .edit-btn, .save-btn, .cancel-btn {
         font-size: 22px;
