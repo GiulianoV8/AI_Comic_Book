@@ -68,6 +68,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     hideTutorial();
     function resetTutorials() {
+        if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
+            addPanelBtn.click();
+        }
+        if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
+            deletePanelBtn.click();
+        }
         addPanelBtn.removeEventListener('click', showPlusClickEvent);
         addPanelBtn.style.zIndex = '';
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '');
@@ -75,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("deleteConfirmDropdown").style.zIndex = '';
         comicBackground.style.zIndex = '2';
         createBtn.style.zIndex = '1';
-        document.getElementsByClassName(".circle").forEach(elem => elem.style.zIndex = '3');
+        document.querySelectorAll(".circle").forEach(elem => elem.style.zIndex = '3');
         document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
             elem.style.zIndex = '';
             modalDisabled = false;
