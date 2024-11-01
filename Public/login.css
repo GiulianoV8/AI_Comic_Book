@@ -380,13 +380,13 @@ select{
         max-width: 80%;
     }
     .title-text {
-        font-size: 3.5em;
+        font-size: 2.8em;
     }
     .subtitle-text {
         font-size: 2.5em;
     }
     label {
-        font-size: 2.5em;
+        font-size: 2.3em;
     }
     input, select, textarea {
         width: 95%;
@@ -395,7 +395,7 @@ select{
         padding: 6px;
     }
     .login-button, .signup-button, .submit-button, .recover-button{
-        font-size: 2.4em;
+        font-size: 2em;
     }
     #recoverPasswordLink, .recovery-message  {
         font-size: 1.7em;
@@ -413,24 +413,24 @@ select{
         max-width: 93%;
     }
     .title-text {
-        font-size: 3.7em;
+        font-size: 3em;
     }
     .subtitle-text {
-        font-size: 3.3em;
+        font-size: 2.8em;
     }
     label {
-        font-size: 2.6em;
+        font-size: 2.3em;
     }
     input, select, textarea {
         padding: 6px;
         width: 95%;
-        font-size: 2.3em;
+        font-size: 2em;
         line-height: 100%;
     }
     .login-button, .signup-button, .submit-button, .recover-button{
-        font-size: 3em;
+        font-size: 2em;
     }
     #recoverPasswordLink, .recovery-message , .recovery-message {
-        font-size: 2.3em;
+        font-size: 1.8em;
     }
 }
