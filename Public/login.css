@@ -368,22 +368,25 @@ select{
 
 @media (min-width: 768px) {
     #novita-logo-title {
-        font-size: 1.8em;
+        font-size: 1.4em;
     }
     #novita-logo img{
         width: 80px;
     }
     #title {
         max-width: 93%;
+        line-height: 100%;
     }
     .login-container, .signup-container, .attributes-container, .recover-password-container {
         max-width: 80%;
     }
     .title-text {
         font-size: 2.8em;
+        line-height: 100%;
     }
     .subtitle-text {
         font-size: 2.5em;
+        line-height: 100%;
     }
     label {
         font-size: 2.3em;
@@ -398,25 +401,28 @@ select{
         font-size: 2em;
     }
     #recoverPasswordLink, .recovery-message  {
-        font-size: 1.7em;
+        font-size: 1.5em;
     }
 }
 
 @media (min-width: 1000px) {
     #novita-logo-title {
-        font-size: 2em;
+        font-size: 1.6em;
     }
     #novita-logo img{
         width: 90px;
     }
     #title {
         max-width: 93%;
+        line-height: 100%;
     }
     .title-text {
-        font-size: 3em;
+        font-size: 3.4em;
+        line-height: 100%;
     }
     .subtitle-text {
         font-size: 2.8em;
+        line-height: 100%;
     }
     label {
         font-size: 2.3em;
@@ -431,6 +437,6 @@ select{
         font-size: 2em;
     }
     #recoverPasswordLink, .recovery-message , .recovery-message {
-        font-size: 1.8em;
+        font-size: 1.6em;
     }
 }
