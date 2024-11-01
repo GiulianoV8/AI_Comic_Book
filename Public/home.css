@@ -526,7 +526,7 @@ input#comic-title {
 .modal-content {
     margin: auto;
     display: block;
-    width: 75%;
+    width: 55%;
     max-width: 700px;
 
 }
@@ -535,8 +535,9 @@ input#comic-title {
 .caption {
     margin: auto;
     display: block;
-    width: 75%;
+    width: 57%;
     max-width: 700px;
+    border-radius: 0px 0px 25% 25%;
     text-align: center;
     padding: 10px 0;
     background-color: rgb(255, 198, 0);
@@ -896,6 +897,12 @@ input#comic-title {
         font-size: 1.8em;
         padding: 12px 23px;
     }
+    .modal-content {
+        width: 450px;
+    }
+    .caption {
+        width: 460px;
+    }
     .event-input, .progress-display{
         font-size: 1.2em;
     }
@@ -928,6 +935,12 @@ input#comic-title {
     #addPanelBtn, #deletePanelBtn {
         font-size: 1.8em;
         padding: 15px 25px;
+    }
+    .modal-content {
+        width: 480px;
+    }
+    .caption {
+        width: 490px;
     }
     .event-input, .progress-display, .caption , .panel-caption, .tutorial-navigation > button, .tutorial-popup > p{
         font-size: 1.5em;
