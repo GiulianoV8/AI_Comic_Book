@@ -180,6 +180,13 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
     function showComicPanels() {
+        if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
+            addPanelBtn.click();
+        }
+        if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
+            deletePanelBtn.click();
+        }
+
         const comicBackground = document.getElementById("comic-background");
         const comicGrid = document.querySelector(".comic-grid");
         const comicDisplayTitle = document.getElementById("comic-display-title");

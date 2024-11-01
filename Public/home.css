@@ -18,10 +18,10 @@ nav {
 nav button {
     color: white;
     border: none;
-    font-size: 20px;
+    font-size: 2em;
     height: 90%;
     width: 90%;
-    line-height: 100%;
+    line-height:100%;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -82,10 +82,6 @@ a {
     align-items: center;
 }
 
-.button-container #deleteBtn {
-    margin-left: -1px; /* Remove space between buttons */
-}
-
 #deleteConfirmBtn {
     color: white;
     background-color: #cd0000;
@@ -117,6 +113,7 @@ a {
     font-family: 'Comic Sans MS', sans-serif;
     display: flex;
     margin-bottom: 5%;
+    margin-top: 2%;
 }
 
 .title-box span {
@@ -237,6 +234,11 @@ input#comic-title {
     box-shadow: 2px 2px 0 #333;
 }
 
+.input-container:active{
+    transform: scale(1);
+    box-shadow: 0px;
+}
+
 
 .grid-item.create {
     background-color: #ffffff00;
@@ -302,6 +304,7 @@ input#comic-title {
     padding: 1.5%; /* Adjusts padding for better aesthetics */
     border: none;
     font-size: 0.8em;
+    overflow-y: auto
 }
 
 .event-submit, .mic-button {
@@ -401,25 +404,22 @@ input#comic-title {
 #deleteDropdown {
     display: block;
     position: absolute;
-    background-color: rgb(255, 31, 31);
     min-width: 120px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     z-index: 1;
     left: 100%;
-    height: 100%;
+    max-height: 90%;
     top: 0;
 }
 
-#deleteDropdown #deleteBtn {
+#deleteBtn {
     color: white;
     background-color: rgb(255, 31, 31);
     border: 2px solid rgb(159, 0, 0);
     border-radius: 0 5px 5px 0;
-    padding: 10px;
+    padding: 5px;
     text-align: center;
     width: 100%;
-    height: 40px;
-    line-height: 100%;
 }
 
 /* Hidden Elements */
@@ -501,16 +501,6 @@ input#comic-title {
     background: rgba(0, 0, 0, 0.5);
     z-index: 999;
     display: none;
-}
-
-.tutorial-popup h2 {
-    margin-top: 0;
-    color: #ff0000;
-    text-shadow: 2px 2px 0px #000;
-}
-
-.tutorial-popup p {
-    font-size: 14px;
 }
 
 /* Modal */
@@ -663,7 +653,7 @@ input#comic-title {
 
 .comic-panel {
     flex: 1; /* Ensure all panels take equal width */
-    border: 2px solid black;
+    border: 4px solid black;
     box-shadow: 0 0 1px #000;
     background-color: #111;
     position: relative;
@@ -684,7 +674,7 @@ input#comic-title {
     justify-content: flex-start;
     align-items: center;
     width: 100%;
-    background-color: #f0f0f0; /* Consistent background */
+    background-color: black; /* Consistent background */
     flex-grow: 1; /* Allow to grow to fill available space */
 }
 
@@ -767,51 +757,174 @@ input#comic-title {
     }
 }
 
-/* General Body Styling */
-body {
-    font-family: 'Comic Sans MS', sans-serif;
-    background-color: #f0f0f0;
-    margin: 0;
-    padding: 0;
-    overflow: auto;
+/* Responsive Styling */
+@media (max-width: 380px) {
+    nav svg{
+        display: none;
+    }
+    nav button {
+        font-size: 1.5em;
+        padding: 4px;
+    }
+    .edit-btn, .save-btn, .cancel-btn {
+        font-size: 14px;
+        padding: 4px 8px;
+    }
+    .title-box span, .comic-title-box span, #createBtn{
+        font-size: 1.2rem;
+    }
+    #deleteBtn {
+        font-size: 0.8em;
+    }
+    #addPanelBtn, #deletePanelBtn {
+        font-size: 1em;
+        padding: 6px 12px;
+    }
+    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+        font-size: 1em;
+    }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 1.8em;
+    }
 }
 
-/* Responsive font-size adjustments for larger screens */
-@media screen and (min-width: 800px) {
-    body {
+@media (max-width: 400px) {
+    nav button {
+        font-size: 1.6em;
+        padding: 10px;
+    }
+    .edit-btn, .save-btn, .cancel-btn{
+        font-size: 15px;
+        padding: 5px 9px;
+    }
+    .title-box span, .comic-title-box span, #createBtn{
+        font-size: 1.3rem;
+    }
+    #deleteBtn {
+        font-size: 1.1em;
+        padding: 1.5px;
+    }
+    #addPanelBtn, #deletePanelBtn {
+        font-size: 1em;
+        padding: 8px 14px;
+    }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 1.9em;
+    }
+}
+
+@media (min-width: 400px) and (max-width: 479px) {
+    nav button {
+        font-size: 1.3em;
+        padding: 6px;
+    }
+    .edit-btn, .save-btn, .cancel-btn {
+        font-size: 16px;
+        padding: 6px 10px;
+    }
+    .title-box span, .comic-title-box span, #createBtn{
+        font-size: 1.4rem;
+    }
+    #deleteBtn {
+        font-size: 1.2em;
+        padding: 1.45px;
+    }
+    #addPanelBtn, #deletePanelBtn {
+        font-size: 1em;
+        padding: 10px 18px;
+    }
+    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
         font-size: 1.2em;
     }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 2em;
+    }
+}
 
+@media (min-width: 480px) {
     nav button {
-        font-size: 3em;
+        font-size: 2em;
+        padding: 8px;
     }
-
-    .title-box span {
-        font-size: 4rem;
-    }
-
     .edit-btn, .save-btn, .cancel-btn {
-        font-size: 2em;
+        font-size: 18px;
+        padding: 8px 12px;
     }
-
+    .title-box span, .comic-title-box span, #createBtn{
+        font-size: 1.6rem;
+    }
+    #deleteBtn {
+        font-size: 1.3em;
+        padding: 3px;
+    }
     #addPanelBtn, #deletePanelBtn {
-        font-size: 2em;
+        font-size: 1.8;
+        padding: 12px 20px;
     }
+    .event-input, .progress-display{
+        font-size: 0.9em;
+    }
+    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+        font-size: 1.3em;
+    }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 2.1em;
+    }
+}
 
-    input#comic-title {
+@media (min-width: 768px) {
+    nav button {
+        font-size: 2.4em;
+        padding: 10px;
+    }
+    .edit-btn, .save-btn, .cancel-btn {
+        font-size: 20px;
+        padding: 10px 15px;
+    }
+    .title-box span, .comic-title-box span, #createBtn{
         font-size: 1.8rem;
     }
-
-    .tutorial-popup {
-        font-size: 1.5em;
+    #deleteBtn {
+        font-size: 1.6em;
     }
+    #addPanelBtn, #deletePanelBtn{
+        font-size: 2em;
+        padding: 15px 25px;
+    }
+    .event-input, .progress-display{
+        font-size: 1.2em;
+    }
+    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+        font-size: 1.4em;
+    }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 2.7em;
+    }
+}
 
-    #createBtn {
+@media (min-width: 1000px) {
+    nav button{
+        font-size: 3em;
+        padding: 12px;
+    }
+    .edit-btn, .save-btn, .cancel-btn {
+        font-size: 22px;
+        padding: 12px 18px;
+    }
+    .title-box span, .comic-title-box span, #createBtn, #createBtn{
+        font-size: 2rem;
+    }
+    #deleteBtn {
         font-size: 2em;
     }
-
-    .event-input {
-        font-size: 1.2em
+    #addPanelBtn, #deletePanelBtn {
+        font-size: 2.3em;
+        padding: 18px 30px;
     }
-    
+    .event-input, .progress-display, .caption , .panel-caption, .tutorial-navigation > button, .tutorial-popup > p{
+        font-size: 1.5em;
+    }
+    .close, .plus-button, .tutorial-popup h2 {
+        font-size: 3em;
+    }
 }
