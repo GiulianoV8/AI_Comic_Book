@@ -860,7 +860,7 @@ input#comic-title {
         padding: 3px;
     }
     #addPanelBtn, #deletePanelBtn {
-        font-size: 1.8em;
+        font-size: 1.6em;
         padding: 12px 20px;
     }
     .event-input, .progress-display{
@@ -893,8 +893,8 @@ input#comic-title {
         font-size: 1.6em;
     }
     #addPanelBtn, #deletePanelBtn{
-        font-size: 2em;
-        padding: 15px 25px;
+        font-size: 1.8em;
+        padding: 12px 23px;
     }
     .event-input, .progress-display{
         font-size: 1.2em;
@@ -926,8 +926,8 @@ input#comic-title {
         font-size: 2em;
     }
     #addPanelBtn, #deletePanelBtn {
-        font-size: 2.3em;
-        padding: 18px 30px;
+        font-size: 1.8em;
+        padding: 15px 25px;
     }
     .event-input, .progress-display, .caption , .panel-caption, .tutorial-navigation > button, .tutorial-popup > p{
         font-size: 1.5em;
