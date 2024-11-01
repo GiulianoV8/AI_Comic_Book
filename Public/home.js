@@ -342,6 +342,12 @@ document.addEventListener("DOMContentLoaded", function() {
     openModal = (imageUrl, description, event) => {
         if(!modalDisabled){
             if(!event.target.classList.contains("circle")){
+                if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
+                    addPanelBtn.click();
+                }
+                if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
+                    deletePanelBtn.click();
+                }
                 modal.style.display = "block";
                 modalImg.src = imageUrl;
                 captionText.innerHTML = description ? description : "";
