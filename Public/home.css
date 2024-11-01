@@ -13,6 +13,7 @@ nav {
     justify-content: space-around;
     background-color: #333;
     padding: 10px;
+    max-height: 90px;
 }
 
 nav button {
@@ -457,7 +458,7 @@ input#comic-title {
 .tutorial-popup {
     position: sticky;
     width: 92.5%;
-    padding: 2.5%;
+    padding: 1%;
     background-color: #ffffff;
     border: 3px solid #000000;
     box-shadow: 10px 10px 0px #ff0000;
@@ -470,8 +471,9 @@ input#comic-title {
 
 .tutorial-popup h2 {
     margin-top: 0;
+    line-height: 100%;
     color: #ff0000;
-    text-shadow: 2px 2px 0px #000;
+    text-shadow: 2px 1px 0px #000;
 }
 
 .tutorial-popup p {
@@ -843,7 +845,7 @@ input#comic-title {
 
 @media (min-width: 480px) {
     nav button {
-        font-size: 2em;
+        font-size: 1.8em;
         padding: 8px;
     }
     .edit-btn, .save-btn, .cancel-btn {
@@ -868,13 +870,13 @@ input#comic-title {
         font-size: 1.3em;
     }
     .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2.1em;
+        font-size: 2em;
     }
 }
 
 @media (min-width: 768px) {
     nav button {
-        font-size: 2.4em;
+        font-size: 2em;
         padding: 10px;
     }
     .edit-btn, .save-btn, .cancel-btn {
@@ -901,13 +903,13 @@ input#comic-title {
         font-size: 1.4em;
     }
     .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2.7em;
+        font-size: 2em;
     }
 }
 
 @media (min-width: 1000px) {
     nav button{
-        font-size: 3em;
+        font-size: 2em;
         padding: 12px;
     }
     .grid-container {
@@ -931,6 +933,6 @@ input#comic-title {
         font-size: 1.5em;
     }
     .close, .plus-button, .tutorial-popup h2 {
-        font-size: 3em;
+        font-size: 2em;
     }
 }
