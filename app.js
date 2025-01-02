@@ -448,7 +448,7 @@ app.post('/save-image-s3', async (req, res) => {
 
         // S3 upload parameters
         const s3Params = {
-            Bucket: 'comicbookimages',
+            Bucket: 'novitacomicbookimages',
             Key: imageFileName,
             Body: imageBuffer,
             ContentType: 'image/png',
