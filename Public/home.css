@@ -1,951 +1,442 @@
-/* General Body Styling */
 body {
     font-family: 'Comic Sans MS', sans-serif;
     background-color: #f0f0f0;
-    margin: 0;
-    padding: 0;
-    overflow-y: scroll;
-}
-
-/* Navigation Bar */
-nav {
     display: flex;
-    justify-content: space-around;
-    background-color: #333;
-    padding: 10px;
-    max-height: 90px;
-}
-
-nav button {
-    color: white;
-    border: none;
-    font-size: 2em;
-    height: 90%;
-    width: 90%;
-    line-height:100%;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    padding: 5px;
-    text-align: center;
-    background-color: #444; /* Darker shade for comic theme */
-    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 3px 3px 0 #333;
-}
-
-nav button:hover {
-    background-color: #555;
-    transform: scale(1.05);
-    box-shadow: 4px 4px 0 #333;
-}
-
-nav button:active {
-    transform: scale(0.95);
-    box-shadow: 2px 2px 0 #333;
-}
-
-/* Links Styling */
-a {
-    text-decoration: none;
-    color: inherit;
-}
-/* Button Styling for Specific IDs */
-#gearBtn {
-    background-color: #7a7a7a;
-}
-#gearBtn:hover {
-    background-color: #8d8d8d;
-}
-
-#questionBtn {
-    background-color: #faad48;
-}
-
-#questionBtn:hover {
-    background-color: #ffbc65;
-}
-
-.red-button {
-    background-color: rgb(155, 0, 0);
-}
-#xBtn {
+    align-items: center;
+    flex-direction: column;
     margin: 0;
 }
-#xBtn:hover {
-    background-color: #cd0000;
-    border-radius: 5px 0 0 5px; /* Rounded left corners */
+
+.login-container, .signup-container, .attributes-container {
+    background: #fff;
+    border: 5px solid #000;
+    padding: 20px;
+    padding-top: 0px;
+    box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
+    text-align: center;
+    width: 60%;
+    max-width: 300px;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+    display: none;
+    margin-bottom: 2%;
 }
 
-.button-container {
-    display: flex;
-    align-items: center;
+.login-container.show, .signup-container.show, .attributes-container.show {
+    opacity: 1;
+    display: block;
 }
 
-#deleteConfirmBtn {
-    color: white;
-    background-color: #cd0000;
-    border-color: #000;
-    border-radius: 5px;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
-}
-#deleteConfirmBtn:hover {
-    background-color: #a00000;
-    box-shadow: 4px 4px 0 #5d0000; /* More pronounced shadow on hover */
-    transform: translate(-2px, -2px); /* "Lifted" effect on hover */
-}
-#deleteConfirmBtn:active {
-    box-shadow: 1px 1px 0 #5d0000; /* Subtle shadow when clicked */
-    transform: translate(1px, 1px); /* Slight "press" effect when clicked */
+.title h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #ff0000 !important;
 }
 
-/* Title Box Styling */
-.title-box {
-    position: relative;
-    padding: 10px 15px;
-    background-color: #ffe600;
-    border: 3px solid #000;
-    border-radius: 10px;
-    box-shadow: 3px 3px 0px #000;
-    font-family: 'Comic Sans MS', sans-serif;
-    display: flex;
-    margin-bottom: 5%;
-    margin-top: 2%;
+h1 {
+    color: #ff0000;
 }
 
-.title-box span {
-    display: inline-block;
-    margin-right: 10px;
-    font-size: 1.5rem;
+.subtitle {
+    font-size: 1.5em;
+    margin-bottom: 15px;
     color: #000;
 }
 
-#edit-title-btns {
-    display: inline-block;
-
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
 }
-.edit-btn, .save-btn, .cancel-btn {
-    background-color: #ff6347;
-    color: #fff;
+
+label {
+    font-size: 1.6em;
+    display: block;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 4px;
+    font-size: 1em;
     border: 2px solid #000;
-    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.login-button, .signup-button, .forgot-password-link {
+    background-color: #ff0000;
+    color: #fff;
+    font-size: 1.2em;
+    padding: 10px;
+    border: 2px solid #000;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover, .signup-button:hover, .forgot-password-link:hover {
+    background-color: #cc0000;
+}
+
+.attribute {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.attribute input {
+    flex: 2;
+}
+
+.attribute button {
+    margin-left: 10px;
+    background-color: #ff0000;
+    color: #fff;
+    border: none;
     padding: 5px 10px;
     cursor: pointer;
-    font-size: 16px;
-    height: 100%;
-    font-family: 'Comic Sans MS', sans-serif;
-    transition: background-color 0.3s, box-shadow 0.3s;
 }
 
-.edit-btn:hover, .save-btn:hover, .cancel-btn:hover {
-    background-color: #ff4500;
-    box-shadow: 2px 2px 0px #000;
-}
-
-.save-btn, .cancel-btn {
-    display: none;
-}
-
-input#comic-title {
-    border: 2px solid #000;
-    padding: 5px;
-    font-family: 'Comic Sans MS', sans-serif;
-    font-size: 1.5rem;
-    background-color: #fff;
-    color: #000;
-    width: auto;
-    outline: none;
-}
-
-.controls {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-#addPanelBtn, #deletePanelBtn {
-    background-color: #FFEB3B; /* Bright yellow for a comic book feel */
-    border: 2px solid #333;    /* Black border */
-    color: #333;               /* Black text */
-    padding: 10px 20px;
-    margin: 0 10px;
-    font-family: 'Comic Sans MS', sans-serif; /* Comic book font */
-    font-size: 16px;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 2px 2px 0 #333; /* Comic book-style shadow */
-}
-
-#addPanelBtn:hover, #deletePanelBtn:hover {
-    background-color: #FFC107; /* Slightly darker yellow on hover */
-    box-shadow: 4px 4px 0 #333; /* More pronounced shadow on hover */
-    transform: translate(-2px, -2px); /* "Lifted" effect on hover */
-}
-
-#addPanelBtn:active, #deletePanelBtn:active {
-    box-shadow: 1px 1px 0 #333; /* Subtle shadow when clicked */
-    transform: translate(1px, 1px); /* Slight "press" effect when clicked */
-}
-
-/* Text Box Styling */
-.text-box {
-    text-align: center;
-    margin: 20px;
-}
-
-/* Grid Container */
-.grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(47%, 1fr));
-    gap: 3%;
-    padding: 5%;
-    margin: auto;
-    overflow-y: visible;
-    max-height: none;
-}
-
-/* Grid Items */
-.grid-item {
-    background-color: #f9f9f9; /* Slightly different to match comic theme */
-    border: 2px solid #ddd; /* Match settings page border color */
-    text-align: center;
-    position: relative;
-    height: 100%; /* Ensure it takes up full height */
-    width: 100%; /* Ensure it takes up full width */
-    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
-    box-shadow: 3px 3px 0 #333;
-    overflow: hidden;
-    min-height: 190px; /* Ensures that the grid item maintains a minimum height */
-    aspect-ratio: 1 / 1; /* Ensures grid item has a consistent width to height ratio */
-    box-sizing: border-box;
-}
-
-.grid-item:hover {
-    background-color: #e0e0e0; /* Light hover effect */
-    transform: scale(1.05);
-    box-shadow: 4px 4px 0 #333;
-}
-
-.grid-item :active {
-    transform: scale(0.95);
-    box-shadow: 2px 2px 0 #333;
-}
-
-.input-container:active{
-    transform: scale(1);
-    box-shadow: 0px;
-}
-
-
-.grid-item.create {
-    background-color: #ffffff00;
-    height: 75%; /* Slightly Smaller */
-    cursor: pointer;
-    display: flex;
-    margin: auto;
-    justify-content: center;
-    align-items: center;
-    border: none;
-    box-shadow: none;
-    max-width: 400px;
-}
-
-#create-svg {
-    cursor: pointer;
-    background-color: #ffffff00; 
-    transition: transform 0.2s, filter 0.2s ease-in-out;
-    fill: #ff7b00;
-}
-#createBtn{
-    cursor: pointer;
-    border: none;
-    background-color: #ffffff00;
-    color: #000000;
-    font-family:'Comic Sans MS', sans-serif;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    left: 0;
-    font-size: 1.5em;
-}
-
-.grid-item.create:hover {
-    transform: scale(1.05);
-    filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 0.4));
-}
-
-.grid-item.create:active {
-    transform: scale(0.95);
-    filter: drop-shadow(0px 3px 3px rgba(0, 0, 0, 0.4));
-}
-
-/* Input Mic and Submit Buttons in a row in comic panel */
-.input-container {
-    display: flex;
-    flex-direction: row;
-    position: absolute;
-    bottom: 0;
-    border: 1px solid #ddd;
-    height: 12.5%;
-    width: 100%;
-    box-sizing: border-box;
-}
-.event-input {
-    width: 100%; /* Makes it take up the full width of its container */
-    height: 100%; /* Makes it take up the full height of its container */
-    resize: none; /* Prevents manual resizing by the user */
-    overflow-wrap: break-word; /* Ensures long words break correctly */
-    line-height: 0.85; /* Adjusts the line height for better readability */
-    padding: 1.5%; /* Adjusts padding for better aesthetics */
-    border: none;
-    font-size: 0.8em;
-    overflow-y: auto
-}
-
-.event-submit, .mic-button {
-    width: 20%;
-    height: 100%;
-    box-sizing: border-box;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0px;
-}
-.event-submit {
-    background-color: #ffcc00;
-    
-}
-.mic-button {
-    background-color: #e8e8e8;
-    padding: 2%
-}
-.mic-button:hover{
-    background-color: #bbbbbb;
-}
-.mic-icon, .submit-image{
-    width: 110%;
-    height: 110%;
-}
-
-
-/* Generated Images */
-.generated-image {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    padding: 0px;
-    left: 0;
-    top: 0;
-}
-
-.scribble-container {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
-/* Pencil Element */
-.pencil {
-    position: absolute;
-    width: 30%;
-    height: 30%;
-    z-index: 1;
-}
-
-/* Keyframes for Scribbling Animation */
-@keyframes scribble {
-    0% { left: 0; top: 0; }
-    25% { left: 80%; top: 10%; }
-    50% { left: 15%; top: 30%; }
-    75% { left: 90%; top: 50%; }
-    100% { left: 50%; top: 60%; }
-}
-
-/* Animate the Pencil */
-.pencil {
-    animation: scribble 2s linear infinite;
-}
-/* Highlight for Selection */
-.highlight {
-    border: 2px solid red;
-}
-
-/* Circles for Deletion */
-.circle {
-    position: absolute;
-    z-index: 3;
-    margin: 5px;
-    top: 5px;
-    right: 5px;
-    width: 20%;
-    height: 20%;
-    border-radius: 50%;
-    background-color: white;
-    border: 1px solid red;
-    display: none;
-}
-
-.circle.selected {
-    background-color: red;
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-    display: flex;
-}
-
-#deleteDropdown {
-    display: block;
-    position: absolute;
-    min-width: 120px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    left: 100%;
-    max-height: 90%;
-    top: 0;
-}
-
-#deleteBtn {
-    color: white;
-    background-color: rgb(255, 31, 31);
-    border: 2px solid rgb(159, 0, 0);
-    border-radius: 0 5px 5px 0;
-    padding: 5px;
-    text-align: center;
-    width: 100%;
-}
-
-/* Hidden Elements */
-.hidden {
-    display: none !important;
-    animation: none;
-}
-
-/* Plus button */
-.plus-button {
-    width: 20%;
-    height: 20%;
-    background-color: #00aaff;
-    border: none;
-    border-radius: 50%;
-    color: white;
-    font-size: 2em;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    margin: auto;
-}
-
-.progress-display {
-    z-index: 2;
-    position: absolute;
-    left: 0;
-    top: 0;
-}
-
-/* Tutorial Popup Style */
-.tutorial-popup {
-    position: sticky;
-    width: 92.5%;
-    padding: 1%;
-    background-color: #ffffff;
-    border: 3px solid #000000;
-    box-shadow: 10px 10px 0px #ff0000;
-    border-radius: 8px;
-    z-index: 1000;
-    display: none;
-    left: 0;
-    bottom: 0;
-}
-
-.tutorial-popup h2 {
-    margin-top: 0;
-    line-height: 100%;
-    color: #ff0000;
-    text-shadow: 2px 1px 0px #000;
-}
-
-.tutorial-popup p {
-    font-size: 14px;
-}
-
-.tutorial-navigation {
+.buttons {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
+    background-color: #ff0000;
+    font-size: 1em;
 }
 
-.tutorial-navigation button {
-    background-color: #000000;
-    color: #ffffff;
-    border: 2px solid #ff0000;
-    padding: 5px 10px;
-    border-radius: 5px;
+button{
+    background-color: #ff0000;
+    border: 2px solid #000;
     cursor: pointer;
-    width: 20%;
+    color: white;
+    font-size: 0.8em;
 }
 
-.tutorial-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+button:hover{
+    background-color: #cc0000;
+}
+
+option {
+    width: 50%;
+}
+
+#title-novita-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+}
+
+#title {
+    text-align: center;
+    padding: 15px;
+    background-color: #ff0000;
+    color: #ffffff;
+    border: 5px solid #000000;
+    box-shadow: 10px 10px 0px #ffffff;
+    border-radius: 10px;
+    max-width: 90%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    font-family: 'Comic Sans MS', sans-serif;
+    transition: all 0.3s ease-in-out;
+}
+
+.title-text {
+    font-size: 2.5em;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-shadow: 3px 1px #000000;
+    display: block;
+}
+
+.subtitle-text {
+    font-size: 1.2em;
+    font-weight: normal;
+    text-shadow: 1px 0px #000000;
+    display: block;
+    margin-top: 10px;
+}
+
+#novita-logo {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 2px;
+    margin-left: 2%;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+#novita-logo img {
+    width: 50px;
+    height: auto;
+}
+
+#novita-logo a {
+    text-decoration: none;
+    color: black;
+}
+
+#novita-logo-title {
+    display: block;
+    font-size: 10px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.recover-password-container {
+    background: #fff;
+    border: 5px solid #000;
+    padding: 20px;
+    box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
+    text-align: center;
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
     display: none;
 }
 
-/* Modal */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    padding-top: 5%; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
-}
-
-/* Modal Content (the image) */
-.modal-content {
-    margin: auto;
+.recover-password-container.show {
+    opacity: 1;
     display: block;
-    width: 55%;
-    max-width: 700px;
-
 }
 
-/* Caption of Modal Image */
-.caption {
-    margin: auto;
-    display: block;
-    width: 57%;
-    max-width: 700px;
-    border-radius: 0px 0px 25% 25%;
-    text-align: center;
-    padding: 10px 0;
-    background-color: rgb(255, 198, 0);
-    color: black;
-    font-family: 'Comic Sans MS', sans-serif;
-    text-transform: uppercase;
-    line-height: 120%;
-    font-size: 120%;
-}
-
-/* The Close Button */
-.close {
-    text-align: center;
-    line-height: 0.75em;
-    position: fixed;
-    top: 2%;
-    right: 1%;
-    color: #e10000;
-    font-weight: bold;
-    transition: 0.3s;
-    cursor: pointer;
-    height: 1em;
-    width: 1em;
-    font-size: 2.5em;
-    border-radius: 50%;
-    text-decoration: none;
-    transition: background-color, border, 0.1s ease-in-out;
-    background-color: rgb(213, 213, 213);
-}
-
-.close:hover,
-.close:focus {
-    color: #ff0b0b;
-    background-color: #959595;
-    border: 2px solid white;
-}
-
-.comic-title-box {
-    position: fixed; /* Keep title box fixed at the top */
-    top: 1px;
-    left: 0;
-    padding: 5px 5px;
-    background-color: rgb(255, 68, 0);
-    border: 5px solid #fff;
-    border-radius: 15px;
-    box-shadow: 3px 3px 0px #000;
-    font-family: 'Comic Sans MS', sans-serif;
+.recover-button {
+    background-color: #ff0000;
     color: #fff;
-    text-align: center;
-    z-index: 10; /* Higher than the overlay */
-    pointer-events: none; /* Makes the title box non-interactive */
-    box-sizing: border-box;
-    width: 100%; /* Ensure the title box adjusts with screen size */
-}
-
-.comic-title-box span {
-    display: inline-block;
-    max-height: 10%;
-    overflow: scroll;
-    font-size: 120%; /* Slightly larger font size */
-    color: #000; /* Black color for emphasis */
-    text-transform: uppercase; /* Uppercase text for a bolder look */
-}
-
-.comic-overlay {
-    position: fixed;
-    top: 15%; /* Leave space for the title box */
-    padding: 2%;
-    left: 0;
-    width: 100%;
-    height: 83%;
-    background-color: white;
-    z-index: 5;
-    border: 2px solid black;
-    box-shadow: 0 0 10px #000000ee;
-    color: #fff;
-    animation: slideOverlayUp 1s ease-in-out forwards;
-    overflow-y: scroll;
-    box-sizing: border-box;
-}
-
-.close-overlay {
-    position: absolute;
-    top: 0px;
-    right: 1px;
-    font-size: 1.3rem;
-    color: #ff1111;
-    z-index: 15; /* Ensure it stays above everything */
+    font-size: 0.9em;
+    padding: 10px;
+    border: 2px solid #000;
     cursor: pointer;
-}
-
-.comic-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 5px; /* Avoid overlap with title box */
-    overflow-x: hidden;
-    box-sizing: border-box;
-}
-
-.row {
-    display: flex;
-    gap: 10px;
     width: 100%;
-    box-sizing: border-box;
-    justify-content: space-around; /* Spread out the 3 panels equally */
+    transition: background-color 0.3s;
 }
 
-.row-3 {
-    grid-template-columns: repeat(3, 1fr); /* 3 panels per row */
+.recover-button:hover {
+    background-color: #cc0000;
 }
 
-.row-2 {
-    grid-template-columns: repeat(2, 1fr); /* 2 panels per row */
-}
-
-.comic-panel {
-    flex: 1; /* Ensure all panels take equal width */
-    border: 4px solid black;
-    box-shadow: 0 0 1px #000;
-    background-color: #111;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background-size: cover;
-    box-sizing: border-box;
-    background-repeat: no-repeat;
-    clip-path: polygon(5% 0, 95% 0, 100% 20%, 100% 80%, 95% 100%, 5% 100%, 0 80%, 0 20%);
-}
-
-.panel-content {
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    width: 100%;
-    background-color: black; /* Consistent background */
-    flex-grow: 1; /* Allow to grow to fill available space */
-}
-
-.panel-caption {
-    width: 100%;
-    text-align: center;
-    background-color: #f0f0f0;
-    color: #000;
-    font-family: 'Comic Sans MS', sans-serif;
+.recovery-message {
+    margin-top: 15px;
     font-size: 1em;
-    padding: 5px;
-    margin-top: auto; /* Pushes the caption to the bottom */
-    box-sizing: border-box;
-    flex-shrink: 0; /* Prevents shrinking */
+    color: green;
+    text-align: center;
 }
 
-.panel-caption.top {
-    margin-top: 1px;
+#recoverPasswordLink{
+    color: white;
 }
 
-.panel-caption.bottom {
-    margin-bottom: 1px;
+option{
+    padding: 0px !important;
+    font-size: 1em !important;
 }
-
-.panel-image {
-    max-width: 100%;
-    max-height: 100%;
-    border-radius: 5px;
-    transform: rotate(-1deg); /* Slight comic-like rotation */
-}
-
-#comic-background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    background: linear-gradient(#e66465, #9198e5);
-    animation: slideComicUp 1s ease forwards;
-}
-
-#noLocalStorage {
-    position: fixed;
-    left: 35%;
-    top: 40%;
-    font-size: 4rem;
-}
-
-#noLocalStorageBackground {
-    height: 100%;
-    width: 100%;
-    z-index: 5;
-    position: fixed;
-    top: 0;
-    left: 0;
-    background-color: #00ffc8;
-}
-
-
-@keyframes slideOverlayUp {
-    from {
-        top: 100%;
-        left: 100%;
-    }
-    to {
-        top: 15%;
-        left: 0%;
-    }
-}
-
-@keyframes slideComicUp {
-    from {
-        top: 100%;
-        left: 100%;
-    }
-    to {
-        top: 0%;
-        left: 0%;
-    }
+select{
+    width: auto !important;
 }
 
 /* Responsive Styling */
 @media (max-width: 380px) {
-    nav svg{
-        display: none;
+    .login-container, .signup-container, .attributes-container, .recover-password-container, #title {
+        max-width: 93%;
     }
-    nav button {
-        font-size: 1.5em;
-        padding: 4px;
+    .title-text {
+        font-size: 1.4em;
     }
-    .edit-btn, .save-btn, .cancel-btn {
-        font-size: 14px;
-        padding: 4px 8px;
+    .subtitle-text {
+        font-size: 1em;
     }
-    .title-box span, .comic-title-box span, #createBtn{
-        font-size: 1.2rem;
+    label {
+        font-size: 1.2em;
     }
-    #deleteBtn {
+    input, select, textarea {
+        width: 95%;
+        font-size: 1.0em;
+        line-height: 1.0em;
+        padding: 5px;
+    }
+    .login-button, .signup-button, .recover-button, .submit-button {
+        font-size: 1em;
+        padding: 8px;
+    }
+    #recoverPasswordLink, .recovery-message  {
         font-size: 0.8em;
-    }
-    #addPanelBtn, #deletePanelBtn {
-        font-size: 1em;
-        padding: 6px 12px;
-    }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
-        font-size: 1em;
-    }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 1.8em;
     }
 }
 
 @media (max-width: 400px) {
-    nav button {
+    #title {
+        max-width: 93%;
+    }
+    .attribute {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .attribute label {
+        margin-bottom: 5px;
+    }
+    .attribute button {
+        margin-top: 10px;
+        margin-left: 0;
+    }
+    .title-text {
+        font-size: 1.6em;
+    }
+    .subtitle-text {
+        font-size: 1.2em;
+    }
+    label {
+        font-size: 1.2em;
+    }
+    input, select, textarea {
+        width: 95%;
+        font-size: 1em;
+        line-height: 0.9em;
+        padding: 8px;
+    }
+    .login-button, .signup-button, .recover-button, .submit-button{
         font-size: 1.2em;
         padding: 10px;
     }
-    .edit-btn, .save-btn, .cancel-btn{
-        font-size: 15px;
-        padding: 5px 9px;
-    }
-    .title-box span, .comic-title-box span, #createBtn{
-        font-size: 1.3rem;
-    }
-    #deleteBtn {
-        font-size: 1.1em;
-        padding: 1.5px;
-    }
-    #addPanelBtn, #deletePanelBtn {
-        font-size: 1em;
-        padding: 8px 14px;
-    }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 1.9em;
+    #recoverPasswordLink, .recovery-message  {
+        font-size: 1.0em;
     }
 }
 
 @media (min-width: 400px) and (max-width: 479px) {
-    nav button {
+    #title {
+        max-width: 93%;
+    }
+    .login-container, .signup-container, .attributes-container, .recover-password-container {
+        max-width: 93%;
+    }
+    .title-text {
+        font-size: 1.8em;
+    }
+    .subtitle-text {
+        font-size: 1.4em;
+    }
+    label {
         font-size: 1.3em;
-        padding: 6px;
     }
-    .edit-btn, .save-btn, .cancel-btn {
-        font-size: 16px;
-        padding: 6px 10px;
+    input, select, textarea {
+        width: 95%;
+        font-size: 1.1em;
+        line-height: 1.0em;
+        padding: 7px;
     }
-    .title-box span, .comic-title-box span, #createBtn{
-        font-size: 1.4rem;
-    }
-    #deleteBtn {
+    .login-button, .signup-button, .recover-button, .submit-button {
         font-size: 1.2em;
-        padding: 1.45px;
+        padding: 8px;
     }
-    #addPanelBtn, #deletePanelBtn {
-        font-size: 1em;
-        padding: 10px 18px;
-    }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
-        font-size: 1.2em;
-    }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2em;
+    #recoverPasswordLink, .recovery-message  {
+        font-size: 0.9em;
     }
 }
 
 @media (min-width: 480px) {
-    nav button {
-        font-size: 1.8em;
+    #title {
+        max-width: 93%;
+    }
+    .login-container, .signup-container, .attributes-container, .recover-password-container {
+        max-width: 90%;
+    }
+    .title-text {
+        font-size: 2em;
+    }
+    .subtitle-text {
+        font-size: 1.7em;
+    }
+    label {
+        font-size: 1.6em;
+    }
+    input, select, textarea {
+        width: 95%;
+        font-size: 1.2em;
+        line-height: 1.1em;
+        padding: 6px;
+    }
+    .login-button, .signup-button, .recover-button, .submit-button{
+        font-size: 1.3em;
         padding: 8px;
     }
-    .edit-btn, .save-btn, .cancel-btn {
-        font-size: 18px;
-        padding: 8px 12px;
-    }
-    .title-box span, .comic-title-box span, #createBtn{
-        font-size: 1.6rem;
-    }
-    #deleteBtn {
-        font-size: 1.3em;
-        padding: 3px;
-    }
-    #addPanelBtn, #deletePanelBtn {
-        font-size: 1.6em;
-        padding: 12px 20px;
-    }
-    .event-input, .progress-display{
-        font-size: 0.9em;
-    }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
-        font-size: 1.3em;
-    }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2em;
+    #recoverPasswordLink, .recovery-message  {
+        font-size: 1.1em;
     }
 }
 
 @media (min-width: 768px) {
-    nav button {
-        font-size: 2em;
-        padding: 10px;
-    }
-    .edit-btn, .save-btn, .cancel-btn {
-        font-size: 20px;
-        padding: 10px 15px;
-    }
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(31%, 1fr));
-    }
-    .title-box span, .comic-title-box span, #createBtn{
-        font-size: 2.0rem;
-    }
-    #deleteBtn {
-        font-size: 1.6em;
-    }
-    #addPanelBtn, #deletePanelBtn{
-        font-size: 1.8em;
-        padding: 12px 23px;
-    }
-    .modal-content {
-        width: 450px;
-    }
-    .caption {
-        width: 460px;
-    }
-    .event-input, .progress-display{
-        font-size: 1.2em;
-    }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+    #novita-logo-title {
         font-size: 1.4em;
     }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2em;
+    #novita-logo img{
+        width: 80px;
+    }
+    #title {
+        max-width: 90%;
+        line-height: 100%;
+    }
+    .login-container, .signup-container, .attributes-container, .recover-password-container {
+        max-width: 70%;
+    }
+    .title-text {
+        font-size: 2.4em;
+        line-height: 100%;
+    }
+    .subtitle-text {
+        font-size: 2.0em;
+        line-height: 100%;
+    }
+    label {
+        font-size: 1.5em;
+    }
+    input, select, textarea {
+        width: 95%;
+        font-size: 1.4em;
+        line-height: 100%;
+        padding: 5px;
+    }
+    .login-button, .signup-button, .submit-button, .recover-button{
+        font-size: 1.5em;
+    }
+    #recoverPasswordLink, .recovery-message  {
+        font-size: 1.3em;
     }
 }
 
 @media (min-width: 1000px) {
-    nav button{
+    #novita-logo-title {
+        font-size: 1.6em;
+    }
+    #novita-logo img{
+        width: 90px;
+    }
+    #title {
+        max-width: 93%;
+        line-height: 100%;
+    }
+    .title-text {
+        font-size: 3.0em;
+        line-height: 100%;
+    }
+    .subtitle-text {
+        font-size: 2.5em;
+        line-height: 100%;
+    }
+    label {
+        font-size: 2.3em;
+    }
+    input, select, textarea {
+        padding: 6px;
+        width: 95%;
         font-size: 2em;
-        padding: 12px;
+        line-height: 100%;
     }
-    .grid-container {
-        grid-template-columns: repeat(auto-fit, minmax(22%, 1fr));
+    .login-button, .signup-button, .submit-button, .recover-button{
+        font-size: 1.9em;
     }
-    .edit-btn, .save-btn, .cancel-btn {
-        font-size: 22px;
-        padding: 12px 18px;
-    }
-    .title-box span, .comic-title-box span, #createBtn, #createBtn{
-        font-size: 2.3rem;
-    }
-    #deleteBtn {
-        font-size: 2em;
-    }
-    #addPanelBtn, #deletePanelBtn {
-        font-size: 1.8em;
-        padding: 15px 25px;
-    }
-    .modal-content {
-        width: 480px;
-    }
-    .caption {
-        width: 490px;
-    }
-    .event-input, .progress-display, .caption , .panel-caption, .tutorial-navigation > button, .tutorial-popup > p{
-        font-size: 1.5em;
-    }
-    .close, .plus-button, .tutorial-popup h2 {
-        font-size: 2em;
+    #recoverPasswordLink, .recovery-message , .recovery-message {
+        font-size: 1.4em;
     }
 }
