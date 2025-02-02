@@ -1,442 +1,522 @@
 body {
-    font-family: 'Comic Sans MS', sans-serif;
-    background-color: #f0f0f0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    margin: 0;
+	align-items: center;
+	background-color: #f0f0f0;
+	display: flex;
+	flex-direction: column;
+	font-family: "Comic Sans MS", sans-serif;
+	justify-content: center;
+	margin: 0;
 }
 
-.login-container, .signup-container, .attributes-container {
-    background: #fff;
-    border: 5px solid #000;
-    padding: 20px;
-    padding-top: 0px;
-    box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
-    text-align: center;
-    width: 60%;
-    max-width: 300px;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    display: none;
-    margin-bottom: 2%;
-}
-
-.login-container.show, .signup-container.show, .attributes-container.show {
-    opacity: 1;
-    display: block;
+.login-container,
+.signup-container,
+.attributes-container {
+	background: #fff;
+	border: 5px solid #000;
+	box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
+	display: none;
+	margin-bottom: 2%;
+	max-width: 300px;
+	opacity: 0;
+	padding: 20px;
+	padding-top: 0;
+	text-align: center;
+	transition: opacity 0.5s ease-in-out;
+	width: 60%;
 }
 
 .title h1 {
-    font-size: 2em;
-    margin-bottom: 20px;
-    color: #ff0000 !important;
-}
-
-h1 {
-    color: #ff0000;
+	color: red !important;
+	font-size: 2em;
+	margin-bottom: 20px;
 }
 
 .subtitle {
-    font-size: 1.5em;
-    margin-bottom: 15px;
-    color: #000;
+	color: #000;
+	font-size: 1.5em;
+	margin-bottom: 15px;
 }
 
 .input-group {
-    margin-bottom: 15px;
-    text-align: left;
+	margin-bottom: 15px;
+	text-align: left;
 }
 
 label {
-    font-size: 1.6em;
-    display: block;
-    margin-bottom: 5px;
+	display: block;
+	font-size: 1.6em;
+	margin-bottom: 5px;
 }
 
 input {
-    width: 100%;
-    padding: 4px;
-    font-size: 1em;
-    border: 2px solid #000;
-    box-sizing: border-box;
+	border: 2px solid #000;
+	box-sizing: border-box;
+	font-size: 1em;
+	padding: 4px;
+	width: 100%;
 }
 
-.login-button, .signup-button, .forgot-password-link {
-    background-color: #ff0000;
-    color: #fff;
-    font-size: 1.2em;
-    padding: 10px;
-    border: 2px solid #000;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.3s;
-}
-
-.login-button:hover, .signup-button:hover, .forgot-password-link:hover {
-    background-color: #cc0000;
+.login-button,
+.signup-button,
+.forgot-password-link {
+	background-color: red;
+	border: 2px solid #000;
+	color: #fff;
+	cursor: pointer;
+	font-size: 1.2em;
+	padding: 10px;
+	transition: background-color 0.3s;
+	width: 100%;
 }
 
 .attribute {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
+	align-items: center;
+	display: flex;
+	margin-bottom: 10px;
 }
 
 .attribute input {
-    flex: 2;
+	flex: 2;
 }
 
 .attribute button {
-    margin-left: 10px;
-    background-color: #ff0000;
-    color: #fff;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
+	background-color: red;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	margin-left: 10px;
+	padding: 5px 10px;
 }
 
 .buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    background-color: #ff0000;
-    font-size: 1em;
+	background-color: red;
+	display: flex;
+	font-size: 1em;
+	justify-content: space-between;
+	margin-top: 20px;
 }
 
-button{
-    background-color: #ff0000;
-    border: 2px solid #000;
-    cursor: pointer;
-    color: white;
-    font-size: 0.8em;
-}
-
-button:hover{
-    background-color: #cc0000;
+button {
+	background-color: red;
+	border: 2px solid #000;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.8em;
 }
 
 option {
-    width: 50%;
+	font-size: 1em !important;
+	padding: 0 !important;
+	width: 50%;
 }
 
 #title-novita-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
+	align-items: center;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
 }
 
 #title {
-    text-align: center;
-    padding: 15px;
-    background-color: #ff0000;
-    color: #ffffff;
-    border: 5px solid #000000;
-    box-shadow: 10px 10px 0px #ffffff;
-    border-radius: 10px;
-    max-width: 90%;
-    margin-top: 2%;
-    margin-bottom: 2%;
-    font-family: 'Comic Sans MS', sans-serif;
-    transition: all 0.3s ease-in-out;
+	background-color: red;
+	border: 5px solid #000;
+	border-radius: 10px;
+	box-shadow: 10px 10px 0 #fff;
+	color: #fff;
+	font-family: "Comic Sans MS", sans-serif;
+	margin-bottom: 2%;
+	margin-top: 2%;
+	max-width: 90%;
+	padding: 15px;
+	text-align: center;
+	transition: all 0.3s ease-in-out;
 }
 
 .title-text {
-    font-size: 2.5em;
-    font-weight: bold;
-    text-transform: uppercase;
-    text-shadow: 3px 1px #000000;
-    display: block;
+	display: block;
+	font-size: 2.5em;
+	font-weight: bold;
+	text-shadow: 3px 1px #000;
+	text-transform: uppercase;
 }
 
 .subtitle-text {
-    font-size: 1.2em;
-    font-weight: normal;
-    text-shadow: 1px 0px #000000;
-    display: block;
-    margin-top: 10px;
+	display: block;
+	font-size: 1.2em;
+	font-weight: normal;
+	margin-top: 10px;
+	text-shadow: 1px 0 #000;
 }
 
 #novita-logo {
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 2px;
-    margin-left: 2%;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+	background-color: #fff0;
+	background-color: #fffc;
+	border-radius: 8px;
+	box-shadow: 0 0 10px #0003;
+	margin-left: 2%;
+	padding: 2px;
+	text-align: center;
 }
 
 #novita-logo img {
-    width: 50px;
-    height: auto;
+	height: auto;
+	width: 50px;
 }
 
 #novita-logo a {
-    text-decoration: none;
-    color: black;
+	color: #000;
+	text-decoration: none;
 }
 
 #novita-logo-title {
-    display: block;
-    font-size: 10px;
-    margin-bottom: 5px;
-    color: #333;
+	color: #333;
+	display: block;
+	font-size: 10px;
+	margin-bottom: 5px;
 }
 
 .recover-password-container {
-    background: #fff;
-    border: 5px solid #000;
-    padding: 20px;
-    box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.5s ease-in-out;
-    display: none;
-}
-
-.recover-password-container.show {
-    opacity: 1;
-    display: block;
+	background: #fff;
+	border: 5px solid #000;
+	box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
+	display: none;
+	opacity: 0;
+	padding: 20px;
+	text-align: center;
+	transition: opacity 0.5s ease-in-out;
 }
 
 .recover-button {
-    background-color: #ff0000;
-    color: #fff;
-    font-size: 0.9em;
-    padding: 10px;
-    border: 2px solid #000;
-    cursor: pointer;
-    width: 100%;
-    transition: background-color 0.3s;
-}
-
-.recover-button:hover {
-    background-color: #cc0000;
+	background-color: red;
+	border: 2px solid #000;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.9em;
+	padding: 10px;
+	transition: background-color 0.3s;
+	width: 100%;
 }
 
 .recovery-message {
-    margin-top: 15px;
-    font-size: 1em;
-    color: green;
-    text-align: center;
+	color: green;
+	font-size: 1em;
+	margin-top: 15px;
+	text-align: center;
 }
 
-#recoverPasswordLink{
-    color: white;
+#recoverPasswordLink {
+	color: #fff;
 }
 
-option{
-    padding: 0px !important;
-    font-size: 1em !important;
-}
-select{
-    width: auto !important;
+select {
+	width: auto !important;
 }
 
-/* Responsive Styling */
+.login-container.show,
+.signup-container.show,
+.attributes-container.show,
+.recover-password-container.show {
+	display: block;
+	opacity: 1;
+}
+
+.login-button:hover,
+.signup-button:hover,
+.forgot-password-link:hover,
+button:hover,
+.recover-button:hover {
+	background-color: #c00;
+}
+
 @media (max-width: 380px) {
-    .login-container, .signup-container, .attributes-container, .recover-password-container, #title {
-        max-width: 93%;
-    }
-    .title-text {
-        font-size: 1.4em;
-    }
-    .subtitle-text {
-        font-size: 1em;
-    }
-    label {
-        font-size: 1.2em;
-    }
-    input, select, textarea {
-        width: 95%;
-        font-size: 1.0em;
-        line-height: 1.0em;
-        padding: 5px;
-    }
-    .login-button, .signup-button, .recover-button, .submit-button {
-        font-size: 1em;
-        padding: 8px;
-    }
-    #recoverPasswordLink, .recovery-message  {
-        font-size: 0.8em;
-    }
+	.login-container,
+	.signup-container,
+	.attributes-container,
+	.recover-password-container,
+	#title {
+		max-width: 93%;
+	}
+
+	.title-text {
+		font-size: 1.4em;
+	}
+
+	.subtitle-text {
+		font-size: 1em;
+	}
+
+	label {
+		font-size: 1.2em;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 1em;
+		line-height: 1em;
+		padding: 5px;
+		width: 95%;
+	}
+
+	.login-button,
+	.signup-button,
+	.recover-button,
+	.submit-button {
+		font-size: 1em;
+		padding: 8px;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message {
+		font-size: 0.8em;
+	}
 }
 
 @media (max-width: 400px) {
-    #title {
-        max-width: 93%;
-    }
-    .attribute {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .attribute label {
-        margin-bottom: 5px;
-    }
-    .attribute button {
-        margin-top: 10px;
-        margin-left: 0;
-    }
-    .title-text {
-        font-size: 1.6em;
-    }
-    .subtitle-text {
-        font-size: 1.2em;
-    }
-    label {
-        font-size: 1.2em;
-    }
-    input, select, textarea {
-        width: 95%;
-        font-size: 1em;
-        line-height: 0.9em;
-        padding: 8px;
-    }
-    .login-button, .signup-button, .recover-button, .submit-button{
-        font-size: 1.2em;
-        padding: 10px;
-    }
-    #recoverPasswordLink, .recovery-message  {
-        font-size: 1.0em;
-    }
+	#title {
+		max-width: 93%;
+	}
+
+	.attribute {
+		align-items: flex-start;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.attribute label {
+		margin-bottom: 5px;
+	}
+
+	.attribute button {
+		margin-left: 0;
+		margin-top: 10px;
+	}
+
+	.title-text {
+		font-size: 1.6em;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 1em;
+		line-height: 0.9em;
+		padding: 8px;
+		width: 95%;
+	}
+
+	.login-button,
+	.signup-button,
+	.recover-button,
+	.submit-button {
+		font-size: 1.2em;
+		padding: 10px;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message {
+		font-size: 1em;
+	}
+
+	.subtitle-text,
+	label {
+		font-size: 1.2em;
+	}
 }
 
 @media (min-width: 400px) and (max-width: 479px) {
-    #title {
-        max-width: 93%;
-    }
-    .login-container, .signup-container, .attributes-container, .recover-password-container {
-        max-width: 93%;
-    }
-    .title-text {
-        font-size: 1.8em;
-    }
-    .subtitle-text {
-        font-size: 1.4em;
-    }
-    label {
-        font-size: 1.3em;
-    }
-    input, select, textarea {
-        width: 95%;
-        font-size: 1.1em;
-        line-height: 1.0em;
-        padding: 7px;
-    }
-    .login-button, .signup-button, .recover-button, .submit-button {
-        font-size: 1.2em;
-        padding: 8px;
-    }
-    #recoverPasswordLink, .recovery-message  {
-        font-size: 0.9em;
-    }
+	.title-text {
+		font-size: 1.8em;
+	}
+
+	.subtitle-text {
+		font-size: 1.4em;
+	}
+
+	label {
+		font-size: 1.3em;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 1.1em;
+		line-height: 1em;
+		padding: 7px;
+		width: 95%;
+	}
+
+	.login-button,
+	.signup-button,
+	.recover-button,
+	.submit-button {
+		font-size: 1.2em;
+		padding: 8px;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message {
+		font-size: 0.9em;
+	}
+
+	#title,
+	.login-container,
+	.signup-container,
+	.attributes-container,
+	.recover-password-container {
+		max-width: 93%;
+	}
 }
 
 @media (min-width: 480px) {
-    #title {
-        max-width: 93%;
-    }
-    .login-container, .signup-container, .attributes-container, .recover-password-container {
-        max-width: 90%;
-    }
-    .title-text {
-        font-size: 2em;
-    }
-    .subtitle-text {
-        font-size: 1.7em;
-    }
-    label {
-        font-size: 1.6em;
-    }
-    input, select, textarea {
-        width: 95%;
-        font-size: 1.2em;
-        line-height: 1.1em;
-        padding: 6px;
-    }
-    .login-button, .signup-button, .recover-button, .submit-button{
-        font-size: 1.3em;
-        padding: 8px;
-    }
-    #recoverPasswordLink, .recovery-message  {
-        font-size: 1.1em;
-    }
+	#title {
+		max-width: 93%;
+	}
+
+	.login-container,
+	.signup-container,
+	.attributes-container,
+	.recover-password-container {
+		max-width: 90%;
+	}
+
+	.title-text {
+		font-size: 2em;
+	}
+
+	.subtitle-text {
+		font-size: 1.7em;
+	}
+
+	label {
+		font-size: 1.6em;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 1.2em;
+		line-height: 1.1em;
+		padding: 6px;
+		width: 95%;
+	}
+
+	.login-button,
+	.signup-button,
+	.recover-button,
+	.submit-button {
+		font-size: 1.3em;
+		padding: 8px;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message {
+		font-size: 1.1em;
+	}
 }
 
 @media (min-width: 768px) {
-    #novita-logo-title {
-        font-size: 1.4em;
-    }
-    #novita-logo img{
-        width: 80px;
-    }
-    #title {
-        max-width: 90%;
-        line-height: 100%;
-    }
-    .login-container, .signup-container, .attributes-container, .recover-password-container {
-        max-width: 70%;
-    }
-    .title-text {
-        font-size: 2.4em;
-        line-height: 100%;
-    }
-    .subtitle-text {
-        font-size: 2.0em;
-        line-height: 100%;
-    }
-    label {
-        font-size: 1.5em;
-    }
-    input, select, textarea {
-        width: 95%;
-        font-size: 1.4em;
-        line-height: 100%;
-        padding: 5px;
-    }
-    .login-button, .signup-button, .submit-button, .recover-button{
-        font-size: 1.5em;
-    }
-    #recoverPasswordLink, .recovery-message  {
-        font-size: 1.3em;
-    }
+	#novita-logo-title {
+		font-size: 1.4em;
+	}
+
+	#novita-logo img {
+		width: 80px;
+	}
+
+	#title {
+		line-height: 100%;
+		max-width: 90%;
+	}
+
+	.login-container,
+	.signup-container,
+	.attributes-container,
+	.recover-password-container {
+		max-width: 70%;
+	}
+
+	.title-text {
+		font-size: 2.4em;
+		line-height: 100%;
+	}
+
+	.subtitle-text {
+		font-size: 2em;
+		line-height: 100%;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 1.4em;
+		line-height: 100%;
+		padding: 5px;
+		width: 95%;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message {
+		font-size: 1.3em;
+	}
+
+	label,
+	.login-button,
+	.signup-button,
+	.submit-button,
+	.recover-button {
+		font-size: 1.5em;
+	}
 }
 
 @media (min-width: 1000px) {
-    #novita-logo-title {
-        font-size: 1.6em;
-    }
-    #novita-logo img{
-        width: 90px;
-    }
-    #title {
-        max-width: 93%;
-        line-height: 100%;
-    }
-    .title-text {
-        font-size: 3.0em;
-        line-height: 100%;
-    }
-    .subtitle-text {
-        font-size: 2.5em;
-        line-height: 100%;
-    }
-    label {
-        font-size: 2.3em;
-    }
-    input, select, textarea {
-        padding: 6px;
-        width: 95%;
-        font-size: 2em;
-        line-height: 100%;
-    }
-    .login-button, .signup-button, .submit-button, .recover-button{
-        font-size: 1.9em;
-    }
-    #recoverPasswordLink, .recovery-message , .recovery-message {
-        font-size: 1.4em;
-    }
+	#novita-logo-title {
+		font-size: 1.6em;
+	}
+
+	#novita-logo img {
+		width: 90px;
+	}
+
+	#title {
+		line-height: 100%;
+		max-width: 93%;
+	}
+
+	.title-text {
+		font-size: 3em;
+		line-height: 100%;
+	}
+
+	.subtitle-text {
+		font-size: 2.5em;
+		line-height: 100%;
+	}
+
+	label {
+		font-size: 2.3em;
+	}
+
+	input,
+	select,
+	textarea {
+		font-size: 2em;
+		line-height: 100%;
+		padding: 6px;
+		width: 95%;
+	}
+
+	.login-button,
+	.signup-button,
+	.submit-button,
+	.recover-button {
+		font-size: 1.9em;
+	}
+
+	#recoverPasswordLink,
+	.recovery-message,
+	.recovery-message {
+		font-size: 1.4em;
+	}
 }
+    
