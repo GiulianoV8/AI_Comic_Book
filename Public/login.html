@@ -57,6 +57,14 @@
 
     <div class="attributes-container" style="display: none;">
         <h1 class="title-text title">Create Your Hero</h1>
+        <button id="take-picture-btn">Take Pic</button>
+        <div class="container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="output-canvas"></canvas>
+            <button id="capture-btn">Capture Photo</button> <span id="img-counter">0/10</span>
+            <img id="avatar-image" src="" alt="Generated Avatar" style="display: none;">
+          </div>
+          
         <h2 class="subtitle-text">Physical Attributes</h2>
         <form id="attributesForm">
             <div class="input-group">
@@ -106,7 +114,7 @@
         </form>
         <p id="recoveryMessage" class="recovery-message" style="display: none;">Password recovery instructions will be sent to your email.</p>
     </div>
-
+          
     <script src="login.js"></script>
 </body>
 </html>

@@ -1,24 +1,87 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const axios = require('axios');
+const fs = require('fs');
 const { DynamoDBDocument } = require('@aws-sdk/lib-dynamodb');
 const path = require('path');
 const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
-const { AWS, S3Client, PutObjectCommand} = require('@aws-sdk/client-s3'); // AWS SDK v3
+const { AWS, S3Client, PutObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3'); // AWS SDK v3
+const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 
 const app = express();
+const upload = multer({ dest: 'uploads/' });
 const PORT = process.env.PORT || 3000;
 
 // Configure AWS S3 Client
 const s3 = new S3Client();
-
+const s3_BUCKET_NAME = 'avatargenerationimages';
 
 const docClient = DynamoDBDocument.from(new DynamoDB());
 const TABLE_NAME = 'ComicUsers';
 const COUNTER_TABLE_NAME = 'UserIDCounter';
 
-app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'Public')));
+app.use(express.json({ limit: '10mb'})); // Parses incoming JSON requests
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (optional)
+app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
+
+// Generate presigned URLs
+app.post('/getPresignedUrls', async (req, res) => {
+    const { username, count } = req.body;
+    if (!username || !count) return res.status(400).json({ success: false, message: 'Missing data' });
+
+    try {
+        const urls = [];
+        for (let i = 0; i < count; i++) {
+            const key = `users/${username}/avatar_${i}.png`; // Store in user folder
+            const command = new PutObjectCommand({
+                Bucket: s3_BUCKET_NAME,
+                Key: key,
+                ContentType: 'image/png',
+            });
+
+            const url = await getSignedUrl(s3, command, { expiresIn: 60 }); // 60 sec expiry
+            urls.push(url);
+        }
+
+        res.json({ success: true, urls });
+    } catch (error) {
+        console.error('Error generating presigned URLs:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
+app.post('/generate-avatar', async (req, res) => {
+    try {
+        const imageBase64 = req.body.image.replace(/^data:image\/\w+;base64,/, ''); // Remove metadata
+        const imageBuffer = Buffer.from(imageBase64, 'base64');
+
+        // Save image locally (optional)
+        fs.writeFileSync('input.png', imageBuffer);
+
+        // Call Stability AI or Replicate API
+        const response = await axios.post(
+            'https://api.stability.ai/v2beta/stable-image/generate/sd3',
+            {
+                prompt: "A superhero character based on this person, wearing a superhero outfit, comic book style.",
+                image: `data:image/png;base64,${imageBase64}`,
+                output_format: "png",
+            },
+            {
+                headers: {
+                    Authorization: `Bearer YOUR_API_KEY`,
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+
+        const generatedAvatarUrl = response.data.output_url; // Get AI-generated image
+
+        res.json({ generatedAvatarUrl });
+    } catch (error) {
+        console.error('Error generating avatar:', error);
+        res.status(500).json({ error: 'Avatar generation failed' });
+    }
+});
 
 const isValidEmail = email => {
     // Regular expression for validating an email

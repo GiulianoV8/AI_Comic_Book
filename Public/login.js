@@ -31,6 +31,87 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
 
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('output-canvas');
+    const captureBtn = document.getElementById('capture-btn');
+    const avatarImage = document.getElementById('avatar-image');
+    
+    // Start webcam and continuously detect face
+    async function startWebcam() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            videoElement.srcObject = stream;
+        } catch (error) {
+            console.error('Error accessing webcam:', error);
+        }
+    }
+
+    const canvas = document.getElementById('output-canvas');
+    captureBtn.addEventListener('click', async () => {
+        if (imageFiles.length < 10) {
+            canvas.toBlob(async (blob) => {
+                imageFiles.push(blob);
+                document.getElementById('img-counter').innerHTML = `${imageFiles.length}/10`;
+    
+                if (imageFiles.length === 10) {
+                    captureBtn.style.display = 'none';
+                    const username = document.getElementById('newUsername').value.trim();
+                    await uploadUserPhotos(username, imageFiles);
+                }
+            }, 'image/png');
+        }
+    });
+    
+    async function uploadUserPhotos(username, images) {
+        console.log('Requesting presigned URLs...');
+    
+        // Request presigned URLs from the backend
+        const response = await fetch('/getPresignedUrls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, count: images.length }),
+        });
+    
+        const data = await response.json();
+        if (!data.success) {
+            console.error('Failed to get presigned URLs');
+            return;
+        }
+    
+        // Upload each image directly to S3
+        const uploadedUrls = [];
+        for (let i = 0; i < images.length; i++) {
+            console.log(`Uploading image ${i + 1} to S3...`);
+            const uploadSuccess = await uploadToS3(images[i], data.urls[i]);
+            if (uploadSuccess) uploadedUrls.push(data.urls[i].split('?')[0]); // Store S3 URL without query params
+        }
+    
+        console.log('All images uploaded:', uploadedUrls);
+    
+        // Display the first image
+        document.getElementById('avatar-image').src = uploadedUrls[0];
+    }
+    
+    // Upload image to S3 using the presigned URL
+    async function uploadToS3(blob, presignedUrl) {
+        try {
+            await fetch(presignedUrl, {
+                method: 'PUT',
+                body: blob,
+                headers: { 'Content-Type': 'image/png' },
+            });
+            return true;
+        } catch (error) {
+            console.error('Upload error:', error);
+            return false;
+        }
+    }
+    // Initialize the application
+    async function init() {
+        await startWebcam();
+    }
+    document.getElementById('take-picture-btn').addEventListener('click', init);
+    
     document.getElementById('recoverPasswordForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const recoveryEmail = document.getElementById('recoveryEmail').value;
