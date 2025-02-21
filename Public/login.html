@@ -57,14 +57,28 @@
 
     <div class="attributes-container" style="display: none;">
         <h1 class="title-text title">Create Your Hero</h1>
+    
         <button id="take-picture-btn">Take Pic</button>
+        
         <div class="container">
             <video id="webcam" autoplay playsinline></video>
-            <canvas id="output-canvas"></canvas>
-            <button id="capture-btn">Capture Photo</button> <span id="img-counter">0/10</span>
+            <canvas id="output-canvas" style="display: none;"></canvas>
+            <button id="capture-btn">Capture Photo</button>
             <img id="avatar-image" src="" alt="Generated Avatar" style="display: none;">
-          </div>
+        </div>
+
+        <div id="generate-container" style="display: none;">
+            <div class="arrow-down">⬇️</div>
+            <button id="generate-avatar-btn">Generate Superhero Avatar</button>
+        </div>
+    
+    
+        <!-- Confirm Button -->
+        <button id="confirm-avatar-btn" style="display: none;">Confirm Avatar</button>
+    
           
+
+
         <h2 class="subtitle-text">Physical Attributes</h2>
         <form id="attributesForm">
             <div class="input-group">

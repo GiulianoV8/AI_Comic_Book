@@ -6,34 +6,120 @@ body {
 	font-family: "Comic Sans MS", sans-serif;
 	justify-content: center;
 	margin: 0;
+    height: 100%;
+}
+
+/* General container styling */
+.attributes-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    width: 100%;
+}
+
+/* Buttons Styling */
+button {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    border: none;
+    padding: 12px 20px;
+    cursor: pointer;
+    margin-top: 15px;
+    border-radius: 10px;
+    transition: 0.3s ease-in-out;
 }
 
 .container {
     position: relative;
-    margin: 20px auto;
-    width: 640px;
-    height: 480px;
-}
-  
-#capture-btn{
-    position: absolute;
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
 }
 
-#img-counter{
-    position: absolute;
-    right: 0;
-    background-color: white;
-    color: black;
-}
 video, canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    border: 2px solid #333;
     border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    display: block;
 }
+
+#capture-btn, #take-picture-btn {
+    background-color: rgb(255, 198, 0);
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: black;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#capture-btn{
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+#capture-btn:hover, #take-picture-btn:hover{
+    background-color: rgb(255, 170, 0);
+}
+
+#generate-container {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.arrow-down {
+    font-size: 30px;
+    color: black;
+    animation: bounce 1s infinite;
+}
+
+#generate-avatar-btn {
+    background-color: rgb(0, 102, 255);
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#generate-avatar-btn:hover {
+    background-color: rgb(0, 80, 200);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    button {
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
+    
+    video, canvas, #avatar-image {
+        width: 95%;
+    }
+
+    #down-arrow {
+        font-size: 2rem;
+    }
+}
+
 
 .login-container,
 .signup-container,
@@ -116,19 +202,10 @@ input {
 }
 
 .buttons {
-	background-color: red;
 	display: flex;
 	font-size: 1em;
 	justify-content: space-between;
 	margin-top: 20px;
-}
-
-button {
-	background-color: red;
-	border: 2px solid #000;
-	color: #fff;
-	cursor: pointer;
-	font-size: 0.8em;
 }
 
 option {
@@ -521,15 +598,15 @@ button:hover,
 	}
 
 	label {
-		font-size: 2.1em;
+		font-size: 2.0em;
 	}
 
 	input,
 	select,
 	textarea {
-		font-size: 2em;
+		font-size: 1.8em;
 		line-height: 100%;
-		padding: 6px;
+		padding: 5px;
 		width: 95%;
 	}
 

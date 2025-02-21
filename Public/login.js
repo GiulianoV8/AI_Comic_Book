@@ -31,68 +31,131 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
 
-    const videoElement = document.getElementById('webcam');
-    const canvasElement = document.getElementById('output-canvas');
+    const video = document.getElementById('webcam');
+    const canvas = document.getElementById('output-canvas');
     const captureBtn = document.getElementById('capture-btn');
     const avatarImage = document.getElementById('avatar-image');
+    const ctx = canvas.getContext('2d');
+    const arrow = document.getElementById('down-arrow');
+    const generateContainer = document.getElementById('generate-container');
+    const generateAvatarBtn = document.getElementById('generate-avatar-btn');
+    const confirmAvatarBtn = document.getElementById('confirm-avatar-btn');
     
     // Start webcam and continuously detect face
     async function startWebcam() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            videoElement.srcObject = stream;
+            video.srcObject = stream;
         } catch (error) {
             console.error('Error accessing webcam:', error);
         }
     }
 
-    const canvas = document.getElementById('output-canvas');
-    captureBtn.addEventListener('click', async () => {
-        if (imageFiles.length < 10) {
-            canvas.toBlob(async (blob) => {
-                imageFiles.push(blob);
-                document.getElementById('img-counter').innerHTML = `${imageFiles.length}/10`;
+    captureBtn.addEventListener('click', () => {
+        if (captureBtn.innerHTML === 'Capture Photo') {
+            // Capture photo
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
     
-                if (imageFiles.length === 10) {
-                    captureBtn.style.display = 'none';
-                    const username = document.getElementById('newUsername').value.trim();
-                    await uploadUserPhotos(username, imageFiles);
-                }
-            }, 'image/png');
+            // Toggle visibility
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+    
+            // Change button text to Retake
+            captureBtn.innerHTML = 'Retake?';
+    
+            // Show avatar generation UI
+            generateContainer.style.display = 'block';
+        } else {
+            // Retake photo
+            video.style.display = 'block';
+            canvas.style.display = 'none';
+    
+            // Reset button text
+            captureBtn.innerHTML = 'Capture Photo';
+    
+            // Hide avatar generation UI
+            generateContainer.style.display = 'none';
         }
     });
     
-    async function uploadUserPhotos(username, images) {
-        console.log('Requesting presigned URLs...');
+    // Clicking arrow or button triggers AI avatar generation
+    generateAvatarBtn.addEventListener('click', async () => {
+        const username = document.getElementById('newUsername').value.trim();
+        // const imageBlob = await generateSuperheroAvatar(username);
     
-        // Request presigned URLs from the backend
-        const response = await fetch('/getPresignedUrls', {
+        if (imageBlob) {
+            // Display avatar preview
+            const avatarURL = URL.createObjectURL(imageBlob);
+            avatarImage.src = avatarURL;
+            avatarImage.style.display = 'block';
+    
+            // Show confirm button
+            confirmAvatarBtn.style.display = 'block';
+    
+            // Hide generate section
+            generateContainer.style.display = 'none';
+        }
+    });
+    
+    // Confirm button saves avatar
+    confirmAvatarBtn.addEventListener('click', async () => {
+        const username = document.getElementById('newUsername').value.trim();
+        
+        // Convert displayed avatar to Blob
+        const response = await fetch(avatarImage.src);
+        const blob = await response.blob();
+    
+        await uploadUserPhoto(username, blob); // Overwrite original image
+    
+        alert("Avatar saved successfully!");
+    
+        // Hide confirm button
+        confirmAvatarBtn.style.display = 'none';
+    });
+    
+    // Upload image to backend
+    async function uploadUserPhoto(username, image) {
+        console.log('Requesting presigned URL...');
+    
+        const response = await fetch('/getPresignedUrl', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, count: images.length }),
+            body: JSON.stringify({ username })
         });
     
         const data = await response.json();
         if (!data.success) {
-            console.error('Failed to get presigned URLs');
+            console.error('Failed to get presigned URL');
             return;
         }
     
-        // Upload each image directly to S3
-        const uploadedUrls = [];
-        for (let i = 0; i < images.length; i++) {
-            console.log(`Uploading image ${i + 1} to S3...`);
-            const uploadSuccess = await uploadToS3(images[i], data.urls[i]);
-            if (uploadSuccess) uploadedUrls.push(data.urls[i].split('?')[0]); // Store S3 URL without query params
-        }
-    
-        console.log('All images uploaded:', uploadedUrls);
-    
-        // Display the first image
-        document.getElementById('avatar-image').src = uploadedUrls[0];
+        // Upload image to S3
+        console.log(`Uploading image to S3...`);
+        await uploadToS3(image, data.url);
     }
     
-    // Upload image to S3 using the presigned URL
+    // Generate superhero avatar using Stability AI API
+    async function generateSuperheroAvatar(username) {
+        console.log("Generating superhero avatar...");
+    
+        const response = await fetch('/generateSuperheroAvatar', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+        });
+    
+        if (!response.ok) {
+            console.error("Failed to generate avatar");
+            return null;
+        }
+    
+        return await response.blob();
+    }
+    
+    // Upload image to S3
     async function uploadToS3(blob, presignedUrl) {
         try {
             await fetch(presignedUrl, {
@@ -106,6 +169,7 @@ document.addEventListener("DOMContentLoaded", function() {
             return false;
         }
     }
+
     // Initialize the application
     async function init() {
         await startWebcam();

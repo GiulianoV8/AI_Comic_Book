@@ -9,7 +9,6 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const upload = multer({ dest: 'uploads/' });
 const PORT = process.env.PORT || 3000;
 
 // Configure AWS S3 Client
@@ -25,61 +24,52 @@ app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (opt
 app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
 
 // Generate presigned URLs
-app.post('/getPresignedUrls', async (req, res) => {
-    const { username, count } = req.body;
-    if (!username || !count) return res.status(400).json({ success: false, message: 'Missing data' });
+app.post('/getPresignedUrl', async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ success: false, message: 'Missing username' });
 
     try {
-        const urls = [];
-        for (let i = 0; i < count; i++) {
-            const key = `users/${username}/avatar_${i}.png`; // Store in user folder
-            const command = new PutObjectCommand({
-                Bucket: s3_BUCKET_NAME,
-                Key: key,
-                ContentType: 'image/png',
-            });
+        const key = `users/${username}/avatar.png`; // Store single image
+        const command = new PutObjectCommand({
+            Bucket: s3_BUCKET_NAME,
+            Key: key,
+            ContentType: 'image/png',
+        });
 
-            const url = await getSignedUrl(s3, command, { expiresIn: 60 }); // 60 sec expiry
-            urls.push(url);
-        }
+        const url = await getSignedUrl(s3, command, { expiresIn: 60 });
 
-        res.json({ success: true, urls });
+        res.json({ success: true, url });
     } catch (error) {
-        console.error('Error generating presigned URLs:', error);
+        console.error('Error generating presigned URL:', error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 
-app.post('/generate-avatar', async (req, res) => {
+// Generate superhero avatar using Stability AI
+app.post('/generateSuperheroAvatar', async (req, res) => {
+    const { username } = req.body;
+    if (!username) return res.status(400).json({ success: false, message: 'Missing username' });
+
     try {
-        const imageBase64 = req.body.image.replace(/^data:image\/\w+;base64,/, ''); // Remove metadata
-        const imageBuffer = Buffer.from(imageBase64, 'base64');
-
-        // Save image locally (optional)
-        fs.writeFileSync('input.png', imageBuffer);
-
-        // Call Stability AI or Replicate API
-        const response = await axios.post(
-            'https://api.stability.ai/v2beta/stable-image/generate/sd3',
-            {
-                prompt: "A superhero character based on this person, wearing a superhero outfit, comic book style.",
-                image: `data:image/png;base64,${imageBase64}`,
-                output_format: "png",
+        const prompt = `Generate a superhero avatar for ${username} in a comic book style with a dynamic pose.`;
+        
+        const stabilityAIResponse = await axios.post('https://api.stability.ai/v2beta/generate/core', {
+            model: 'stable-diffusion-xl',
+            prompt: prompt,
+            output_format: 'png'
+        }, {
+            headers: {
+                'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
+                'Content-Type': 'application/json'
             },
-            {
-                headers: {
-                    Authorization: `Bearer YOUR_API_KEY`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
+            responseType: 'arraybuffer'
+        });
 
-        const generatedAvatarUrl = response.data.output_url; // Get AI-generated image
-
-        res.json({ generatedAvatarUrl });
+        res.setHeader('Content-Type', 'image/png');
+        res.send(Buffer.from(stabilityAIResponse.data));
     } catch (error) {
         console.error('Error generating avatar:', error);
-        res.status(500).json({ error: 'Avatar generation failed' });
+        res.status(500).json({ success: false, message: 'Avatar generation failed' });
     }
 });
 
