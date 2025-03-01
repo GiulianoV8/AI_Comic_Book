@@ -48,7 +48,7 @@ video, canvas {
     display: block;
 }
 
-#capture-btn, #take-picture-btn {
+#capture-btn, #take-picture-btn, #confirm-avatar-btn {
     background-color: rgb(255, 198, 0);
     border: none;
     padding: 10px 20px;
@@ -60,14 +60,19 @@ video, canvas {
     transition: 0.3s;
 }
 
-#capture-btn{
+#capture-btn {
     position: absolute;
     bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
+    background-color: #ffcc00;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
 }
 
-#capture-btn:hover, #take-picture-btn:hover{
+#capture-btn:hover, #take-picture-btn:hover, #confirm-avatar-btn:hover {
     background-color: rgb(255, 170, 0);
 }
 
@@ -76,15 +81,19 @@ video, canvas {
     margin-top: 20px;
 }
 
-.arrow-down {
+#down-arrow {
     font-size: 30px;
-    color: black;
+    text-align: center;
+    margin-top: 10px;
+	color: black;
     animation: bounce 1s infinite;
 }
-
 #generate-avatar-btn {
     background-color: rgb(0, 102, 255);
     border: none;
+	margin-top: 10px;
+	margin-left: auto;
+	margin-right: auto;
     padding: 10px 20px;
     font-size: 16px;
     font-weight: bold;
@@ -94,8 +103,18 @@ video, canvas {
     transition: 0.3s;
 }
 
-#generate-avatar-btn:hover {
+#generate-avatar-btn:hover{
     background-color: rgb(0, 80, 200);
+}
+
+#avatar-image {
+    display: none;
+    width: 100%;
+    max-width: 500px;
+    margin-top: 10px;
+	margin-left: auto;
+	margin-right: auto;
+    border-radius: 10px;
 }
 
 @keyframes bounce {
@@ -598,7 +617,7 @@ button:hover,
 	}
 
 	label {
-		font-size: 2.0em;
+		font-size: 1.8em;
 	}
 
 	input,

@@ -31,15 +31,15 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
 
+    const captureBtn = document.getElementById('capture-btn');
+    const generateContainer = document.getElementById('generate-container');
+    const confirmAvatarBtn = document.getElementById('confirm-avatar-btn');
+    const generateAvatarBtn = document.getElementById('generate-avatar-btn');
+    const avatarContainer = document.getElementById('avatar-container');
+    const arrow = document.getElementById('down-arrow');
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('output-canvas');
-    const captureBtn = document.getElementById('capture-btn');
     const avatarImage = document.getElementById('avatar-image');
-    const ctx = canvas.getContext('2d');
-    const arrow = document.getElementById('down-arrow');
-    const generateContainer = document.getElementById('generate-container');
-    const generateAvatarBtn = document.getElementById('generate-avatar-btn');
-    const confirmAvatarBtn = document.getElementById('confirm-avatar-btn');
     
     // Start webcam and continuously detect face
     async function startWebcam() {
@@ -51,55 +51,60 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    captureBtn.addEventListener('click', () => {
-        if (captureBtn.innerHTML === 'Capture Photo') {
+    // Capture or Retake Photo
+    captureBtn.addEventListener("click", () => {
+        if (captureBtn.innerHTML === "Capture Photo") {
             // Capture photo
-            const context = canvas.getContext('2d');
+            const ctx = canvas.getContext("2d");
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-    
-            // Toggle visibility
-            video.style.display = 'none';
-            canvas.style.display = 'block';
-    
-            // Change button text to Retake
-            captureBtn.innerHTML = 'Retake?';
-    
-            // Show avatar generation UI
-            generateContainer.style.display = 'block';
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Hide video and show canvas
+            video.style.display = "none";
+            canvas.style.display = "block";
+
+            // Change button text to "Retake"
+            captureBtn.innerHTML = "Retake";
+
+            // Show the generate avatar section
+            generateContainer.style.display = "block";
+            generateAvatarBtn.innerHTML === "Generate Superhero Avatar"
+
         } else {
             // Retake photo
-            video.style.display = 'block';
-            canvas.style.display = 'none';
-    
-            // Reset button text
-            captureBtn.innerHTML = 'Capture Photo';
-    
-            // Hide avatar generation UI
-            generateContainer.style.display = 'none';
+            video.style.display = "block";
+            canvas.style.display = "none";
+            captureBtn.innerHTML = "Capture Photo";
+
+            // Hide the generate avatar section
+            generateContainer.style.display = "none";
+            avatarContainer.style.display = "none";
         }
     });
-    
-    // Clicking arrow or button triggers AI avatar generation
-    generateAvatarBtn.addEventListener('click', async () => {
+
+    // Generate or Regenerate Avatar
+    generateAvatarBtn.addEventListener("click", async () => {
+        if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
+            generateAvatarBtn.innerHTML = "Regenerate Avatar";
+        }
         const username = document.getElementById('newUsername').value.trim();
         // const imageBlob = await generateSuperheroAvatar(username);
-    
-        if (imageBlob) {
+        const imageBlob = true;
+        if(imageBlob) {
             // Display avatar preview
-            const avatarURL = URL.createObjectURL(imageBlob);
+            const avatarURL = 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRpxkR9ItvFiXpBPl6tulrDMLkQqnQpDqK-EwgfpYllakqPagl6bNSb27Df2spuWUHaSBwSYVypvr9Ye_pgLfIhOA'; //URL.createObjectURL(imageBlob);
             avatarImage.src = avatarURL;
             avatarImage.style.display = 'block';
     
-            // Show confirm button
-            confirmAvatarBtn.style.display = 'block';
+            // Show avatar image and container
+            avatarContainer.style.display = 'block';
     
             // Hide generate section
-            generateContainer.style.display = 'none';
+            arrow.style.display = 'none';
         }
     });
-    
+
     // Confirm button saves avatar
     confirmAvatarBtn.addEventListener('click', async () => {
         const username = document.getElementById('newUsername').value.trim();
@@ -116,25 +121,39 @@ document.addEventListener("DOMContentLoaded", function() {
         confirmAvatarBtn.style.display = 'none';
     });
     
-    // Upload image to backend
-    async function uploadUserPhoto(username, image) {
-        console.log('Requesting presigned URL...');
-    
-        const response = await fetch('/getPresignedUrl', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
-        });
-    
+    // Fetch avatar image URL
+    async function fetchAvatarURL(username) {
+        const response = await fetch(`/getAvatarUrl?username=${username}`);
         const data = await response.json();
-        if (!data.success) {
-            console.error('Failed to get presigned URL');
-            return;
+        if (data.success) {
+            document.getElementById("avatarImage").src = data.url;
+        } else {
+            console.error("Failed to load avatar");
         }
+    }
+
+    // Upload image to backend
+    async function uploadUserPhoto(imageFile, username) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('username', username);
     
-        // Upload image to S3
-        console.log(`Uploading image to S3...`);
-        await uploadToS3(image, data.url);
+        try {
+            const response = await fetch('/uploadAvatar', {
+                method: 'POST',
+                body: formData
+            });
+    
+            const data = await response.json();
+            if (data.success) {
+                console.log('Avatar uploaded successfully:', data.url);
+                document.getElementById('userAvatar').src = data.url; // Set avatar image
+            } else {
+                console.error('Upload failed:', data.message);
+            }
+        } catch (error) {
+            console.error('Error uploading avatar:', error);
+        }
     }
     
     // Generate superhero avatar using Stability AI API
@@ -153,21 +172,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     
         return await response.blob();
-    }
-    
-    // Upload image to S3
-    async function uploadToS3(blob, presignedUrl) {
-        try {
-            await fetch(presignedUrl, {
-                method: 'PUT',
-                body: blob,
-                headers: { 'Content-Type': 'image/png' },
-            });
-            return true;
-        } catch (error) {
-            console.error('Upload error:', error);
-            return false;
-        }
     }
 
     // Initialize the application

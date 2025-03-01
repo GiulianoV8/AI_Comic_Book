@@ -59,24 +59,30 @@
         <h1 class="title-text title">Create Your Hero</h1>
     
         <button id="take-picture-btn">Take Pic</button>
-        
+    
         <div class="container">
+            <!-- Video feed for taking a photo -->
             <video id="webcam" autoplay playsinline></video>
+            
+            <!-- Canvas for captured image -->
             <canvas id="output-canvas" style="display: none;"></canvas>
+    
+            <!-- Capture/Retake button positioned inside video/canvas -->
             <button id="capture-btn">Capture Photo</button>
-            <img id="avatar-image" src="" alt="Generated Avatar" style="display: none;">
         </div>
-
-        <div id="generate-container" style="display: none;">
-            <div class="arrow-down">⬇️</div>
+    
+        <!-- Arrow and "Generate Superhero Avatar" button (hidden initially) -->
+        <div id="generate-container" style="display: none; text-align: center;">
+            <div id="down-arrow">⬇️</div>
             <button id="generate-avatar-btn">Generate Superhero Avatar</button>
         </div>
     
-    
-        <!-- Confirm Button -->
-        <button id="confirm-avatar-btn" style="display: none;">Confirm Avatar</button>
-    
-          
+        <!-- Avatar image & Regenerate button (hidden initially) -->
+        <div id="avatar-container" style="display: none;">
+            <img id="avatar-image" src="" alt="Generated Avatar">
+
+            <button id="confirm-avatar-btn">Confirm Avatar</button>
+        </div>
 
 
         <h2 class="subtitle-text">Physical Attributes</h2>

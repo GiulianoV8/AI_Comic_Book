@@ -7,13 +7,23 @@ const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
 const { AWS, S3Client, PutObjectCommand, GetObjectCommand} = require('@aws-sdk/client-s3'); // AWS SDK v3
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
+const multer = require('multer');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configure AWS S3 Client
-const s3 = new S3Client();
+const s3 = new S3Client({
+    region: "us-east-1",  // Change to your S3 region
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+    }
+});
 const s3_BUCKET_NAME = 'avatargenerationimages';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const docClient = DynamoDBDocument.from(new DynamoDB());
 const TABLE_NAME = 'ComicUsers';
@@ -23,25 +33,57 @@ app.use(express.json({ limit: '10mb'})); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (optional)
 app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
 
-// Generate presigned URLs
-app.post('/getPresignedUrl', async (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ success: false, message: 'Missing username' });
+// Fetch Avatar URL
+app.get("/getAvatarUrl", async (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ success: false, message: "Missing username" });
 
     try {
-        const key = `users/${username}/avatar.png`; // Store single image
-        const command = new PutObjectCommand({
-            Bucket: s3_BUCKET_NAME,
-            Key: key,
-            ContentType: 'image/png',
+        const command = new GetObjectCommand({
+            Bucket: "avatargenerationimages",
+            Key: `users/${username}/avatar.png`
         });
 
-        const url = await getSignedUrl(s3, command, { expiresIn: 60 });
+        const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        res.json({ success: true, url: signedUrl });
+    } catch (error) {
+        console.error("Error generating signed URL:", error);
+        res.status(500).json({ success: false, message: "Failed to generate signed URL" });
+    }
+});
+
+// Upload Avatar Image to S3
+app.post('/uploadAvatar', upload.single('image'), async (req, res) => {
+    const { username } = req.body;
+    const file = req.file;
+
+    if (!username || !file) {
+        return res.status(400).json({ success: false, message: 'Missing username or file' });
+    }
+
+    try {
+        const s3Key = `users/${username}/avatar.png`;
+
+        // Upload the avatar to S3
+        const uploadParams = new PutObjectCommand({
+            Bucket: s3_BUCKET_NAME,
+            Key: s3Key,
+            Body: file.buffer,
+            ContentType: file.mimetype
+        });
+
+        await s3.send(uploadParams);
+
+        // Generate a pre-signed URL for securely accessing the uploaded avatar
+        const url = await getSignedUrl(s3, new GetObjectCommand({
+            Bucket: s3_BUCKET_NAME,
+            Key: s3Key
+        }), { expiresIn: 3600 }); // URL expires in 1 hour
 
         res.json({ success: true, url });
     } catch (error) {
-        console.error('Error generating presigned URL:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        console.error('Upload error:', error);
+        res.status(500).json({ success: false, message: 'Upload failed' });
     }
 });
 
