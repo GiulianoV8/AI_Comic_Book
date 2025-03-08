@@ -48,28 +48,37 @@
                     <select id="gender" name="gender" required>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
-                        <option value="Non-binary">Non-binary</option>
+                        <option value="Non-binary">Other</option>
                     </select>
                 </div>
                 <div class="input-group">
                     <label for="age">What is your age?</label>
                     <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
                 </div>
-                <div class="input-group">
-                    <label for="height">What is your height?</label>
-                    <input type="text" id="height" name="height" placeholder="5'7, 1.7 metres, 70 inches" required>
+                button id="take-picture-btn">Take a picture of yourself to create your superhero avatar!</button>
+    
+                <div class="container">
+                    <!-- Video feed for taking a photo -->
+                    <video id="webcam" autoplay playsinline></video>
+                    
+                    <!-- Canvas for captured image -->
+                    <canvas id="output-canvas" style="display: none;"></canvas>
+            
+                    <!-- Capture/Retake button positioned inside video/canvas -->
+                    <button id="capture-btn">Capture Photo</button>
                 </div>
-                <div class="input-group">
-                    <label for="skinColor">What is your skin color?</label>
-                    <input type="text" id="skinColor" name="skinColor" placeholder="tan" required>
+            
+                <!-- Arrow and "Generate Superhero Avatar" button (hidden initially) -->
+                <div id="generate-container" style="display: none; text-align: center;">
+                    <div id="down-arrow">⬇️</div>
+                    <button id="generate-avatar-btn">Generate Superhero Avatar</button>
                 </div>
-                <div class="input-group">
-                    <label for="hair">Describe your hair</label>
-                    <input type="text" id="hair" name="hair" placeholder="Brown, long, curly" required>
-                </div>
-                <div class="input-group">
-                    <label for="otherFeatures">Is there any other defining features you would like to add?</label>
-                    <textarea id="otherFeatures" placeholder="blue eyes, black glasses" name="otherFeatures"></textarea>
+            
+                <!-- Avatar image & Regenerate button (hidden initially) -->
+                <div id="avatar-container" style="display: none;">
+                    <img id="avatar-image" src="" alt="Generated Avatar">
+
+                    <button id="confirm-avatar-btn">Confirm Avatar</button>
                 </div>
                 <button id='save-changes-btn' type="submit">Save Changes</button>
             </form>

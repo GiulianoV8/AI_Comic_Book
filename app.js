@@ -8,6 +8,7 @@ const { AWS, S3Client, PutObjectCommand, GetObjectCommand} = require('@aws-sdk/c
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+require('dotenv').config();
 
 
 const app = express();
@@ -23,7 +24,7 @@ const s3 = new S3Client({
 });
 const s3_BUCKET_NAME = 'avatargenerationimages';
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage() }); // Keep files in memory for processing
 
 const docClient = DynamoDBDocument.from(new DynamoDB());
 const TABLE_NAME = 'ComicUsers';
@@ -54,6 +55,9 @@ app.get("/getAvatarUrl", async (req, res) => {
 
 // Upload Avatar Image to S3
 app.post('/uploadAvatar', upload.single('image'), async (req, res) => {
+    console.log('Received file:', req.file);  // Debugging output
+    console.log('Received username:', req.body.username);
+
     const { username } = req.body;
     const file = req.file;
 

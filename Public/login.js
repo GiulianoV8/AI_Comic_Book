@@ -18,12 +18,12 @@ document.addEventListener("DOMContentLoaded", function() {
         transitionForms('.signup-container', '.login-container');
     });
 
-    document.getElementById('backToSignUp-button').addEventListener('click', () => {
-        transitionForms('.attributes-container', '.signup-container');
-    });
-
     document.querySelector('.forgot-password-link').addEventListener('click', function() {
         transitionForms('.login-container', '.recover-password-container');
+    });
+
+    document.getElementById('backToSignUp-button').addEventListener('click', () => {
+        transitionForms('.attributes-container', '.signup-container');
     });
     
     document.getElementById('backToLoginFromRecover').addEventListener('click', function() {
@@ -88,12 +88,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
             generateAvatarBtn.innerHTML = "Regenerate Avatar";
         }
+
+        generateAvatarBtn.disabled = true;
         const username = document.getElementById('newUsername').value.trim();
         // const imageBlob = await generateSuperheroAvatar(username);
         const imageBlob = true;
         if(imageBlob) {
             // Display avatar preview
-            const avatarURL = 'https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRpxkR9ItvFiXpBPl6tulrDMLkQqnQpDqK-EwgfpYllakqPagl6bNSb27Df2spuWUHaSBwSYVypvr9Ye_pgLfIhOA'; //URL.createObjectURL(imageBlob);
+            const avatarURL = './imgs/DailyHeroics.png'; //URL.createObjectURL(imageBlob);
             avatarImage.src = avatarURL;
             avatarImage.style.display = 'block';
     
@@ -103,40 +105,45 @@ document.addEventListener("DOMContentLoaded", function() {
             // Hide generate section
             arrow.style.display = 'none';
         }
+        generateAvatarBtn.disabled = false;
     });
 
     // Confirm button saves avatar
     confirmAvatarBtn.addEventListener('click', async () => {
         const username = document.getElementById('newUsername').value.trim();
+
+        const blobresponse = await fetch(avatarImage.src);
+        const blob = await blobresponse.blob();
+    
+        let data = await uploadUserPhoto(blob, username);
         
-        // Convert displayed avatar to Blob
-        const response = await fetch(avatarImage.src);
-        const blob = await response.blob();
-    
-        await uploadUserPhoto(username, blob); // Overwrite original image
-    
-        alert("Avatar saved successfully!");
-    
-        // Hide confirm button
-        confirmAvatarBtn.style.display = 'none';
-    });
-    
-    // Fetch avatar image URL
-    async function fetchAvatarURL(username) {
-        const response = await fetch(`/getAvatarUrl?username=${username}`);
-        const data = await response.json();
         if (data.success) {
-            document.getElementById("avatarImage").src = data.url;
+            console.log('Avatar uploaded successfully:', data.url);
+
+            let genderField = document.getElementById('gender').value;
+            let gender = (genderField == "Non-binary")? "" : genderField
+            
+            const attributes = {
+                gender: gender,
+                age: document.getElementById('age').value,
+            };
+            
+            await submitSignUp(document.getElementById('newUsername').value, document.getElementById('newEmail').value, document.getElementById('newPassword').value, attributes);
+            // Redirect to home.html after successful upload
+            window.location.href = "./home.html";
         } else {
-            console.error("Failed to load avatar");
+            console.error('Upload failed:', data.message);
         }
-    }
+    });
 
     // Upload image to backend
-    async function uploadUserPhoto(imageFile, username) {
+    async function uploadUserPhoto(imageFile, username) {  
+        console.log("Uploading file:", imageFile);
+        console.log("Username:", username);
+        
         const formData = new FormData();
-        formData.append('image', imageFile);
         formData.append('username', username);
+        formData.append('image', imageFile);
     
         try {
             const response = await fetch('/uploadAvatar', {
@@ -144,13 +151,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 body: formData
             });
     
-            const data = await response.json();
-            if (data.success) {
-                console.log('Avatar uploaded successfully:', data.url);
-                document.getElementById('userAvatar').src = data.url; // Set avatar image
-            } else {
-                console.error('Upload failed:', data.message);
-            }
+            return await response.json();
         } catch (error) {
             console.error('Error uploading avatar:', error);
         }
@@ -252,34 +253,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     usernameField.value = '';
                 }
             }
+
             if (!data.usernameExists && !data.emailExists) {
                 transitionForms('.signup-container', '.attributes-container');
             }
         });
         
-    });
-
-    document.querySelector('form#attributesForm').addEventListener('submit', event => {
-        event.preventDefault();
-        let gender = "";
-        let genderField = document.getElementById('gender').value;
-        if(genderField == "Non-binary"){
-            gender = "";
-        }
-        
-        const attributes = {
-            gender: gender,
-            age: document.getElementById('age').value,
-            height: document.getElementById('height').value,
-            skinColor: document.getElementById('skinColor').value,
-            hair: document.getElementById('hair').value,
-            otherFeatures: document.getElementById('otherFeatures').value
-        };
-        const newUsername = document.getElementById('newUsername').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const newEmail = document.getElementById('newEmail').value;
-        submitSignUp(newUsername, newEmail, newPassword, attributes);
-        transitionForms('.attributes-container', '.login-container');
     });
 });
 
@@ -312,7 +291,7 @@ function authenticate(username, password) {
     });
 }
 
-function submitSignUp(newUsername, newEmail, newPassword, attributes) {
+async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     fetch('/signup', {
         method: 'POST',
         headers: {
@@ -328,7 +307,7 @@ function submitSignUp(newUsername, newEmail, newPassword, attributes) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            transitionForms('.signup-container', '.login-container')
+            transitionForms('.attributes-container', '.login-container')
         }
     })
     .catch(error => {

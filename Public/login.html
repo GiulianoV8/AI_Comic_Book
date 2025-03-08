@@ -50,15 +50,27 @@
                 <label for="newPassword">Password</label>
                 <input type="password" id="newPassword" name="newPassword" required>
             </div>
-            <button type="submit" class="signup-button">Sign Up</button>
+            <div class="input-group">
+                <label for="gender">What is your gender?</label>
+                <select id="gender" name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Non-binary">Other</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="age">What is your age?</label>
+                <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
+            </div>
+            <button type="submit" class="signup-button">Continue</button>
             <button type="button" id="backToLogin-button" class="login-button">Back to Login</button>
         </form>
     </div>
 
     <div class="attributes-container" style="display: none;">
-        <h1 class="title-text title">Create Your Hero</h1>
-    
-        <button id="take-picture-btn">Take Pic</button>
+        <h1 class="title-text title">Create Your Hero!</h1>
+
+        <button id="take-picture-btn">Take a picture of yourself to create your superhero avatar!</button>
     
         <div class="container">
             <!-- Video feed for taking a photo -->
@@ -84,42 +96,7 @@
             <button id="confirm-avatar-btn">Confirm Avatar</button>
         </div>
 
-
-        <h2 class="subtitle-text">Physical Attributes</h2>
-        <form id="attributesForm">
-            <div class="input-group">
-                <label for="gender">What is your gender?</label>
-                <select id="gender" name="gender" required>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Non-binary">Non-binary</option>
-                </select>
-            </div>
-            <div class="input-group">
-                <label for="age">What is your age?</label>
-                <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
-            </div>
-            <div class="input-group">
-                <label for="height">What is your height?</label>
-                <input type="text" id="height" name="height" placeholder="5'7 feet, 1.7 metres, 70 inches" required>
-            </div>
-            <div class="input-group">
-                <label for="skinColor">What is your skin color?</label>
-                <input type="text" id="skinColor" name="skinColor" placeholder="tan" required>
-            </div>
-            <div class="input-group">
-                <label for="hair">Describe your hair</label>
-                <input type="text" id="hair" name="hair" placeholder="brown, long, curly" required>
-            </div>
-            <div class="input-group">
-                <label for="otherFeatures">Is there any other defining features you would like to add?</label>
-                <textarea id="otherFeatures" placeholder="blue eyes, black glasses" name="otherFeatures"></textarea>
-            </div>
-            <div class="buttons">
-                <button type="button" id="backToSignUp-button" class="login-button">Back to Sign Up</button>
-                <button type="submit" class="submit-button">Submit</button>
-            </div>
-        </form>
+        <button type="button" id="backToSignUp-button" class="login-button">Back to Sign Up</button>
     </div>
 
     <div class="recover-password-container" style="display: none;">
