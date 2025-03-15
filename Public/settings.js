@@ -91,15 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('attributes', JSON.stringify(attributes));
         }
 
-        for(const [key, value] of Object.entries(attributes)) {
-            if(key == 'gender'){
-                if(value.length < 3){
-                    document.getElementById('gender').value = "Non-binary";
-                }
-            }else{
-                document.getElementById(key).value = value;
-            }
-        }
     }
 
     attributeForm.onsubmit = async function(event) {
@@ -113,10 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const attributes = {
             gender: gender,
             age: document.getElementById('age').value,
-            height: document.getElementById('height').value,
-            skinColor: document.getElementById('skinColor').value,
-            hair: document.getElementById('hair').value,
-            otherFeatures: document.getElementById('otherFeatures').value
         };
         
         localStorage.setItem('attributes', JSON.stringify(attributes));
