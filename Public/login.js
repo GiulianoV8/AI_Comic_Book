@@ -85,13 +85,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Generate or Regenerate Avatar
     generateAvatarBtn.addEventListener("click", async () => {
-        if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
-            generateAvatarBtn.innerHTML = "Regenerate Avatar";
-        }
-
         generateAvatarBtn.disabled = true;
         const username = document.getElementById('newUsername').value.trim();
         // const imageBlob = await generateSuperheroAvatar(username);
+        if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
+            generateAvatarBtn.innerHTML = "Regenerate Avatar";
+        }
         const imageBlob = true;
         if(imageBlob) {
             // Display avatar preview
@@ -221,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
 
-    document.querySelector('form#signUpForm').addEventListener('submit', event => {
+    document.querySelector('continue-sign-up-btn').addEventListener('click', event => {
         event.preventDefault();
         fetch('/check-username', {
             method: 'POST',
@@ -230,7 +229,7 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             body: JSON.stringify({
                 username: document.getElementById('newUsername').value,
-                newEmail: document.getElementById('newEmail').value
+                email: document.getElementById('newEmail').value
             })
         })
         .then(response => response.json())

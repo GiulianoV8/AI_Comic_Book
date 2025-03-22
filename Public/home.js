@@ -650,6 +650,8 @@ async function fillData(userID) {
         const userData = await response.json();
         const data = userData.item;
 
+        localStorage.setItem('username', data.username);
+
         // Fill in the #comic-title input tag with the comicTitle attribute value
         const comicTitle = document.getElementById('comic-title');
         if (comicTitle && data.comicTitle) {

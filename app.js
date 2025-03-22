@@ -236,14 +236,14 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/check-username', async (req, res) => {
-    const { username, newEmail } = req.body;
+    const { username, email } = req.body;
 
     const emailParams = {
         TableName: 'ComicUsers',
         IndexName: 'email',
         KeyConditionExpression: 'email = :email',
         ExpressionAttributeValues: {
-            ':email': newEmail
+            ':email': email
         },
         Limit: 1
     };

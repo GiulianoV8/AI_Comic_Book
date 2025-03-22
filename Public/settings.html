@@ -56,9 +56,10 @@
                     <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
                 </div>
                 
-                <button id="take-picture-btn">Change Avatar?</button>
+                <button type="button" id="take-picture-btn">Change Avatar?</button>
+                <img id="avatar-image" src="" alt="Generated Avatar">
     
-                <div class="container">
+                <div id="camera-container" style="display: none;">
                     <!-- Video feed for taking a photo -->
                     <video id="webcam" autoplay playsinline></video>
                     
@@ -66,20 +67,20 @@
                     <canvas id="output-canvas" style="display: none;"></canvas>
             
                     <!-- Capture/Retake button positioned inside video/canvas -->
-                    <button id="capture-btn">Capture Photo</button>
+                    <button type="button" id="capture-btn" type="button">Capture Photo</button>
                 </div>
             
                 <!-- Arrow and "Generate Superhero Avatar" button (hidden initially) -->
                 <div id="generate-container" style="display: none; text-align: center;">
                     <div id="down-arrow">⬇️</div>
-                    <button id="generate-avatar-btn">Generate Superhero Avatar</button>
+                    <button type="button" id="generate-avatar-btn" type="button">Generate Superhero Avatar</button>
                 </div>
             
                 <!-- Avatar image & Regenerate button (hidden initially) -->
                 <div id="avatar-container" style="display: none;">
-                    <img id="avatar-image" src="" alt="Generated Avatar">
+                    <img id="avatar-display-image" src="" alt="Generated Avatar">
 
-                    <button id="confirm-avatar-btn">Confirm Avatar</button>
+                    <button type="button" id="confirm-avatar-btn" type="button">Confirm Avatar</button>
                 </div>
 
                 <button id='save-changes-btn' type="submit">Save Changes</button>
