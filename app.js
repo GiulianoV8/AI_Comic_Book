@@ -8,7 +8,10 @@ const { AWS, S3Client, PutObjectCommand, GetObjectCommand} = require('@aws-sdk/c
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
+const { NovitaSDK } = require("novita-sdk");
+const { convertImageToBase64 } = require("./utils.js");
 require('dotenv').config();
+
 
 
 const app = express();
@@ -22,6 +25,8 @@ const s3 = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 });
+const novitaClient = new NovitaSDK(process.env.NOVITA_KEY);
+
 const s3_BUCKET_NAME = 'avatargenerationimages';
 
 const upload = multer({ storage: multer.memoryStorage() }); // Keep files in memory for processing
@@ -34,7 +39,83 @@ app.use(express.json({ limit: '10mb'})); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (optional)
 app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
 
-// Fetch Avatar URL
+// Generate Avatar Image
+async function img2img(onFinish) {
+  const baseImg = await convertImageToBase64(path.join(__dirname, "test.png"));
+  const params = {
+    request: {
+      model_name: "majicmixRealistic_v7_134792.safetensors",
+      image_base64: baseImg,
+      prompt: "1girl,sweater,white background",
+      negative_prompt: "(worst quality:2),(low quality:2),(normal quality:2),lowres,watermark,",
+      width: 512,
+      height: 768,
+      sampler_name: "Euler a",
+      guidance_scale: 7,
+      steps: 20,
+      image_num: 1,
+      seed: -1,
+      strength: 0.5,
+    },
+  };
+  novitaClient
+    .img2Img(params)
+    .then((res) => {
+      if (res && res.task_id) {
+        const timer = setInterval(() => {
+          novitaClient
+            .progress({
+              task_id: res.task_id,
+            })
+            .then((progressRes) => {
+              if (progressRes.task.status === TaskStatus.SUCCEED) {
+                console.log("finished!", progressRes.images);
+                clearInterval(timer);
+                onFinish(progressRes.images);
+              }
+              if (progressRes.task.status === TaskStatus.FAILED) {
+                console.warn("failed!", progressRes.task.reason);
+                clearInterval(timer);
+              }
+              if (progressRes.task.status === TaskStatus.QUEUED) {
+                console.log("queueing");
+              }
+            })
+            .catch((err) => {
+              console.error("progress error:", err);
+            });
+        }, 1000);
+      }
+    })
+    .catch((err) => {
+      console.error("img2Img error:", err);
+    });
+}
+
+// img2img((imgs) => {
+//   console.log(imgs);
+// });
+
+// Generate Avatar Image
+app.get("/getAvatarUrl", async (req, res) => {
+    const { username } = req.query;
+    if (!username) return res.status(400).json({ success: false, message: "Missing username" });
+
+    try {
+        const command = new GetObjectCommand({
+            Bucket: "avatargenerationimages",
+            Key: `users/${username}/avatar.png`
+        });
+
+        const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        res.json({ success: true, url: signedUrl });
+    } catch (error) {
+        console.error("Error generating signed URL:", error);
+        res.status(500).json({ success: false, message: "Failed to generate signed URL" });
+    }
+});
+
+// Get Avatar URL
 app.get("/getAvatarUrl", async (req, res) => {
     const { username } = req.query;
     if (!username) return res.status(400).json({ success: false, message: "Missing username" });
