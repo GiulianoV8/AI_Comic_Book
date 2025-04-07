@@ -86,15 +86,22 @@ document.addEventListener("DOMContentLoaded", function() {
     // Generate or Regenerate Avatar
     generateAvatarBtn.addEventListener("click", async () => {
         generateAvatarBtn.disabled = true;
+    
         const username = document.getElementById('newUsername').value.trim();
-        // const imageBlob = await generateSuperheroAvatar(username);
+    
+        // Get the image blob from the canvas
+        const canvasBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+    
+        // Pass the blob to the generateSuperheroAvatar function
+        const imageBlob = await generateSuperheroAvatar(username, canvasBlob);
+    
         if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
             generateAvatarBtn.innerHTML = "Regenerate Avatar";
         }
-        const imageBlob = true;
-        if(imageBlob) {
+    
+        if (imageBlob) {
             // Display avatar preview
-            const avatarURL = './imgs/DailyHeroics.png'; //URL.createObjectURL(imageBlob);
+            const avatarURL = URL.createObjectURL(imageBlob);
             avatarImage.src = avatarURL;
             avatarImage.style.display = 'block';
     
@@ -106,7 +113,44 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         generateAvatarBtn.disabled = false;
     });
-
+    
+    // Generate superhero avatar
+    async function generateSuperheroAvatar(username, imageBlob) {
+        console.log("Generating superhero avatar...");
+    
+        let genderField = document.getElementById('gender').value;
+        let gender = (genderField === "Non-binary") ? "" : genderField;
+    
+        const attributes = {
+            gender: gender,
+            age: document.getElementById('age').value,
+        };
+        const prompt = `A full body image of a ${attributes.age} years old ${attributes.gender} superhero in a dynamic pose`;
+    
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('blob', imageBlob, 'photo.png'); // Ensure the blob is appended with a filename
+        formData.append('prompt', prompt);
+    
+        try {
+            console.log('Blob before sending:', imageBlob); // Frontend
+            const response = await fetch('/generatePhoto', {
+                method: 'POST',
+                body: formData
+            });
+    
+            if (!response.ok) {
+                console.error("Failed to generate avatar");
+                return null;
+            }
+    
+            return await response.blob(); // Return the generated avatar blob
+        } catch (error) {
+            console.error("Error in generateSuperheroAvatar:", error);
+            return null;
+        }
+    }
+    
     // Confirm button saves avatar
     confirmAvatarBtn.addEventListener('click', async () => {
         const username = document.getElementById('newUsername').value.trim();
@@ -156,23 +200,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
-    // Generate superhero avatar using Stability AI API
-    async function generateSuperheroAvatar(username) {
-        console.log("Generating superhero avatar...");
     
-        const response = await fetch('/generateSuperheroAvatar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
-        });
-    
-        if (!response.ok) {
-            console.error("Failed to generate avatar");
-            return null;
-        }
-    
-        return await response.blob();
-    }
 
     // Initialize the application
     async function init() {
@@ -220,7 +248,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
 
-    document.querySelector('continue-sign-up-btn').addEventListener('click', event => {
+    document.querySelector('#continue-sign-up-btn').addEventListener('click', event => {
         event.preventDefault();
         fetch('/check-username', {
             method: 'POST',

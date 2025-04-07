@@ -9,7 +9,6 @@ const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
 const { NovitaSDK } = require("novita-sdk");
-const { convertImageToBase64 } = require("./utils.js");
 require('dotenv').config();
 
 
@@ -39,25 +38,18 @@ app.use(express.json({ limit: '10mb'})); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (optional)
 app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
 
+const blobToBase64 = blob => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    return new Promise(resolve => {
+        reader.onloadend = () => {
+            resolve(reader.result);
+        };
+    });
+};
+
 // Generate Avatar Image
-async function img2img(onFinish) {
-  const baseImg = await convertImageToBase64(path.join(__dirname, "test.png"));
-  const params = {
-    request: {
-      model_name: "majicmixRealistic_v7_134792.safetensors",
-      image_base64: baseImg,
-      prompt: "1girl,sweater,white background",
-      negative_prompt: "(worst quality:2),(low quality:2),(normal quality:2),lowres,watermark,",
-      width: 512,
-      height: 768,
-      sampler_name: "Euler a",
-      guidance_scale: 7,
-      steps: 20,
-      image_num: 1,
-      seed: -1,
-      strength: 0.5,
-    },
-  };
+async function img2img(params, onFinish) {
   novitaClient
     .img2Img(params)
     .then((res) => {
@@ -92,26 +84,65 @@ async function img2img(onFinish) {
     });
 }
 
-// img2img((imgs) => {
-//   console.log(imgs);
-// });
+app.post('/generatePhoto', upload.single('blob'), async (req, res) => {
+    const { username, prompt } = req.body;
+    const blob = req.file;
 
-// Generate Avatar Image
-app.get("/getAvatarUrl", async (req, res) => {
-    const { username } = req.query;
-    if (!username) return res.status(400).json({ success: false, message: "Missing username" });
+    if (!username || !blob || !prompt) {
+        return res.status(400).json({ success: false, message: 'Missing required parameters.' });
+    }
+
+    console.log('Received blob:', blob); // Debugging output
+    console.log('Received prompt:', prompt); // Debugging output
+
+
+    // Convert the blob to Base64 for processing
+    const base64Img = blob.buffer.toString('base64');
+
+    const params = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: process.env.NOVITA_KEY },
+        request: {
+            model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
+            image_base64: base64Img,
+            prompt: prompt,
+            negative_prompt: "(worst quality:2),(low quality:2),(normal quality:2),lowres,watermark, nsfw, superman, crooked fingers, partial body, only showing face, words, weapons",
+            width: 512,
+            height: 512,
+            sampler_name: "Euler a",
+            guidance_scale: 20,
+            steps: 20,
+            image_num: 1,
+            seed: -1,
+            strength: 0.5,
+        },
+    };
 
     try {
-        const command = new GetObjectCommand({
-            Bucket: "avatargenerationimages",
-            Key: `users/${username}/avatar.png`
+        const image = await img2img(params, (imgs) => imgs);
+        console.log('Generated image response:', image);
+
+        if (!image || !image[0]) {
+            throw new Error('No image returned from img2img function.');
+        }
+
+        const imageBlob = await fetch(image[0].image_url).then(response => response.blob());
+
+        // Save the generated avatar to S3
+        const s3Key = `users/${username}/generated_image_${Date.now()}.png`;
+        const uploadParams = new PutObjectCommand({
+            Bucket: s3_BUCKET_NAME,
+            Key: s3Key,
+            Body: Buffer.from(await imageBlob.arrayBuffer()), // Save the blob as binary
+            ContentType: 'image/png'
         });
 
-        const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        res.json({ success: true, url: signedUrl });
+        await s3.send(uploadParams);
+
+        res.status(200).json({ success: true, message: 'Avatar generated successfully.', s3Key });
     } catch (error) {
-        console.error("Error generating signed URL:", error);
-        res.status(500).json({ success: false, message: "Failed to generate signed URL" });
+        console.error('Error generating avatar:', error);
+        res.status(500).json({ success: false, message: 'Avatar generation failed', error: error.message });
     }
 });
 
@@ -169,34 +200,6 @@ app.post('/uploadAvatar', upload.single('image'), async (req, res) => {
     } catch (error) {
         console.error('Upload error:', error);
         res.status(500).json({ success: false, message: 'Upload failed' });
-    }
-});
-
-// Generate superhero avatar using Stability AI
-app.post('/generateSuperheroAvatar', async (req, res) => {
-    const { username } = req.body;
-    if (!username) return res.status(400).json({ success: false, message: 'Missing username' });
-
-    try {
-        const prompt = `Generate a superhero avatar for ${username} in a comic book style with a dynamic pose.`;
-        
-        const stabilityAIResponse = await axios.post('https://api.stability.ai/v2beta/generate/core', {
-            model: 'stable-diffusion-xl',
-            prompt: prompt,
-            output_format: 'png'
-        }, {
-            headers: {
-                'Authorization': `Bearer ${process.env.STABILITY_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            responseType: 'arraybuffer'
-        });
-
-        res.setHeader('Content-Type', 'image/png');
-        res.send(Buffer.from(stabilityAIResponse.data));
-    } catch (error) {
-        console.error('Error generating avatar:', error);
-        res.status(500).json({ success: false, message: 'Avatar generation failed' });
     }
 });
 
@@ -563,10 +566,10 @@ app.post('/changePassword', async (req, res) => {
 });
 
 app.post('/deleteImage', async (req, res) => {
-    const { userID, imageUrl, imageDescription } = req.body;
+    const { userID, imageKey } = req.body;
 
-    if (!userID || !imageUrl || !imageDescription) {
-        return res.status(400).json({ success: false, message: 'User ID and image are required.' });
+    if (!userID || !imageKey) {
+        return res.status(400).json({ success: false, message: 'User ID and image key are required.' });
     }
 
     // Fetch the user's data from DynamoDB
@@ -581,31 +584,32 @@ app.post('/deleteImage', async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        // Remove the image URL from the user's imageUrls list
-        const imageUrls = data.Item.imageUrls;
-        const updatedImageUrls = imageUrls.filter(url => !imageUrl.includes(url));
+        // Remove the image object from the user's imageObjects list
+        let imageObjects = data.Item.imageObjects || [];
+        imageObjects = imageObjects.filter(obj => obj.key !== imageKey);
 
-        let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-        updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
+        // Reassign orders to maintain the correct sequence
+        imageObjects.forEach((obj, index) => {
+            obj.order = index + 1;
+        });
 
         // Update the user's data in DynamoDB
         const updateParams = {
             TableName: TABLE_NAME,
             Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
+            UpdateExpression: "set imageObjects = :objects",
             ExpressionAttributeValues: {
-                ":urls": updatedImageUrls,
-                ":descriptions": updatedImageDescriptions
+                ":objects": imageObjects
             },
             ReturnValues: "UPDATED_NEW"
         };
 
         await docClient.update(updateParams);
 
-        return res.status(200).json({ success: true, message: 'Image removed successfully.' });
+        return res.status(200).json({ success: true, message: 'Image object deleted successfully.' });
     } catch (err) {
-        console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error image URL.' });
+        console.error('Error deleting image object:', JSON.stringify(err, null, 2));
+        return res.status(500).json({ success: false, message: 'Error deleting image object.' });
     }
 });
 
@@ -615,7 +619,7 @@ app.get('/get-api-key', (req, res) => {
 });
 
 app.post('/save-image-s3', async (req, res) => {
-    const { imageUrl } = req.body;
+    const { imageUrl, imageDescription } = req.body;
 
     try {
         // Download the image from the temporary URL
@@ -650,10 +654,10 @@ app.post('/save-image-s3', async (req, res) => {
 });
 
 app.post('/saveImage', async (req, res) => {
-    const { userID, updatedImageUrls, updatedImageDescriptions } = req.body;
+    const { userID, imageObjects } = req.body;
 
-    if (!userID || !updatedImageUrls || !updatedImageDescriptions) {
-        return res.status(400).json({ success: false, message: `User ID and image are required: userID: ${userID}, image Urls: ${updatedImageUrls}, image descriptions: ${imageDescriptions}` });
+    if (!userID || !imageObjects) {
+        return res.status(400).json({ success: false, message: 'User ID and image objects are required.' });
     }
 
     // Fetch the user's data from DynamoDB
@@ -672,20 +676,19 @@ app.post('/saveImage', async (req, res) => {
         const updateParams = {
             TableName: TABLE_NAME,
             Key: { userID: userID },
-            UpdateExpression: "set imageUrls = :urls, imageDescriptions = :descriptions",
+            UpdateExpression: "set imageObjects = :objects",
             ExpressionAttributeValues: {
-                ":urls": updatedImageUrls,
-                ":descriptions": updatedImageDescriptions
+                ":objects": imageObjects
             },
             ReturnValues: "UPDATED_NEW"
         };
 
         await docClient.update(updateParams);
 
-        return res.status(200).json({ success: true, message: 'Image URLs saved successfully.' });
+        return res.status(200).json({ success: true, message: 'Image objects saved successfully.' });
     } catch (err) {
-        console.error('Error deleting image URL:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error saving image URLs.' });
+        console.error('Error saving image objects:', JSON.stringify(err, null, 2));
+        return res.status(500).json({ success: false, message: 'Error saving image objects.' });
     }
 });
 

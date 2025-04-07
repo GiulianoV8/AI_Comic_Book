@@ -642,7 +642,7 @@ async function deleteImageUrl(imgSrc) {
 async function fillData(userID) {
     try {
         // Clear current data
-        localStorage.clear()
+        localStorage.clear();
         localStorage.setItem('userID', userID);
 
         // Fetch user data from the backend
@@ -659,38 +659,26 @@ async function fillData(userID) {
             localStorage.setItem('comicTitle', data.comicTitle);
         }
 
-        // Handle imageUrls and imageDescriptions
-        let imageUrls = data.imageUrls || [];
-        let imageDescriptions = data.imageDescriptions || [];
+        // Handle image objects
+        const imageObjects = data.imageObjects || [];
+        localStorage.setItem('imageObjects', JSON.stringify(imageObjects));
 
-        // Check if it's the first login of the day and reset images if true
-        const resetImages = userData.firstLogin;
-        if (resetImages === true) {
-            imageUrls = [];
-            imageDescriptions = [];
-            localStorage.setItem('imageUrls', JSON.stringify([]));
-            localStorage.setItem('imageDescriptions', JSON.stringify([]));
-        } else {
-            localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
-            localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
-        }
+        // Sort images by their order property
+        const sortedImages = imageObjects.sort((a, b) => a.order - b.order);
 
-        // Populate the page with images
-        let insertIndex = 0;
-        for (const imageUrl of imageUrls) {
-            if(imageUrl)
-            createPanel(imageUrl, true, insertIndex);
-            insertIndex++;
-        }
-
-        await saveImage(userID);
-
-        // Set user's attributes in localStorage
-        if (!localStorage.getItem('attributes')) {
-            localStorage.setItem('attributes', JSON.stringify(data.attributes));
-        }
+        // Render images on the page
+        const gridContainer = document.getElementById('gridContainer');
+        sortedImages.forEach((imageObject) => {
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('image-container'); // Add your container class
+            imageContainer.innerHTML = `
+                <img src="data:image/png;base64,${imageObject.image}" alt="${imageObject.description}">
+                <p>${imageObject.description}</p>
+            `;
+            gridContainer.appendChild(imageContainer);
+        });
     } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error("Error fetching user data:", error);
     }
 }
 
@@ -709,42 +697,18 @@ function submitEvent(form, description) {
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
-    generatedImage = generateImage(selectedPanel, progressDisplay, description.trim(), JSON.parse(localStorage.getItem('attributes')));
+    generatedImage = generateImage(selectedPanel, /*progressDisplay, */description.trim(), JSON.parse(localStorage.getItem('attributes')));
 }
 
 
-async function generateImage(imgElement, progressDisplay, description, attributes) {
-    const url = "https://api.novita.ai/v3/async/txt2img";
-    let key = "";
-    try {
-        const response = await fetch('/get-api-key', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        
-        key = await response.json();
-        key = key.apiKey
+async function generateImage(imgElement,/* progressDisplay, */description, attributes) {
 
-      } catch (error) {
-        console.error('Error fetching API key:', error);
+    //get Avatar URL from getAvatarUrl in app.js using the localStorage.username, then use it to generate the image with the prompt using generatePhoto from app.js. Use the image returned to display in the imgElement
 
-        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
-        addPanelBtn.disabled = false;
-        deletePanelBtn.disabled = false;
-
-        return false;
-      }
-
-    const data = {
+    const prompt = {
         request: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme showing a ${attributes.gender} ${attributes.height} tall ${attributes.age} years old ${attributes.skinColor}-skinned superhero with ${attributes.hair} and ${attributes.otherFeatures} is doing this action: ${description}.`,
+            prompt: `In a superhero comic book theme, a ${attributes.age} years old ${attributes.gender} superhero with is doing this action: ${description}.`,
             negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face, words, weapons",
             width: 512,
             height: 512,
@@ -758,91 +722,47 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         }
     };
 
-    const options = {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${key}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-    };
-
     try {
-        // Request to generate the image
-        const response = await fetch(url, options);
-        const result = await response.json();
-        const task_id = result.task_id;
 
-        // Polling function for task status
-        const checkTaskStatus = async () => {
-            const imageFetchUrl = `https://api.novita.ai/v3/async/task-result?task_id=${task_id}`;
-            const statusResponse = await fetch(imageFetchUrl, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${key}`,
-                    "Content-Type": "application/json",
-                },
-            });
-            const statusResult = await statusResponse.json();
+        const saveImageResponse = await fetch("/save-image-s3", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ imageUrl: imageUrl, imageDescription: imageDescription }),  // Send the image URL and description
+        });
 
-            progressDisplay.classList.remove('hidden');
-            progressDisplay.innerHTML = `${statusResult.task.progress_percent}%`;
+        const saveImageResult = await saveImageResponse.json();
+        
+        if (saveImageResult.success) {
+            const s3ImageUrl = saveImageResult.s3ImageUrl;  // S3 URL returned by the backend
 
-            if (statusResult.task.status === "TASK_STATUS_SUCCEED") {
-                const imageUrl = statusResult.images[0].image_url;
+            let gridItem = imgElement.parentElement;
+            gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
+            gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
 
-                // Send the temporary image URL to the backend to save to S3
-                const saveImageResponse = await fetch("/save-image-s3", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ imageUrl }),  // Send the image URL and description
-                });
-
-                const saveImageResult = await saveImageResponse.json();
-                
-                if (saveImageResult.success) {
-                    const s3ImageUrl = saveImageResult.s3ImageUrl;  // S3 URL returned by the backend
-
-                    let gridItem = imgElement.parentElement;
-                    gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
-                    gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
-
-                    // Store the new S3 URL
-                    let imageUrls = [];
-                    for(const image of document.querySelectorAll('.generated-image')) {
-                        if(!image.src.includes("imgs/blank_white.jpeg")){
-                            imageUrls.push(image.src);
-                        }
-                    }
-
-                    let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-                    imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(s3ImageUrl), 0, description);
-                    localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
-
-                    saveImage(localStorage.getItem('userID'));
-                }else{
-                    let gridItem = imgElement.parentElement;
-                    gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
-                    return false;
+            // Store the new S3 URL
+            let imageUrls = [];
+            for(const image of document.querySelectorAll('.generated-image')) {
+                if(!image.src.includes("imgs/blank_white.jpeg")){
+                    imageUrls.push(image.src);
                 }
-
-                document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
-                addPanelBtn.disabled = false;
-                deletePanelBtn.disabled = false;
-
-            } else if (statusResult.task.status === "TASK_STATUS_QUEUED" || statusResult.task.status === "TASK_STATUS_PROCESSING") {
-                setTimeout(checkTaskStatus, 5000); // Retry after 5 seconds
-            } else if (statusResult.task.status === "TASK_STATUS_FAILED") {
-                let gridItem = imgElement.parentElement;
-                gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
-                return false;
             }
-        };
 
-        checkTaskStatus();
-        return true;
+            let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
+            imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(s3ImageUrl), 0, description);
+            localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
+
+            saveImage(localStorage.getItem('userID'));
+        }else{
+            let gridItem = imgElement.parentElement;
+            gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
+            return false;
+        }
+
+        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
+        addPanelBtn.disabled = false;
+        deletePanelBtn.disabled = false;
     } catch (error) {
         console.error("Error:", error);
 
@@ -850,38 +770,35 @@ async function generateImage(imgElement, progressDisplay, description, attribute
         addPanelBtn.disabled = false;
         deletePanelBtn.disabled = false;
 
+        let gridItem = imgElement.parentElement;
+        gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
         return false;
     }
 }
 
 
-async function saveImage(userID) {
-    try {
-        let imageUrls = [];
-        for(const image of document.querySelectorAll('.generated-image')) {
-            if(!image.src.includes("imgs/blank_white.jpeg")){
-                imageUrls.push(image.src);
-            }
-        }
+async function saveImage(userID, imageBlob, description) {
+    const imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
 
-        const response = await fetch('/saveImage', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userID: userID,
-                updatedImageUrls: imageUrls,
-                updatedImageDescriptions: JSON.parse(localStorage.getItem('imageDescriptions'))
-            })
-        });
-        const result = await response.json();
-        if (result.success) {
-            localStorage.setItem('imageUrls', JSON.stringify(imageUrls));
-        } else {
-            console.error("Error saving images to DynamoDB:", result.message);
-        }
-    } catch (error) {
-        console.error('Error saving images:', error);
-    }
+    // Get the current order of images on the page
+    const imageContainers = document.querySelectorAll('.image-container'); // Replace with the actual class or ID of your image containers
+    const order = imageContainers.length; // Assign the next order based on the number of images
+
+    // Create a new image object
+    const newImageObject = {
+        key: `generated_image_${Date.now()}`,
+        description: description,
+        image: await blobToBase64(imageBlob), // Convert blob to base64
+        order: order
+    };
+
+    imageObjects.push(newImageObject);
+    localStorage.setItem('imageObjects', JSON.stringify(imageObjects));
+
+    // Send the updated image objects to the backend
+    await fetch('/saveImage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userID, imageObjects })
+    });
 }

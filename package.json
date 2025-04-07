@@ -22,7 +22,7 @@
         "express": "^4.21.0",
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.9.15",
-        "novita-sdk": "^1.0.44",
+        "novita-sdk": "^1.1.0",
         "path": "^0.12.7"
     },
     "author": "Giuliano Vitale",
