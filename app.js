@@ -61,9 +61,9 @@ async function img2img(params, onFinish) {
             })
             .then((progressRes) => {
               if (progressRes.task.status === TaskStatus.SUCCEED) {
-                console.log("finished!", progressRes.images);
+                console.log("finished!", progressRes.imgs);
                 clearInterval(timer);
-                onFinish(progressRes.images);
+                onFinish(progressRes.imgs);
               }
               if (progressRes.task.status === TaskStatus.FAILED) {
                 console.warn("failed!", progressRes.task.reason);
@@ -98,11 +98,11 @@ app.post('/generatePhoto', upload.single('blob'), async (req, res) => {
 
     // Convert the blob to Base64 for processing
     const base64Img = blob.buffer.toString('base64');
-
+    
     const params = {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: process.env.NOVITA_KEY },
-        request: {
+        body: {
             model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
             image_base64: base64Img,
             prompt: prompt,
