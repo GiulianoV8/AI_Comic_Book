@@ -18,12 +18,19 @@
         "aws-sdk-js-codemod": "^2.3.0",
         "axios": "^1.7.9",
         "body-parser": "^1.20.2",
+        "convert": "^5.10.0",
         "dotenv": "^16.4.7",
         "express": "^4.21.0",
+        "filereader": "^0.10.3",
+        "fs": "^0.0.1-security",
+        "heic-convert": "^2.1.0",
+        "heic-to": "^1.1.12",
         "multer": "^1.4.5-lts.1",
         "nodemailer": "^6.9.15",
         "novita-sdk": "^1.1.0",
-        "path": "^0.12.7"
+        "path": "^0.12.7",
+        "sharp": "^0.34.1",
+        "util": "^0.12.5"
     },
     "author": "Giuliano Vitale",
     "devDependencies": {

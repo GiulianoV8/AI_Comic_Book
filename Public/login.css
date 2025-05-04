@@ -21,7 +21,7 @@ body {
 }
 
 /* Buttons Styling */
-button {
+button, #upload-image-input{
     font-size: 1.2rem;
     font-weight: bold;
     text-transform: uppercase;
@@ -45,10 +45,10 @@ video, canvas {
     width: 100%;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-    display: block;
+    display: none;
 }
 
-#capture-btn, #take-picture-btn, #confirm-avatar-btn {
+#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input{
     background-color: rgb(255, 198, 0);
     border: none;
     padding: 10px 20px;
@@ -60,7 +60,15 @@ video, canvas {
     transition: 0.3s;
 }
 
+#uploaded-image {
+	margin: auto;
+	border-radius: 3%;
+	border: 2px solid black;
+	max-width: 100%; 
+
+}
 #capture-btn {
+	display: none;
     position: absolute;
     bottom: 10px;
     left: 50%;
@@ -72,7 +80,7 @@ video, canvas {
     font-size: 16px;
 }
 
-#capture-btn:hover, #take-picture-btn:hover, #confirm-avatar-btn:hover {
+#capture-btn:hover, #take-picture-btn:hover, #confirm-avatar-btn:hover, #upload-image-input:hover {
     background-color: rgb(255, 170, 0);
 }
 
@@ -80,6 +88,7 @@ video, canvas {
     text-align: center;
     margin-top: 20px;
 }
+
 
 #down-arrow {
     font-size: 30px;
@@ -110,11 +119,12 @@ video, canvas {
 #avatar-image {
     display: none;
     width: 100%;
-    max-width: 500px;
+    max-width: 100%;
     margin-top: 10px;
 	margin-left: auto;
 	margin-right: auto;
-    border-radius: 10px;
+	border: 2px solid black;
+    border-radius: 3%;
 }
 
 @keyframes bounce {

@@ -59,7 +59,7 @@
                 </select>
             </div>
             <div class="input-group">
-                <label for="age">What is your age?</label>
+                <label for="age">Age</label>
                 <input type="number" id="age" name="age" placeholder="53" required min="1" step="1">
             </div>
             <button type="button" class="signup-button" id="continue-sign-up-btn">Continue</button>
@@ -71,16 +71,24 @@
         <h1 class="title-text title">Create Your Hero!</h1>
 
         <button id="take-picture-btn">Take a picture of yourself to create your superhero avatar!</button>
-    
+        
         <div class="container">
+            <!-- File input for uploading an image -->
+            <label for="upload-image-input" id="upload-image-label" class="btn">Or Select an Image</label>
+            <input type="file" id="upload-image-input" accept="image/*">
             <!-- Video feed for taking a photo -->
             <video id="webcam" autoplay playsinline></video>
             
             <!-- Canvas for captured image -->
             <canvas id="output-canvas" style="display: none;"></canvas>
-    
+        
+            <!-- Uploaded image preview -->
+            <img id="uploaded-image" style="display: none;" alt="Uploaded Image">
+        
             <!-- Capture/Retake button positioned inside video/canvas -->
             <button id="capture-btn">Capture Photo</button>
+        
+            
         </div>
     
         <!-- Arrow and "Generate Superhero Avatar" button (hidden initially) -->

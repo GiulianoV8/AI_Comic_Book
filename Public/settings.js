@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const attributes = {
             gender: gender,
-            age: document.getElementById('age').value,
+			age: document.getElementById("age").value < 21 ? "young" : document.getElementById("age").value,
         };
         
         localStorage.setItem('attributes', JSON.stringify(attributes));

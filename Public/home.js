@@ -522,7 +522,6 @@ function createPanel(src, image, position) {
         const imageUrl = src;
         const description = JSON.parse(localStorage.getItem('imageDescriptions'))[position];
         newGridItem.addEventListener('click', event => openModal(imageUrl, description, event));
-
     } else {
         newGridItem.innerHTML = `
             <div class="scribble-container">
@@ -530,8 +529,8 @@ function createPanel(src, image, position) {
             </div>
             <img class="generated-image" src=${src}>
             <form class="input-container" onSubmit="submitEvent(this, description.value)">
-                <textarea class="event-input" id="event-input-${position}" name="description" placeholder="Event" rows="1"></textarea>
-                <button class="mic-button" id="mic-button-${position}" type="button">
+                <textarea class="event-input" name="description" placeholder="Event" rows="1"></textarea>
+                <button class="mic-button" type="button">
                     <img src="imgs/mic_icon.png" alt="speak" class="mic-icon">
                 </button>
                 <button class="event-submit" type="submit">
@@ -559,12 +558,12 @@ function createPanel(src, image, position) {
 
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            document.getElementById(`event-input-${position}`).value += ` ${transcript}`;
+            document.getElementsByClassName(`event-input`)[position].value += ` ${transcript}`;
         };
         recognition.onstart = () => {
             recognizingSpeech = true;
-            document.getElementById(`event-input-${position}`).placeholder = "Listening...";
-            document.getElementById(`mic-button-${position}`).style.backgroundColor = "#00a6cb";
+            document.getElementByClassName(`event-input`)[position].placeholder = "Listening...";
+            document.getElementByClassName(`mic-button`)[position].style.backgroundColor = "#00a6cb";
 
             // Disable all other mic buttons
             disableOtherMicButtons(position, true);
@@ -601,44 +600,6 @@ function disableOtherMicButtons(currentPosition, disable) {
     });
 }
 
-
-async function deleteImageUrl(imgSrc) {
-    if (imgSrc === undefined) {
-        return false;
-    }
-
-    let imageDescription = JSON.parse(localStorage.getItem('imageDescriptions'))[JSON.parse(localStorage.getItem('imageUrls')).indexOf(imgSrc)];
-    
-    try {
-        // Send a request to delete the image URL from DynamoDB
-        const response = await fetch('/deleteImage', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userID: localStorage.getItem('userID'),
-                imageUrl: imgSrc,
-                imgDescription: imageDescription
-            })
-        });
-        const result = await response.json();
-        if (result.success) {
-            let imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
-            updatedImageUrls = imageUrls.filter(url => !imgSrc.includes(url));
-            localStorage.setItem('imageUrls', JSON.stringify(updatedImageUrls));
-
-            let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-            updatedImageDescriptions = imageDescriptions.filter(description => description !== imageDescription);
-            localStorage.setItem('imageDescriptions', JSON.stringify(updatedImageDescriptions));
-        } else {
-            console.error("Error removing image from DynamoDB:", result.message);
-        }
-    } catch (error) {
-        console.error("Error during deletion request:", error);
-    }
-}
-
 async function fillData(userID) {
     try {
         // Clear current data
@@ -672,7 +633,7 @@ async function fillData(userID) {
             const imageContainer = document.createElement('div');
             imageContainer.classList.add('image-container'); // Add your container class
             imageContainer.innerHTML = `
-                <img src="data:image/png;base64,${imageObject.image}" alt="${imageObject.description}">
+                <img src="${imageObject.image}" alt="${imageObject.description}">
                 <p>${imageObject.description}</p>
             `;
             gridContainer.appendChild(imageContainer);
@@ -689,116 +650,82 @@ function submitEvent(form, description) {
     addPanelBtn.disabled = true;
     deletePanelBtn.disabled = true;
 
-    const progressDisplay = document.createElement('span');
-    progressDisplay.classList.add('progress-display', 'hidden');
-    form.parentElement.appendChild(progressDisplay);
-
     const selectedPanel = form.parentElement.querySelector('.generated-image');
     const pencil = form.parentElement.querySelector('.pencil');
     pencil.classList.remove('hidden');
 
-    generatedImage = generateImage(selectedPanel, /*progressDisplay, */description.trim(), JSON.parse(localStorage.getItem('attributes')));
+    generateImage(selectedPanel, description.trim(), JSON.parse(localStorage.getItem('attributes')));
 }
 
 
-async function generateImage(imgElement,/* progressDisplay, */description, attributes) {
-
-    //get Avatar URL from getAvatarUrl in app.js using the localStorage.username, then use it to generate the image with the prompt using generatePhoto from app.js. Use the image returned to display in the imgElement
-
-    const prompt = {
-        request: {
-            model_name: "protovisionXLHighFidelity3D_beta0520Bakedvae_106612.safetensors",
-            prompt: `In a superhero comic book theme, a ${attributes.age} years old ${attributes.gender} superhero with is doing this action: ${description}.`,
-            negative_prompt: "nsfw, superman, crooked fingers, partial body, only showing face, words, weapons",
-            width: 512,
-            height: 512,
-            sampler_name: "DPM++ 2S a Karras",
-            guidance_scale: 10.5,
-            steps: 20,
-            image_num: 1,
-            clip_skip: 1,
-            seed: -1,
-            loras: [],
-        }
-    };
+async function generateImage(imgElement, description, attributes) {
+    const prompt = `In a superhero comic book theme, a ${attributes.age} ${attributes.gender} superhero is doing this action: ${description}.`;
+    const position = Array.from(document.querySelectorAll(".generated-image")).indexOf(imgElement);
 
     try {
-
-        const saveImageResponse = await fetch("/save-image-s3", {
+        // Generate photo through /generatePhoto endpoint
+        const response = await fetch("/generatePhoto", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ imageUrl: imageUrl, imageDescription: imageDescription }),  // Send the image URL and description
+            body: JSON.stringify({ 
+                username: localStorage.getItem('userID'), 
+                prompt: prompt, 
+                isAvatar: false, 
+                position: position
+            }),
         });
 
-        const saveImageResult = await saveImageResponse.json();
-        
-        if (saveImageResult.success) {
-            const s3ImageUrl = saveImageResult.s3ImageUrl;  // S3 URL returned by the backend
-
-            let gridItem = imgElement.parentElement;
-            gridItem.innerHTML = `<img class="generated-image" src=${s3ImageUrl}>`;
-            gridItem.addEventListener('click', (event) => openModal(s3ImageUrl, description, event));
-
-            // Store the new S3 URL
-            let imageUrls = [];
-            for(const image of document.querySelectorAll('.generated-image')) {
-                if(!image.src.includes("imgs/blank_white.jpeg")){
-                    imageUrls.push(image.src);
-                }
-            }
-
-            let imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
-            imageDescriptions = imageDescriptions.toSpliced(imageUrls.indexOf(s3ImageUrl), 0, description);
-            localStorage.setItem('imageDescriptions', JSON.stringify(imageDescriptions));
-
-            saveImage(localStorage.getItem('userID'));
-        }else{
-            let gridItem = imgElement.parentElement;
-            gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
+        const result = await response.json();
+        if (!result.success) {
+            console.error("Error generating image:", result.message);
             return false;
         }
 
-        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
-        addPanelBtn.disabled = false;
-        deletePanelBtn.disabled = false;
+        // Save the generated image to S3 and update imageObjects
+        const imageBlob = await fetch(result.imageUrl).then((res) => res.blob());
+    
+        await saveImage(localStorage.getItem("userID"), imageBlob, description, position);
+
+        // Update the UI
+        imgElement.src = result.imageUrl;
     } catch (error) {
-        console.error("Error:", error);
-
-        document.querySelectorAll(".event-submit").forEach(button => button.disabled = false);
-        addPanelBtn.disabled = false;
-        deletePanelBtn.disabled = false;
-
-        let gridItem = imgElement.parentElement;
-        gridItem.innerHTML = `<img class="generated-image" src="imgs/blank_white.jpeg">`;
+        console.error("Error generating image:", error);
+        imgElement.src = "imgs/blank_white.jpeg"; // Fallback image
         return false;
     }
+
+    document.querySelectorAll(".event-submit").forEach((button) => (button.disabled = false));
+    addPanelBtn.disabled = false;
+    deletePanelBtn.disabled = false;
 }
 
+async function saveImage(userID, imageBlob, description, position) {
+    const imageObjects = JSON.parse(localStorage.getItem("imageObjects")) || [];
 
-async function saveImage(userID, imageBlob, description) {
-    const imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
-
-    // Get the current order of images on the page
-    const imageContainers = document.querySelectorAll('.image-container'); // Replace with the actual class or ID of your image containers
-    const order = imageContainers.length; // Assign the next order based on the number of images
-
-    // Create a new image object
+    // Insert the new image object at the correct position
     const newImageObject = {
-        key: `generated_image_${Date.now()}`,
+        key: `${position}_image.jpeg`,
         description: description,
-        image: await blobToBase64(imageBlob), // Convert blob to base64
-        order: order
+        image: imageBlob.toBuffer(),
+        order: position,
     };
 
-    imageObjects.push(newImageObject);
-    localStorage.setItem('imageObjects', JSON.stringify(imageObjects));
+    // Reorder existing images
+    imageObjects.splice(position, 0, newImageObject);
+    imageObjects.forEach((obj, index) => {
+        obj.order = index;
+        obj.key = `${index}_image.jpeg`;
+    });
+
+    localStorage.setItem("imageObjects", JSON.stringify(imageObjects));
 
     // Send the updated image objects to the backend
-    await fetch('/saveImage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userID, imageObjects })
+    await fetch("/saveImage", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userID, imageObjects }),
     });
 }
+
