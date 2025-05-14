@@ -221,66 +221,79 @@ document.addEventListener('DOMContentLoaded', () => {
    
     // Generate or Regenerate Avatar
     generateAvatarBtn.addEventListener("click", async () => {
+        generateAvatarBtn.disabled = true;
+
+        const username = localStorage.getItem("username");
+
+        let imageBlob;
+        if (avatarImage.style.display === "block") {
+            // Use the uploaded image
+            const response = await fetch(avatarImage.src);
+            imageBlob = await response.blob();
+        } else {
+            // Use the captured image from the canvas
+            imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+        }
+        console.log("imageBlob:", imageBlob);
+
+        // Pass the image to the generateSuperheroAvatar function
+        const avatarResult = await generateSuperheroAvatar(username, imageBlob);
+
         if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
             generateAvatarBtn.innerHTML = "Regenerate Avatar";
         }
 
-        generateAvatarBtn.disabled = true;
-        const username = document.getElementById('newUsername').value.trim();
-        // const imageBlob = await generateSuperheroAvatar(username);
-        const imageBlob = true;
-        if(imageBlob) {
+        if (avatarResult) {
             // Display avatar preview
-            const avatarURL = './imgs/DailyHeroics.png'; //URL.createObjectURL(imageBlob);
-            avatarImage.src = avatarURL;
-            avatarImage.style.display = 'block';
-    
+            avatarImage.src = avatarResult;
+            avatarImage.style.display = "block";
+
             // Show avatar image and container
-            avatarContainer.style.display = 'block';
-    
+            avatarContainer.style.display = "block";
+
             // Hide generate section
-            arrow.style.display = 'none';
+            arrow.style.display = "none";
         }
         generateAvatarBtn.disabled = false;
     });
 
-    // Upload image to backend
-    async function uploadUserPhoto(imageFile, username) {  
-        console.log("Uploading file:", imageFile);
-        console.log("Username:", username);
-        
-        const formData = new FormData();
-        formData.append('username', username);
-        formData.append('image', imageFile);
-    
-        try {
-            const response = await fetch('/uploadAvatar', {
-                method: 'POST',
-                body: formData
-            });
-    
-            return await response.json();
-        } catch (error) {
-            console.error('Error uploading avatar:', error);
-        }
-    }
-    
-    // Generate superhero avatar using Stability AI API
-    async function generateSuperheroAvatar(username) {
+    // Generate superhero avatar
+    async function generateSuperheroAvatar(username, blob) {
         console.log("Generating superhero avatar...");
-    
-        const response = await fetch('/generateSuperheroAvatar', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username })
-        });
-    
-        if (!response.ok) {
-            console.error("Failed to generate avatar");
+
+        let genderField = document.getElementById("gender").value;
+        let gender = genderField === "Non-binary" ? "" : genderField;
+
+        const attributes = {
+            gender: gender,
+            age: document.getElementById("age").value < 21 ? "young" : `${document.getElementById("age").value} year old`,
+        };
+        const prompt = `A full body image of this ${attributes.age} ${attributes.gender} person as a hero in a dynamic pose and comic book style`;
+
+        const formData = new FormData();
+        formData.append("username", username);
+        formData.append("prompt", prompt);
+        formData.append("isAvatar", true);
+        formData.append("image", blob, "avatar.jpeg"); // Append the Blob with a filename
+
+        try {
+            console.log("Sending blob:", blob);
+            const response = await fetch("/generatePhoto", {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!response.ok) {
+                console.error("Failed to generate avatar");
+                return null;
+            }
+
+            const result = await response.json();
+            return result.image; // Return the generated avatar URL
+        } catch (error) {
+            console.error("Error in generateSuperheroAvatar:", error);
             return null;
         }
-    
-        return await response.blob();
     }
 
     logoutBtn.addEventListener('click', () => localStorage.clear());

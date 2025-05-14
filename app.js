@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const fs = require('fs');
 const { promisify } = require('util');
+const streamPipeline = promisify(require('stream').pipeline);
 const { DynamoDBDocument } = require('@aws-sdk/lib-dynamodb');
 const path = require('path');
 const { DynamoDB, QueryCommand } = require('@aws-sdk/client-dynamodb');
@@ -28,7 +29,6 @@ const s3 = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
     }
 });
-const novitaClient = new NovitaSDK(process.env.NOVITA_KEY);
 
 const s3_BUCKET_NAME = 'avatargenerationimages';
 
@@ -99,7 +99,7 @@ async function generateWithDeepImage(formDataParams) {
     const response = await fetch('https://deep-image.ai/rest_api/process', {
         method: 'POST',
         headers: {
-            'x-api-key': `${process.env.DEEP-IMAGE_KEY}`,
+            'x-api-key': `${process.env.DEEP_IMAGE_KEY}`,
         },
         body: formDataParams
     });
@@ -137,14 +137,14 @@ async function updateS3Keys(username, oldImageObjects, newImageObjects) {
 }
 
 app.post('/generatePhoto', upload.single('image'), async (req, res) => {
-    const { username, prompt, isAvatar, position } = req.body;
+    const { username, userID, prompt, isAvatar, position, description } = req.body;
     const file = req.file || null;
 
     console.log('--- /generatePhoto Request Received ---');
     console.log('Request Body:', req.body);
     console.log('Uploaded File:', file);
 
-    if (!username || ((!file && isAvatar) || (file && !isAvatar)) || !prompt) {
+    if (!(username || userID) || ((!file && isAvatar) || (file && !isAvatar)) || !prompt) {
         console.error('Validation Error: Missing required parameters.');
         return res.status(400).json({ success: false, message: 'Missing required parameters.' });
     }
@@ -170,11 +170,6 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
             console.log('Fetched Avatar Image Buffer (First 100 Bytes):', imageBuffer.subarray(0, 100));
         }
 
-        // Create a readable stream from the buffer
-        const imageStream = new Readable();
-        imageStream.push(imageBuffer); // Push the buffer into the stream
-        imageStream.push(null); // Signal the end of the stream
-
         console.log('Preparing parameters for DeepImage.ai...');
         // Set parameters for image generation
         const params = {
@@ -191,39 +186,53 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
             },
         };
 
+        const headers = {
+            'x-api-key': `${process.env.DEEP_IMAGE_KEY}`,
+        };
+
         console.log('Parameters for DeepImage.ai:', params);
 
         // Prepare the form data for the DeepImage.ai API
         const formData = new FormData();
-        formData.append('image', imageStream, file ? file.originalname : 'avatar.jpeg'); // Attach the readable stream
+        formData.append('image', new Blob([imageBuffer], { type: 'image/jpeg' }), 'avatar.jpeg');
         formData.append('parameters', JSON.stringify(params)); // Attach the parameters
 
         console.log('Sending request to DeepImage.ai...');
         // Generate image with DeepImage.ai
-        const resultJson = await generateWithDeepImage(formData);
-        console.log('DeepImage.ai Response:', resultJson);
-
-        const jobId = resultJson.job;
+        const response = await fetch('https://deep-image.ai/rest_api/process', {
+            method: 'POST',
+            headers: headers,
+            body: formData
+        });
+        
+        if (!response.ok) throw new Error('API request failed');
+        
+        let responseJson = await response.json();
+        console.log('DeepImage.ai Response:', responseJson);
+        const jobId = responseJson.job;
         console.log('DeepImage.ai Job ID:', jobId);
 
         let resultStatus = 'received';
-        let s3Key = '';
+        let updatedImageObjects = [];
+        let avatarUrl = '';
+        let resultJson = null;
 
         while (["received", "in_progress", "not_started"].includes(resultStatus)) {
             console.log(`Checking job status for Job ID: ${jobId}...`);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 3000));
             const resultResponse = await fetch(`https://deep-image.ai/rest_api/result/${jobId}`, { headers });
-            const resultJson = await resultResponse.json();
+            resultJson = await resultResponse.json();
             resultStatus = resultJson.status;
-            console.log(`Job Status: ${resultStatus}`);
+            console.log(`Job Status: ${JSON.stringify(resultJson)}`);
         }
 
         if (resultStatus === 'complete') {
             const resultUrl = resultJson.result_url;
             console.log('Generated Image URL:', resultUrl);
-
+            
             // Fetch the generated image as a buffer
-            const imageBuffer = await fetch(resultUrl).then((response) => response.arrayBuffer());
+            const imageBufferRequest = await fetch(resultUrl);
+            const imageBuffer = await imageBufferRequest.arrayBuffer();
             const buffer = Buffer.from(imageBuffer); // Convert ArrayBuffer to Buffer
             console.log('Generated Image Buffer (First 100 Bytes):', buffer.subarray(0, 100));
 
@@ -243,7 +252,7 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 // Insert the new image at the specified position
                 const newImageObject = {
                     key: `${position}_image.jpeg`,
-                    description: prompt,
+                    description: description,
                     order: position,
                 };
                 const newImageObjects = [...oldImageObjects];
@@ -255,6 +264,7 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                     obj.key = `${index}_image.jpeg`;
                 });
 
+                updatedImageObjects = newImageObject;
                 console.log('New Image Objects:', newImageObjects);
 
                 // Update S3 keys if necessary
@@ -274,6 +284,16 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
 
                 await s3.send(uploadParams);
 
+                // Update avatarUrl to presigned URL of the generated image
+                const getObjectParams = {
+                    Bucket: s3_BUCKET_NAME,
+                    Key: s3Key,
+                };
+                avatarUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                    expiresIn: 3600, // URL expires in 1 hour
+                });
+                console.log('Generated Image Presigned URL:', avatarUrl);
+
                 // Update the user's imageObjects in DynamoDB
                 console.log('Updating DynamoDB with new imageObjects...');
                 const updateParams = {
@@ -286,7 +306,7 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                     ReturnValues: "UPDATED_NEW",
                 };
 
-                await docClient.update(updateParams);
+                docClient.update(updateParams);
             } else if (isAvatar) {
                 console.log('Processing avatar image...');
                 // Save avatar to S3
@@ -300,14 +320,21 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                     ContentType: 'image/jpeg',
                 };
                 await s3.send(new PutObjectCommand(uploadParams));
+
+                // update avatarUrl to presigned url of the avatar
+                const getObjectParams = {
+                    Bucket: s3_BUCKET_NAME,
+                    Key: s3Key,
+                };
+                avatarUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                    expiresIn: 3600, // URL expires in 1 hour
+                });
+                console.log('Avatar URL:', avatarUrl);
             }
-        } else {
-            console.error('Image generation failed.');
-            throw new Error('Image generation failed.');
         }
 
         console.log('Image generation workflow completed successfully.');
-        res.status(200).json({ success: true, message: 'Image generated successfully.', s3Key });
+        res.status(200).json({ success: true, message: 'Image generated successfully.', imageObjects: updatedImageObjects, image: avatarUrl });
     } catch (error) {
         console.error('Error generating photo:', error);
         res.status(500).json({ success: false, message: 'Photo generation failed.', error: error.message });
@@ -528,6 +555,31 @@ app.get('/getUserData', async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        console.log('User Data: ', data);
+    
+        // Get today's date in the user's local time zone
+        const today = 1 // Format: YYYYMMDD
+        // Convert lastLogin to the same format as today
+        const lastLogin = parseInt(data.Item.lastLogin);
+    
+        let firstLogin = false;
+        console.log(today, lastLogin);
+        if (!lastLogin || lastLogin < today) {
+            firstLogin = true;
+            console.log("First login of the day!");
+    
+            // Update the last login date in DynamoDB
+            const updateParams = {
+                TableName: TABLE_NAME,
+                Key: { userID: userID },
+                UpdateExpression: "SET lastLogin = :date",
+                ExpressionAttributeValues: {
+                    ":date": today
+                }
+            };
+            await docClient.update(updateParams);
+        }
+
         const imageObjects = data.Item.imageObjects || [];
 
         // Generate presigned URLs for each image
@@ -549,7 +601,7 @@ app.get('/getUserData', async (req, res) => {
             })
         );
 
-        res.json({ item: { ...data.Item, imageObjects: updatedImageObjects } });
+        res.json({ item: { ...data.Item, imageObjects: updatedImageObjects, firstLogin: firstLogin } });
     } catch (error) {
         console.error('Error fetching data from DynamoDB:', error);
         res.status(500).json({ error: 'Internal Server Error' });

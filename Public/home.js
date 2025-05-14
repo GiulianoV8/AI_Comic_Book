@@ -659,9 +659,20 @@ function submitEvent(form, description) {
 
 
 async function generateImage(imgElement, description, attributes) {
-    const prompt = `In a superhero comic book theme, a ${attributes.age} ${attributes.gender} superhero is doing this action: ${description}.`;
+    const prompt = `A high-energy comic book panel of a ${attributes.age} ${attributes.gender} superhero ${description}, 
+    drawn in a bold ink style with thick outlines, Ben-Day dots, and exaggerated perspective. 
+    Color palette: Vibrant primaries (red/blue/yellow) with comic-book halftone shading. 
+    Style: Cross between [Jack Kirby's dynamic poses] and [Bruce Timm's clean lines]. 
+    Add speed lines, sound effects, and a dramatic spotlight.`;
+    
     const position = Array.from(document.querySelectorAll(".generated-image")).indexOf(imgElement);
 
+    const formData = new FormData();
+	formData.append("username", localStorage.getItem('username'));
+    formData.append("userID", localStorage.getItem('userID'));
+    formData.append("prompt", prompt);
+    formData.append("isAvatar", false);
+	formData.append("description", description);
     try {
         // Generate photo through /generatePhoto endpoint
         const response = await fetch("/generatePhoto", {
@@ -683,13 +694,11 @@ async function generateImage(imgElement, description, attributes) {
             return false;
         }
 
-        // Save the generated image to S3 and update imageObjects
-        const imageBlob = await fetch(result.imageUrl).then((res) => res.blob());
-    
-        await saveImage(localStorage.getItem("userID"), imageBlob, description, position);
+        
+        saveImage(localStorage.getItem("userID"), result.imageObjects);
 
         // Update the UI
-        imgElement.src = result.imageUrl;
+        imgElement.src = result.image;
     } catch (error) {
         console.error("Error generating image:", error);
         imgElement.src = "imgs/blank_white.jpeg"; // Fallback image
@@ -701,31 +710,7 @@ async function generateImage(imgElement, description, attributes) {
     deletePanelBtn.disabled = false;
 }
 
-async function saveImage(userID, imageBlob, description, position) {
-    const imageObjects = JSON.parse(localStorage.getItem("imageObjects")) || [];
-
-    // Insert the new image object at the correct position
-    const newImageObject = {
-        key: `${position}_image.jpeg`,
-        description: description,
-        image: imageBlob.toBuffer(),
-        order: position,
-    };
-
-    // Reorder existing images
-    imageObjects.splice(position, 0, newImageObject);
-    imageObjects.forEach((obj, index) => {
-        obj.order = index;
-        obj.key = `${index}_image.jpeg`;
-    });
-
+async function saveImage(userID, imageObjects) {
     localStorage.setItem("imageObjects", JSON.stringify(imageObjects));
-
-    // Send the updated image objects to the backend
-    await fetch("/saveImage", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userID, imageObjects }),
-    });
 }
 

@@ -148,33 +148,45 @@ document.addEventListener("DOMContentLoaded", function () {
 		const username = document.getElementById("newUsername").value.trim();
 
 		let imageBlob;
-        if (uploadedImage.style.display === "block") {
-            // Use the uploaded image
-            const response = await fetch(uploadedImage.src);
-            imageBlob = await response.blob();
-        } else {
-            // Use the captured image from the canvas
-            imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
-        }
-        console.log("imageBlob:", imageBlob);
+		if (uploadedImage.style.display === "block") {
+			// Use the uploaded image
+			const response = await fetch(uploadedImage.src);
+			imageBlob = await response.blob();
+		} else {
+			// Use the captured image from the canvas
+			imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+		}
+		console.log("imageBlob:", imageBlob);
 
-		// Pass the image to the generateSuperheroAvatar function
+		// Show the loading animation
+		const loadingContainer = document.getElementById("loading-container");
+		loadingContainer.style.display = "block";
+
+		// Hide the avatar container while loading
+		const avatarContainer = document.getElementById("avatar-container");
+		avatarContainer.style.display = "none";
+
+		// Generate the superhero avatar
 		const avatarResult = await generateSuperheroAvatar(username, imageBlob);
+
+		// Hide the loading animation
+		loadingContainer.style.display = "none";
 
 		if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
 			generateAvatarBtn.innerHTML = "Regenerate Avatar";
 		}
 
 		if (avatarResult) {
-			// Display avatar preview
-			const avatarURL = URL.createObjectURL(avatarResult);
-			avatarImage.src = avatarURL;
-			avatarImage.style.display = "block";
-
-			// Show avatar image and container
+			// Show avatar container
 			avatarContainer.style.display = "block";
 
-			// Hide generate section
+			// Display avatar preview
+			const avatarImage = document.getElementById("avatar-image");
+			avatarImage.style.display = "block";
+			avatarImage.src = avatarResult;
+
+			// Hide the generate section
+			const arrow = document.getElementById("down-arrow");
 			arrow.style.display = "none";
 		}
 		generateAvatarBtn.disabled = false;
@@ -191,13 +203,21 @@ document.addEventListener("DOMContentLoaded", function () {
 			gender: gender,
 			age: document.getElementById("age").value < 21 ? "young" : `${document.getElementById("age").value} year old`,
 		};
-		const prompt = `A full body image of this ${attributes.age} ${attributes.gender} person as a hero in a dynamic pose and comic book style`;
+
+		const prompt = `A bold comic book illustration of this ${attributes.age} ${attributes.gender} person as a superhero, 
+		hyper-stylized with ink outlines, Ben-Day dots, and vibrant primary colors. 
+		Dynamic superhero pose with exaggerated perspective (e.g., foreshortened fists or flying motion), 
+		${attributes.age < 21 ? 'youthful, energetic' : 'powerful, commanding'} facial expression, 
+		and a comic-book-style halftone background. 
+		Inspired by [Artists: Stan Lee/Jim Lee/Jack Kirby], with dramatic lighting and action lines for motion effects.`;
 
 		const formData = new FormData();
 		formData.append("username", username);
+		formData.append("userID", '_');
         formData.append("prompt", prompt);
         formData.append("isAvatar", true);
 		formData.append("image", blob, blob.mimetype); // Append the Blob with a filename
+		formData.append("description", '');
 
 		try {
 			console.log("sending blob:", blob); // Frontend
@@ -208,13 +228,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			if (!response.ok) {
 				console.error("Failed to generate avatar");
-				return null;
+				return './svgs/errorwarning.webp';
 			}
 
-			return await response.blob(); // Return the generated avatar blob
+			return await response.image; // Return the generated avatar blob
 		} catch (error) {
 			console.error("Error in generateSuperheroAvatar:", error);
-			return null;
+			return './svgs/errorwarning.webp';
 		}
 	}
 
@@ -234,9 +254,6 @@ document.addEventListener("DOMContentLoaded", function () {
 			document.getElementById("newPassword").value,
 			attributes
 		);
-        
-		// Redirect to home.html after successful upload
-		window.location.href = "./home.html";
 	});
 
 	document.getElementById("recoverPasswordForm").addEventListener("submit", async function (e) {
@@ -371,7 +388,8 @@ async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
 		.then((response) => response.json())
 		.then((data) => {
 			if (data.success) {
-				transitionForms(".attributes-container", ".login-container");
+				// Redirect to home.html after successful upload
+				window.location.href = "./home.html";
 			}
 		})
 		.catch((error) => {
