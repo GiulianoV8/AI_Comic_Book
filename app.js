@@ -10,10 +10,10 @@ const { S3Client, PutObjectCommand, GetObjectCommand, CopyObjectCommand, DeleteO
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const nodemailer = require('nodemailer');
 const multer = require('multer');
-const { NovitaSDK, TaskStatus } = require("novita-sdk");
 const sharp = require('sharp');
 const heicConvert = require('heic-convert');
 const { Readable } = require('stream');
+const FormData = require('form-data');
 require('dotenv').config();
 
 
@@ -21,9 +21,15 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Add X-Content-Type-Options: nosniff header to all responses
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    next();
+});
+
 // Configure AWS S3 Client
 const s3 = new S3Client({
-    region: "us-east-1",  // Change to your S3 region
+    region: "us-east-1",
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
@@ -34,7 +40,14 @@ const s3_BUCKET_NAME = 'avatargenerationimages';
 
 const upload = multer({ storage: multer.memoryStorage() }); // Keep files in memory for processing
 
-const docClient = DynamoDBDocument.from(new DynamoDB());
+// Configure DynamoDB client 
+const docClient = DynamoDBDocument.from(new DynamoDB({
+    region: 'us-east-1',
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+}));
 const TABLE_NAME = 'ComicUsers';
 const COUNTER_TABLE_NAME = 'UserIDCounter';
 
@@ -42,6 +55,20 @@ app.use(express.json({ limit: '10mb'})); // Parses incoming JSON requests
 app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data (optional)
 app.use(express.static(path.join(__dirname, 'Public'))); // Serves static files
 
+async function streamToBuffer(stream) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        stream.on('data', (chunk) => chunks.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(chunks)));
+        stream.on('error', reject);
+    });
+}
+function bufferToStream(buffer) {
+    const stream = new Readable();
+    stream.push(buffer);
+    stream.push(null);
+    return stream;
+}
 async function convertImageToJPEGBuffer(blob, mimeType) {
     try {
         console.log('Converting File: ', blob);
@@ -94,20 +121,6 @@ async function convertImageToJPEGBuffer(blob, mimeType) {
     }
 }
 
-// Generate Avatar Image
-async function generateWithDeepImage(formDataParams) {
-    const response = await fetch('https://deep-image.ai/rest_api/process', {
-        method: 'POST',
-        headers: {
-            'x-api-key': `${process.env.DEEP_IMAGE_KEY}`,
-        },
-        body: formDataParams
-    });
-    
-    if (!response.ok) throw new Error('API request failed');
-    return response.json();
-}
-
 async function updateS3Keys(username, oldImageObjects, newImageObjects) {
     for (let i = 0; i < newImageObjects.length; i++) {
         const newKey = newImageObjects[i].key;
@@ -121,100 +134,124 @@ async function updateS3Keys(username, oldImageObjects, newImageObjects) {
             // Copy the object to the new key
             const copyParams = {
                 Bucket: s3_BUCKET_NAME,
-                CopySource: `${s3_BUCKET_NAME}/avatargenerationimages/${username}/${oldKey}`,
-                Key: `avatargenerationimages/${username}/${newKey}`,
+                CopySource: `${s3_BUCKET_NAME}/${username}/${oldKey}`,
+                Key: `${username}/${newKey}`,
             };
             await s3.send(new CopyObjectCommand(copyParams));
 
             // Delete the old object
             const deleteParams = {
                 Bucket: s3_BUCKET_NAME,
-                Key: `avatargenerationimages/${username}/${oldKey}`,
+                Key: `${username}/${oldKey}`,
             };
             await s3.send(new DeleteObjectCommand(deleteParams));
         }
     }
 }
 
+app.get('/getAvatarURL', async (req, res) => {
+    const { username } = req.query;
+
+    if (!username) {
+        return res.status(400).json({ error: 'Missing username parameter' });
+    }
+
+    const getObjectParams = {
+        Bucket: s3_BUCKET_NAME,
+        Key: `users/${username}/avatar.jpeg`,
+    };
+
+    try {
+        const avatarUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+            expiresIn: 3600, // URL expires in 1 hour
+        });
+        console.log('Avatar URL:', avatarUrl);
+        res.json({ avatarUrl: avatarUrl });
+    } catch (error) {
+        console.error('Error fetching avatar URL:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 app.post('/generatePhoto', upload.single('image'), async (req, res) => {
-    const { username, userID, prompt, isAvatar, position, description } = req.body;
+    const { username, userID, prompt, createAvatar, position, description, temporary } = req.body;
     const file = req.file || null;
+
+    let isAvatar = false;
+    if (typeof createAvatar === 'string') {
+        isAvatar = createAvatar === 'true';
+    }
 
     console.log('--- /generatePhoto Request Received ---');
     console.log('Request Body:', req.body);
-    console.log('Uploaded File:', file);
+    if (file) {console.log('Uploaded File:', file);}
 
-    if (!(username || userID) || ((!file && isAvatar) || (file && !isAvatar)) || !prompt) {
+    if (!(username || userID) || ((isAvatar && !file) || (!isAvatar && !description)) || !prompt || !temporary) {
         console.error('Validation Error: Missing required parameters.');
         return res.status(400).json({ success: false, message: 'Missing required parameters.' });
     }
 
     try {
-        let imageBuffer;
-
         if (isAvatar) {
             console.log('Processing avatar image...');
             // Convert the uploaded file to a JPEG buffer
-            imageBuffer = await convertImageToJPEGBuffer(file, file.mimetype);
-            console.log('Converted Avatar Image Buffer (First 100 Bytes):', imageBuffer.subarray(0, 100));
-        } else {
-            console.log('Fetching avatar from S3...');
-            // Fetch the avatar from S3 as a buffer
-            const getObjectParams = {
+            let imageBuffer = await convertImageToJPEGBuffer(file, file.mimetype);
+            // save image to s3
+            const uploadParams = {
                 Bucket: s3_BUCKET_NAME,
-                Key: `avatargenerationimages/users/${username}/avatar.jpeg`,
+                Key: `users/${username}/avatar.jpeg`,
+                Body: imageBuffer,
+                ContentType: 'image/jpeg',
             };
-            const command = new GetObjectCommand(getObjectParams);
-            const data = await s3.send(command);
-            imageBuffer = await data.Body.toBuffer();
-            console.log('Fetched Avatar Image Buffer (First 100 Bytes):', imageBuffer.subarray(0, 100));
+            console.log('Uploading avatar to S3...');
+            await s3.send(new PutObjectCommand(uploadParams));
         }
-
+    
         console.log('Preparing parameters for DeepImage.ai...');
+
+        const headers = {
+            'X-API-KEY': `${process.env.DEEP_IMAGE_KEY}`,
+            'Content-Type': 'application/json' 
+        };
+        console.log('Headers for API Call:', headers);
+
         // Set parameters for image generation
         const params = {
-            "width": 1024,
-            "height": 1024,
+            "url": `storage://${s3_BUCKET_NAME}/users/${username}/avatar.jpeg`, // Use the S3 key for the avatar
             "background": {
                 "generate": {
                     "description": prompt,
                     "adapter_type": "face",
                     "face_id": true,
-                    "output_format": "jpeg",
                     "quality": 90,
                 },
             },
+            "width": 1024,
+            "height": 1024,
+            "output_format": "jpg",
         };
-
-        const headers = {
-            'x-api-key': `${process.env.DEEP_IMAGE_KEY}`,
-        };
-
         console.log('Parameters for DeepImage.ai:', params);
 
-        // Prepare the form data for the DeepImage.ai API
-        const formData = new FormData();
-        formData.append('image', new Blob([imageBuffer], { type: 'image/jpeg' }), 'avatar.jpeg');
-        formData.append('parameters', JSON.stringify(params)); // Attach the parameters
-
-        console.log('Sending request to DeepImage.ai...');
         // Generate image with DeepImage.ai
-        const response = await fetch('https://deep-image.ai/rest_api/process', {
+        console.log(`Sending request to DeepImage.ai...`);
+        const response = await fetch(' https://deep-image.ai/rest_api/process_result', {
             method: 'POST',
             headers: headers,
-            body: formData
+            body: JSON.stringify(params)
         });
-        
-        if (!response.ok) throw new Error('API request failed');
         
         let responseJson = await response.json();
         console.log('DeepImage.ai Response:', responseJson);
+        if (!response.ok) {
+            // throw error
+            throw new Error(`Error from DeepImage.ai: ${response.status} - ${responseJson.message}`);
+        }
         const jobId = responseJson.job;
         console.log('DeepImage.ai Job ID:', jobId);
 
         let resultStatus = 'received';
         let updatedImageObjects = [];
-        let avatarUrl = '';
+        let imageUrl = '';
+        let resultImageBuffer = null;
         let resultJson = null;
 
         while (["received", "in_progress", "not_started"].includes(resultStatus)) {
@@ -233,15 +270,28 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
             // Fetch the generated image as a buffer
             const imageBufferRequest = await fetch(resultUrl);
             const imageBuffer = await imageBufferRequest.arrayBuffer();
-            const buffer = Buffer.from(imageBuffer); // Convert ArrayBuffer to Buffer
-            console.log('Generated Image Buffer (First 100 Bytes):', buffer.subarray(0, 100));
+            resultImageBuffer = Buffer.from(imageBuffer); // Convert ArrayBuffer to Buffer
+            console.log('Generated Image Buffer (First 100 Bytes):', resultImageBuffer.subarray(0, 100));
 
             if (!isAvatar) {
                 console.log('Processing non-avatar image...');
+                
+                // Save the new image to S3
+                let s3Key = `users/${username}/image_${Date.now()}.jpeg`; // Generate a unique key for the new image
+                console.log('Generated S3 Key for New Image:', s3Key);
+                const uploadParams = {
+                    Bucket: s3_BUCKET_NAME,
+                    Key: s3Key,
+                    Body: resultImageBuffer, // Store as Buffer
+                    ContentType: 'image/jpeg',
+                };
+                console.log('Uploading new image to S3 with key:', s3Key);
+                await s3.send(new PutObjectCommand(uploadParams));
+
                 // Fetch the user's current imageObjects from DynamoDB
                 const getParams = {
                     TableName: TABLE_NAME,
-                    Key: { userID: username },
+                    Key: { userID: userID },
                 };
                 const userData = await docClient.get(getParams);
                 console.log('Fetched User Data from DynamoDB:', userData);
@@ -249,11 +299,17 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 const oldImageObjects = userData.Item.imageObjects || [];
                 console.log('Old Image Objects:', oldImageObjects);
 
+                // Generate a presigned URL for the new image
+                imageUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                    expiresIn: 3600, // URL expires in 1 hour
+                });
+
                 // Insert the new image at the specified position
                 const newImageObject = {
-                    key: `${position}_image.jpeg`,
+                    key: s3Key,
                     description: description,
                     order: position,
+                    image: imageUrl
                 };
                 const newImageObjects = [...oldImageObjects];
                 newImageObjects.splice(position, 0, newImageObject);
@@ -261,44 +317,16 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 // Reorder the imageObjects and update their keys
                 newImageObjects.forEach((obj, index) => {
                     obj.order = index;
-                    obj.key = `${index}_image.jpeg`;
                 });
 
                 updatedImageObjects = newImageObject;
                 console.log('New Image Objects:', newImageObjects);
 
-                // Update S3 keys if necessary
-                console.log('Updating S3 keys...');
-                await updateS3Keys(username, oldImageObjects, newImageObjects);
-
-                // Save the generated image to S3
-                const s3Key = `avatargenerationimages/${username}/${newImageObject.key}`;
-                console.log('Saving generated image to S3 with key:', s3Key);
-
-                const uploadParams = new PutObjectCommand({
-                    Bucket: s3_BUCKET_NAME,
-                    Key: s3Key,
-                    Body: buffer, // Use the buffer directly
-                    ContentType: 'image/jpeg',
-                });
-
-                await s3.send(uploadParams);
-
-                // Update avatarUrl to presigned URL of the generated image
-                const getObjectParams = {
-                    Bucket: s3_BUCKET_NAME,
-                    Key: s3Key,
-                };
-                avatarUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
-                    expiresIn: 3600, // URL expires in 1 hour
-                });
-                console.log('Generated Image Presigned URL:', avatarUrl);
-
                 // Update the user's imageObjects in DynamoDB
                 console.log('Updating DynamoDB with new imageObjects...');
                 const updateParams = {
                     TableName: TABLE_NAME,
-                    Key: { username: username },
+                    Key: { userID: userID },
                     UpdateExpression: "set imageObjects = :objects",
                     ExpressionAttributeValues: {
                         ":objects": newImageObjects,
@@ -307,16 +335,24 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 };
 
                 docClient.update(updateParams);
+
+                const getObjectParams = {
+                    Bucket: s3_BUCKET_NAME,
+                    Key: s3Key,
+                };
+                imageUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                    expiresIn: 3600, // URL expires in 1 hour
+                });
             } else if (isAvatar) {
                 console.log('Processing avatar image...');
                 // Save avatar to S3
-                s3Key = `avatargenerationimages/users/${username}/avatar.jpeg`;
+                s3Key = temporary? `users/${username}/avatar_t.jpeg` : `users/${username}/avatar.jpeg`; // Use a different key for temporary avatars
                 console.log('Saving avatar image to S3 with key:', s3Key);
 
                 const uploadParams = {
                     Bucket: s3_BUCKET_NAME,
                     Key: s3Key,
-                    Body: buffer,
+                    Body: resultImageBuffer,
                     ContentType: 'image/jpeg',
                 };
                 await s3.send(new PutObjectCommand(uploadParams));
@@ -334,19 +370,66 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
         }
 
         console.log('Image generation workflow completed successfully.');
-        res.status(200).json({ success: true, message: 'Image generated successfully.', imageObjects: updatedImageObjects, image: avatarUrl });
+        res.status(200).json({ success: true, message: 'Image generated successfully.', imageObjects: updatedImageObjects, imageUrl: imageUrl});
     } catch (error) {
         console.error('Error generating photo:', error);
         res.status(500).json({ success: false, message: 'Photo generation failed.', error: error.message });
     }
 });
 
-const isValidEmail = email => {
-    // Regular expression for validating an email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    return emailRegex.test(email);
-}
+// Function to delete temporary avatar
+app.delete('/deleteAvatar', async (req, res) => {
+    const { username } = req.query;
+
+    if (!username) {
+        return res.status(400).json({ success: false, message: 'Username is required.' });
+    }
+
+    try {
+        // Delete the avatar from S3
+        const deleteParams = {
+            Bucket: s3_BUCKET_NAME,
+            Key: `users/${username}/avatar_t.jpeg`,
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+
+        res.status(200).json({ success: true, message: 'Avatar deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting avatar:', error);
+        res.status(500).json({ success: false, message: 'Error deleting avatar.', error: error.message });
+    }
+});
+
+// Function to switch avatar for temporary avatar
+app.post('/switchAvatar', async (req, res) => {
+    const { username } = req.query;
+
+    if (!username) {
+        return res.status(400).json({ success: false, message: 'Username is required.' });
+    }
+
+    try {
+        // Copy the temporary avatar to the main avatar location
+        const copyParams = {
+            Bucket: s3_BUCKET_NAME,
+            CopySource: `${s3_BUCKET_NAME}/users/${username}/avatar_t.jpeg`,
+            Key: `users/${username}/avatar.jpeg`,
+        };
+        await s3.send(new CopyObjectCommand(copyParams));
+
+        // Delete the temporary avatar
+        const deleteParams = {
+            Bucket: s3_BUCKET_NAME,
+            Key: `users/${username}/avatar_t.jpeg`,
+        };
+        await s3.send(new DeleteObjectCommand(deleteParams));
+
+        res.status(200).json({ success: true, message: 'Avatar switched successfully.' });
+    } catch (error) {
+        console.error('Error switching avatar:', error);
+        res.status(500).json({ success: false, message: 'Error switching avatar.', error: error.message });
+    }
+});
 
 // Generate a new userID using an atomic counter
 async function generateUserID() {
@@ -512,6 +595,7 @@ app.post('/login', async (req, res) => {
                 ':email': username
             }
         };
+        console.log('Using email for login');
     }else{
         var params = {
             TableName: TABLE_NAME,
@@ -521,6 +605,7 @@ app.post('/login', async (req, res) => {
                 ':username': username
             }
         };
+        console.log('Using username for login');
     }
 
     try {
@@ -533,7 +618,7 @@ app.post('/login', async (req, res) => {
         }
     } catch (err) {
         console.error('Error logging in:', JSON.stringify(err, null, 2));
-        return res.status(500).json({ success: false, message: 'Error logging in.' });
+        return res.status(500).json({ success: 'error', message: 'Error logging in.' });
     }
 });
 
@@ -561,45 +646,52 @@ app.get('/getUserData', async (req, res) => {
         const today = 1 // Format: YYYYMMDD
         // Convert lastLogin to the same format as today
         const lastLogin = parseInt(data.Item.lastLogin);
-    
-        let firstLogin = false;
         console.log(today, lastLogin);
+
+        let firstLogin = false;
+        const imageObjects = data.Item.imageObjects || [];
+
         if (!lastLogin || lastLogin < today) {
             firstLogin = true;
             console.log("First login of the day!");
     
-            // Update the last login date in DynamoDB
+            // Update the last login date in DynamoDB, and delete all imageObjects
             const updateParams = {
                 TableName: TABLE_NAME,
                 Key: { userID: userID },
-                UpdateExpression: "SET lastLogin = :date",
+                UpdateExpression: "SET lastLogin = :date, imageObjects = :emptyList",
                 ExpressionAttributeValues: {
-                    ":date": today
+                    ":date": today,
+                    ":emptyList": []
                 }
             };
             await docClient.update(updateParams);
         }
 
-        const imageObjects = data.Item.imageObjects || [];
+        let updatedImageObjects;
+        if (imageObjects.length > 0 && !firstLogin) {
+            // Generate presigned URLs for each image
+            updatedImageObjects = await Promise.all(
+                imageObjects.map(async (imageObject) => {
+                    console.log('Processing image object:', imageObject);
+                    if (imageObject.image !== 'https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png') {
+                        const getObjectParams = {
+                            Bucket: s3_BUCKET_NAME,
+                            Key: `${imageObject.key}`,
+                        };
 
-        // Generate presigned URLs for each image
-        const updatedImageObjects = await Promise.all(
-            imageObjects.map(async (imageObject) => {
-                const getObjectParams = {
-                    Bucket: s3_BUCKET_NAME,
-                    Key: `avatargenerationimages/${data.Item.username}/${imageObject.key}`,
-                };
+                        const presignedUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                            expiresIn: 3600, // URL expires in 1 hour
+                        });
+                        console.log(`Generated presigned URL for key ${imageObject.key}: ${presignedUrl}`);
 
-                const presignedUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
-                    expiresIn: 3600, // URL expires in 1 hour
-                });
-
-                return {
-                    ...imageObject,
-                    image: presignedUrl, // Replace the image field with the presigned URL
-                };
-            })
-        );
+                        imageObject.image = presignedUrl;
+                    }
+                    return imageObject;
+                })
+            );
+        }
+        
 
         res.json({ item: { ...data.Item, imageObjects: updatedImageObjects, firstLogin: firstLogin } });
     } catch (error) {
@@ -722,10 +814,10 @@ app.post('/changePassword', async (req, res) => {
     }
 });
 
-app.post('/deleteImage', async (req, res) => {
-    const { userID, imageKey } = req.body;
+app.post('/deleteImages', async (req, res) => {
+    const { userID, keys } = req.body;
 
-    if (!userID || !imageKey) {
+    if (!userID || !keys) {
         return res.status(400).json({ success: false, message: 'User ID and image key are required.' });
     }
 
@@ -741,9 +833,9 @@ app.post('/deleteImage', async (req, res) => {
             return res.status(404).json({ success: false, message: 'User not found.' });
         }
 
-        // Remove the image object from the user's imageObjects list
+        // Remove the image objects from the user's imageObjects list
         let imageObjects = data.Item.imageObjects || [];
-        imageObjects = imageObjects.filter(obj => obj.key !== imageKey);
+        imageObjects = imageObjects.filter(obj => !keys.includes(obj.key));
 
         // Reassign orders to maintain the correct sequence
         imageObjects.forEach((obj, index) => {
@@ -763,59 +855,36 @@ app.post('/deleteImage', async (req, res) => {
 
         await docClient.update(updateParams);
 
-        return res.status(200).json({ success: true, message: 'Image object deleted successfully.' });
+        return res.status(200).json({ success: true, message: 'Image object(s) deleted successfully.' });
     } catch (err) {
         console.error('Error deleting image object:', JSON.stringify(err, null, 2));
         return res.status(500).json({ success: false, message: 'Error deleting image object.' });
     }
 });
 
-app.post('/saveImage', upload.single('imageBlob'), async (req, res) => {
-    const { userID, username, imageObjects } = req.body;
+app.post('/saveImages', async (req, res) => {
+    const { userID, imageObjects } = req.body;
 
-    if (!userID || !username || !imageObjects) {
+    if (!userID || !imageObjects) {
         return res.status(400).json({ success: false, message: 'User ID, username, and image objects are required.' });
     }
 
     try {
-        const parsedImageObjects = JSON.parse(imageObjects);
-
-        // Fetch the user's current imageObjects from DynamoDB
-        const getParams = {
-            TableName: TABLE_NAME,
-            Key: { userID: userID },
-        };
-        const userData = await docClient.get(getParams);
-        const oldImageObjects = userData.Item.imageObjects || [];
-
-        // Update S3 keys if necessary
-        await updateS3Keys(username, oldImageObjects, parsedImageObjects);
-
-        // Upload each image to S3
-        for (const imageObject of parsedImageObjects) {
-            const s3Key = `avatargenerationimages/${username}/${imageObject.key}`;
-            const uploadParams = {
-                Bucket: s3_BUCKET_NAME,
-                Key: s3Key,
-                Body: imageObject.image, // The uploaded image blob
-                ContentType: 'image/jpeg',
-            };
-
-            await s3.send(new PutObjectCommand(uploadParams));
-        }
-
+        console.log('Saving image objects for user:', userID);
+        console.log('Image Objects:', ...imageObjects);
         // Update the user's imageObjects in DynamoDB
         const updateParams = {
             TableName: TABLE_NAME,
             Key: { userID: userID },
             UpdateExpression: "set imageObjects = :objects",
             ExpressionAttributeValues: {
-                ":objects": parsedImageObjects,
+                ":objects": imageObjects,
             },
             ReturnValues: "UPDATED_NEW",
         };
 
         await docClient.update(updateParams);
+
 
         res.status(200).json({ success: true, message: 'Image objects saved successfully.' });
     } catch (err) {

@@ -1,4 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
+	if (window.location.href.indexOf("localhost") > -1) {
+		localStorage.setItem("userID", '1002');
+		window.location.replace("/home.html");
+	}
+	
 	document.querySelector(".login-container").style.display = "block";
 	setTimeout(() => {
 		document.querySelector(".login-container").classList.add("show");
@@ -24,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	document
 		.querySelector(".forgot-password-link")
-		.addEventListener("click", function () {
+		.addEventListener("click", () => {
 			transitionForms(".login-container", ".recover-password-container");
 		});
 
@@ -52,13 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	const uploadImageLabel = document.getElementById("upload-image-label");
     const uploadImageInput = document.getElementById("upload-image-input");
 	const uploadedImage = document.getElementById("uploaded-image");
+	const loadingContainer = document.getElementById("loading-container");
 
-    // Initialize the webcam
-	async function init() {
-		await startWebcam();
-	}
-
-	document.getElementById("take-picture-btn").addEventListener("click", () => {
+	document.getElementById("take-picture-btn").addEventListener("click", async () => {
         uploadImageInput.value = ""; // Clear the file input
         uploadedImage.src = ""; // Clear the uploaded image source
         uploadedImage.style.display === "none";
@@ -71,7 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
         //Show canvas
         canvas.style.display = "none";
 
-        init();
+        await startWebcam();
     });
 
 	// Handle image upload
@@ -97,7 +98,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	});
 
-	// Start webcam and continuously detect face
+	// Start webcam
 	async function startWebcam() {
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
@@ -144,6 +145,8 @@ document.addEventListener("DOMContentLoaded", function () {
 	// Generate or Regenerate Avatar
 	generateAvatarBtn.addEventListener("click", async () => {
 		generateAvatarBtn.disabled = true;
+		// Show the loading animation
+		loadingContainer.style.display = "block";
 
 		const username = document.getElementById("newUsername").value.trim();
 
@@ -158,30 +161,17 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 		console.log("imageBlob:", imageBlob);
 
-		// Show the loading animation
-		const loadingContainer = document.getElementById("loading-container");
-		loadingContainer.style.display = "block";
-
-		// Hide the avatar container while loading
-		const avatarContainer = document.getElementById("avatar-container");
-		avatarContainer.style.display = "none";
-
 		// Generate the superhero avatar
 		const avatarResult = await generateSuperheroAvatar(username, imageBlob);
 
 		// Hide the loading animation
 		loadingContainer.style.display = "none";
 
-		if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
-			generateAvatarBtn.innerHTML = "Regenerate Avatar";
-		}
-
 		if (avatarResult) {
 			// Show avatar container
 			avatarContainer.style.display = "block";
 
 			// Display avatar preview
-			const avatarImage = document.getElementById("avatar-image");
 			avatarImage.style.display = "block";
 			avatarImage.src = avatarResult;
 
@@ -189,6 +179,11 @@ document.addEventListener("DOMContentLoaded", function () {
 			const arrow = document.getElementById("down-arrow");
 			arrow.style.display = "none";
 		}
+
+		if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
+			generateAvatarBtn.innerHTML = "Regenerate Avatar";
+		}
+
 		generateAvatarBtn.disabled = false;
 	});
 
@@ -197,17 +192,16 @@ document.addEventListener("DOMContentLoaded", function () {
 		console.log("Generating superhero avatar...");
 
 		let genderField = document.getElementById("gender").value;
-		let gender = genderField === "Non-binary" ? "" : genderField;
 
 		const attributes = {
-			gender: gender,
+			gender: genderField === "Non-binary" ? "" : genderField,
 			age: document.getElementById("age").value < 21 ? "young" : `${document.getElementById("age").value} year old`,
 		};
 
 		const prompt = `A bold comic book illustration of this ${attributes.age} ${attributes.gender} person as a superhero, 
 		hyper-stylized with ink outlines, Ben-Day dots, and vibrant primary colors. 
 		Dynamic superhero pose with exaggerated perspective (e.g., foreshortened fists or flying motion), 
-		${attributes.age < 21 ? 'youthful, energetic' : 'powerful, commanding'} facial expression, 
+		${isNaN(attributes.age) ? 'youthful, energetic' : 'powerful, commanding'} facial expression, 
 		and a comic-book-style halftone background. 
 		Inspired by [Artists: Stan Lee/Jim Lee/Jack Kirby], with dramatic lighting and action lines for motion effects.`;
 
@@ -215,9 +209,10 @@ document.addEventListener("DOMContentLoaded", function () {
 		formData.append("username", username);
 		formData.append("userID", '_');
         formData.append("prompt", prompt);
-        formData.append("isAvatar", true);
+        formData.append("createAvatar", true);
 		formData.append("image", blob, blob.mimetype); // Append the Blob with a filename
-		formData.append("description", '');
+		formData.append("description", '_');
+		formData.append("temporary", false);
 
 		try {
 			console.log("sending blob:", blob); // Frontend
@@ -231,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				return './svgs/errorwarning.webp';
 			}
 
-			return await response.image; // Return the generated avatar blob
+			return await response.imageUrl; // Return the generated avatar blob
 		} catch (error) {
 			console.error("Error in generateSuperheroAvatar:", error);
 			return './svgs/errorwarning.webp';
@@ -339,8 +334,8 @@ document.addEventListener("DOMContentLoaded", function () {
 		});
 });
 
-function authenticate(username, password) {
-	fetch("/login", {
+async function authenticate(username, password) {
+	await fetch("/login", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -354,22 +349,28 @@ function authenticate(username, password) {
 				window.location.replace("/home.html");
 			} else {
 				const usernameInput = document.getElementById("username");
-				usernameInput.value = "Wrong Username Or Password!";
+				if (data.success == false) {
+					usernameInput.value = "Wrong Username Or Password!";
+				}
 				usernameInput.style.color = "red";
 				usernameInput.addEventListener("click", () => {
 					usernameInput.style.color = "black";
 					usernameInput.value = "";
 				});
+				if (data.success == 'error') {
+					usernameInput.value = "There was an error logging in";
+					throw new Error("There was an error logging in");
+				}
 			}
 		})
 		.catch((error) => {
-			// Did not work
+			// Could not login
 			console.error("Error:", error);
 		});
 }
 
 async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
-	fetch("/signup", {
+	await fetch("/signup", {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

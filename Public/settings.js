@@ -76,6 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    let avatarImage = document.getElementById('avatar-image');
+
     // Open Edit Attributes Modal and fetch user attributes
     editHeroBtn.onclick = async function() {
         console.log('Open Edit Attributes Modal');
@@ -98,8 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(response);
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
-            document.getElementById('avatar-image').src = data.url;
-            document.getElementById('avatar-image').style.display = 'block';
+            avatarImage.src = data.avatarUrl;
+            avatarImage.style.display = 'block';
         } catch (error) {
             console.error('Error fetching avatar url:', error);
         }
@@ -108,63 +110,25 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const captureBtn = document.getElementById('capture-btn');
     const generateContainer = document.getElementById('generate-container');
-    const confirmAvatarBtn = document.getElementById('confirm-avatar-btn');
     const generateAvatarBtn = document.getElementById('generate-avatar-btn');
     const avatarContainer = document.getElementById('avatar-container');
     const cameraContainer = document.getElementById('camera-container');
     const arrow = document.getElementById('down-arrow');
     const video = document.getElementById('webcam');
     const canvas = document.getElementById('output-canvas');
-    const avatarImage = document.getElementById('avatar-display-image');
+    const avatarDisplayImage = document.getElementById('avatar-display-image');
     const takePicBtn = document.getElementById('take-picture-btn');
-   
-    attributeForm.onsubmit = async function(event) {
-        event.preventDefault();
+    const uploadImageInput = document.getElementById("upload-image-input");
+	const uploadedImage = document.getElementById("uploaded-image");
 
-        let gender = document.getElementById('gender').value;
-        if(gender == "Non-binary"){
-            gender = "";
-        }
-        
-        const attributes = {
-            gender: gender,
-			age: document.getElementById("age").value < 21 ? "young" : document.getElementById("age").value,
-        };
-        
-        localStorage.setItem('attributes', JSON.stringify(attributes));
-
-        const blobresponse = await fetch(avatarImage.src);
-        const blob = await blobresponse.blob();
-    
-        let data = await uploadUserPhoto(blob, username);
-        
-        if (data.success) {
-            console.log('Avatar uploaded successfully:', data.url);
-        } else {
-            console.error('Upload failed:', data.message);
-        }
-
-        try {
-            const response = await fetch('/editAttributes', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userID, attributes })
-            });
-            if (response.ok) {
-                closeModals();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
-
-    // Start webcam and continuously detect face
+    // Start webcam
     async function startWebcam() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
+            video.style.display = "block";
         } catch (error) {
-            console.error('Error accessing webcam:', error);
+            console.error("Error accessing webcam:", error);
         }
     }
 
@@ -187,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show the generate avatar section
             generateContainer.style.display = "block";
             generateAvatarBtn.innerHTML === "Generate Superhero Avatar"
-
         } else {
             // Retake photo
             video.style.display = "block";
@@ -200,35 +163,78 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    async function init() {
-        await startWebcam();
-    }
+    // Handle image upload
+	uploadImageInput.addEventListener("change", (event) => {
+		const file = event.target.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = (e) => {
+				// Display the uploaded image
+				uploadedImage.src = e.target.result;
+				uploadedImage.style.display = "block";
 
-    takePicBtn.addEventListener('click', () => {
+				// Hide the video and canvas
+				video.style.display = "none";
+				canvas.style.display = "none";
+                captureBtn.style.display = "none";
+
+                // Show the generate avatar section
+                generateContainer.style.display = "block";
+                generateAvatarBtn.innerHTML === "Generate Superhero Avatar";
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+    takePicBtn.addEventListener('click', async () => {
         if(takePicBtn.innerHTML == "Change Avatar?"){
-            document.getElementById('avatar-image').style.display = "none";
-            cameraContainer.style.display = "block";
-            init()
             takePicBtn.innerHTML = "Cancel";
+            avatarImage.style.display = "none";
+            cameraContainer.style.display = "block";
+            await startWebcam();
+            
+            //Show capture button
+            captureBtn.style.display = "block";
+            //Show webcam
+            video.style.display = "block";
+            //Show canvas
+            canvas.style.display = "none";
         }else{
+            // Cancel avatar change
+            uploadImageInput.value = ""; // Clear the file input
+            uploadedImage.src = ""; // Clear the uploaded image source
+            uploadedImage.style.display === "none";
             generateContainer.style.display = "none";
             avatarContainer.style.display = "none";
             cameraContainer.style.display = "none";
             takePicBtn.innerHTML = "Change Avatar?";
-            document.getElementById('avatar-image').style.display = "block";
+            avatarImage.style.display = "block";
+            // Send request to backend to delete the avatar
+            try {
+                const response = await fetch(`/deleteAvatar?username=${localStorage.getItem('username')}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) {
+                    console.error("Failed to delete avatar");
+                }
+            } catch (error) {
+                console.error("Error deleting avatar:", error);
+            }
         }
     });
    
     // Generate or Regenerate Avatar
     generateAvatarBtn.addEventListener("click", async () => {
         generateAvatarBtn.disabled = true;
+        // Show the loading animation
+		loadingContainer.style.display = "block";
 
         const username = localStorage.getItem("username");
 
         let imageBlob;
-        if (avatarImage.style.display === "block") {
+        if (avatarDisplayImage.style.display === "block") {
             // Use the uploaded image
-            const response = await fetch(avatarImage.src);
+            const response = await fetch(avatarDisplayImage.src);
             imageBlob = await response.blob();
         } else {
             // Use the captured image from the canvas
@@ -239,20 +245,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // Pass the image to the generateSuperheroAvatar function
         const avatarResult = await generateSuperheroAvatar(username, imageBlob);
 
-        if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
-            generateAvatarBtn.innerHTML = "Regenerate Avatar";
-        }
+        // Hide the loading animation
+		loadingContainer.style.display = "none";
 
         if (avatarResult) {
-            // Display avatar preview
-            avatarImage.src = avatarResult;
-            avatarImage.style.display = "block";
+            // Show avatar container
+			avatarContainer.style.display = "block";
+
+            avatarDisplayImage.src = avatarResult;
+            avatarDisplayImage.style.display = "block";
 
             // Show avatar image and container
             avatarContainer.style.display = "block";
 
             // Hide generate section
             arrow.style.display = "none";
+        }
+
+        if (generateAvatarBtn.innerHTML === "Generate Superhero Avatar") {
+            generateAvatarBtn.innerHTML = "Regenerate Avatar";
         }
         generateAvatarBtn.disabled = false;
     });
@@ -268,31 +279,72 @@ document.addEventListener('DOMContentLoaded', () => {
             gender: gender,
             age: document.getElementById("age").value < 21 ? "young" : `${document.getElementById("age").value} year old`,
         };
-        const prompt = `A full body image of this ${attributes.age} ${attributes.gender} person as a hero in a dynamic pose and comic book style`;
 
-        const formData = new FormData();
-        formData.append("username", username);
+        const prompt = `A bold comic book illustration of this ${attributes.age} ${attributes.gender} person as a superhero, 
+		hyper-stylized with ink outlines, Ben-Day dots, and vibrant primary colors. 
+		Dynamic superhero pose with exaggerated perspective (e.g., foreshortened fists or flying motion), 
+		${attributes.age < 21 ? 'youthful, energetic' : 'powerful, commanding'} facial expression, 
+		and a comic-book-style halftone background. 
+		Inspired by [Artists: Stan Lee/Jim Lee/Jack Kirby], with dramatic lighting and action lines for motion effects.`;
+
+		const formData = new FormData();
+		formData.append("username", username);
+		formData.append("userID", '_');
         formData.append("prompt", prompt);
-        formData.append("isAvatar", true);
-        formData.append("image", blob, "avatar.jpeg"); // Append the Blob with a filename
+        formData.append("createAvatar", true);
+		formData.append("image", blob, blob.mimetype); // Append the Blob with a filename
+		formData.append("description", '_');
+        formData.append("temporary", true);
 
         try {
-            console.log("Sending blob:", blob);
-            const response = await fetch("/generatePhoto", {
-                method: "POST",
-                body: formData,
+			console.log("sending blob:", blob); // Frontend
+			const response = await fetch("/generatePhoto", {
+				method: "POST",
+				body: formData,
+			});
+
+			if (!response.ok) {
+				console.error("Failed to generate avatar");
+				return './svgs/errorwarning.webp';
+			}
+
+			return await response.imageUrl; // Return the generated avatar blob
+		} catch (error) {
+			console.error("Error in generateSuperheroAvatar:", error);
+			return './svgs/errorwarning.webp';
+		}
+    }
+
+    attributeForm.onsubmit = async function(event) {
+        event.preventDefault();
+
+        let genderField = document.getElementById("gender").value;
+        
+        const attributes = {
+            gender: genderField === "Non-binary" ? "" : genderField,
+			age: document.getElementById("age").value < 21 ? "young" : document.getElementById("age").value,
+        };
+        
+        localStorage.setItem('attributes', JSON.stringify(attributes));
+
+        try {
+            // Send attributes to the backend
+            const editResponse = await fetch('/editAttributes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userID, attributes })
             });
 
-            if (!response.ok) {
-                console.error("Failed to generate avatar");
-                return null;
-            }
+            // Send backend request to switch avatar, no need to pass data
+            const avatarResponse = await fetch(`/switchAvatar?username=${localStorage.getItem('username')}`, {
+                method: 'POST'
+            });
 
-            const result = await response.json();
-            return result.image; // Return the generated avatar URL
+            if (editResponse.ok && avatarResponse.ok) {
+                closeModals();
+            }
         } catch (error) {
-            console.error("Error in generateSuperheroAvatar:", error);
-            return null;
+            console.error('Error:', error);
         }
     }
 

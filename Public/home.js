@@ -1,6 +1,24 @@
 let openModal;
 let modalDisabled = false;
 document.addEventListener("DOMContentLoaded", function() {
+    function testCreateImageObjects() {
+        const imageObjects = [];
+        const username = localStorage.getItem('username') || 'GiulianoV';
+        const baseDate = Date.now();
+        // Fetch the image as a buffer (ArrayBuffer)
+        for (let i = 0; i < 10; i++) {
+            imageObjects.push({
+                image: `https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png`,
+                description: `Test image ${i + 1}`,
+                order: i,
+                key: `users/${username}/image_${baseDate + i * 24 * 60 * 60 * 1000}.jpeg`
+            });
+        }
+        localStorage.setItem('imageObjects', JSON.stringify(imageObjects));
+        saveImage(localStorage.getItem('userID'), imageObjects, true);
+        return imageObjects;
+    }
+    document.getElementById("testTenBtn").addEventListener("click", testCreateImageObjects);
     function isLocalStorageEnabled() {
         const testKey = "testkey";
     
@@ -25,8 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     
 
-    const xBtn = document.getElementById("xBtn");
-    const deleteBtn = document.getElementById("deleteBtn");
+    const rewriteBtn = document.getElementById("rewriteBtn");
+    const rewriteConfirmBtn = document.getElementById("rewriteConfirmBtn");
     const dropdown = document.getElementById('deleteDropdown');
     let deleteMode = false;
     let selectedItems = [];
@@ -47,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const captionText = document.getElementById("imageCaption");
     const closeBtn = document.getElementsByClassName("close")[0];
 
-    const createBtn = document.getElementById("createBtn-container");
+    const createBtn = document.getElementById("createBtn");
 
     const steps = [
         { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, because everything you do is a daily heroic.' },
@@ -68,21 +86,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
     hideTutorial();
     function resetTutorials() {
-        if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
+        if(addPanelBtn.innerHTML == "Cancel") {
             addPanelBtn.click();
         }
-        if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
+        if(deletePanelBtn.innerHTML == "Cancel") {
             deletePanelBtn.click();
         }
         addPanelBtn.removeEventListener('click', showPlusClickEvent);
         addPanelBtn.style.zIndex = '';
-        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => elem.style.zIndex = '');
+        document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
         deletePanelBtn.style.zIndex = '';
         document.getElementById("deleteConfirmDropdown").style.zIndex = '';
         comicBackground.style.zIndex = '2';
         createBtn.style.zIndex = '1';
         document.querySelectorAll(".circle").forEach(elem => elem.style.zIndex = '3');
-        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
+        document.querySelectorAll('.grid-item').forEach(elem => {
             elem.style.zIndex = '';
             modalDisabled = false;
         });
@@ -93,7 +111,7 @@ document.addEventListener("DOMContentLoaded", function() {
         nextStepButton.innerText = "Next";
     }
     function showPanelsEvent() {
-        document.querySelectorAll('.grid-item:not(.create)').forEach(elem => {
+        document.querySelectorAll('.grid-item').forEach(elem => {
             elem.style.zIndex = '1000';
             modalDisabled = true;
         });
@@ -171,112 +189,177 @@ document.addEventListener("DOMContentLoaded", function() {
         showStep(currentStep);
     });
     
-
-    if(!localStorage.getItem('userID')){
-        window.location.replace("/login.html");
-    }
-    userID = localStorage.getItem("userID");
-    fillData(userID);    
-
     if(!isLocalStorageEnabled) {
         document.getElementById("noLocalStorageBackground").classList.add('hidden');
         console.log('storage not enabled');
     }
 
+    if(!localStorage.getItem('userID')){
+        window.location.replace("/login.html");
+    }else {
+        userID = localStorage.getItem("userID");
+        fillData(userID);    
+    }
+    
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
+    
+    function generateComicLayout(n) {
+		const gridSize = Math.ceil(Math.sqrt(n * 1.5));
+		const grid = Array(gridSize)
+			.fill()
+			.map(() => Array(gridSize).fill(null));
+		const panels = [];
+
+		const panelSizes = [
+			{ w: 1, h: 1 },
+			{ w: 1, h: 2 },
+			{ w: 2, h: 1 },
+			{ w: 2, h: 2 },
+		];
+
+		for (let i = 0; i < n; i++) {
+			let placed = false;
+			let attempts = 0;
+
+			while (!placed && attempts < 50) {
+				const size =
+					panelSizes[Math.floor(Math.random() * panelSizes.length)];
+				const row = Math.floor(Math.random() * (gridSize - size.h + 1));
+				const col = Math.floor(Math.random() * (gridSize - size.w + 1));
+
+				// Check if space is available
+				let canPlace = true;
+				for (let r = row; r < row + size.h; r++) {
+					for (let c = col; c < col + size.w; c++) {
+						if (grid[r][c] !== null) {
+							canPlace = false;
+							break;
+						}
+					}
+					if (!canPlace) break;
+				}
+
+				if (canPlace) {
+					// Place panel
+					for (let r = row; r < row + size.h; r++) {
+						for (let c = col; c < col + size.w; c++) {
+							grid[r][c] = i;
+						}
+					}
+					panels.push({ index: i, row, col, w: size.w, h: size.h });
+					placed = true;
+				}
+				attempts++;
+			}
+		}
+
+		// Convert to CSS grid-template-areas format
+		const gridAreas = grid
+			.map((row) => '"' + row.map((cell) => (cell !== null ? `panel${cell}` : ".")).join(" ") +'"')
+			.join("\n    ");
+
+		return { gridAreas, panels };
+	}
 
     function showComicPanels() {
-        if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
-            addPanelBtn.click();
-        }
-        if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
-            deletePanelBtn.click();
-        }
+        // Cancel add/delete panel modes if active
+        if(addPanelBtn.innerHTML == "Cancel") addPanelBtn.click();
+        if(deletePanelBtn.innerHTML == "Cancel") deletePanelBtn.click();
         document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
 
+        // Get relevant DOM elements
         const comicBackground = document.getElementById("comic-background");
         const comicGrid = document.querySelector(".comic-grid");
         const comicDisplayTitle = document.getElementById("comic-display-title");
-    
+
+        // Set comic title
         comicDisplayTitle.innerText = document.getElementById("comic-title").innerText;
-        
-        const imageUrls = JSON.parse(localStorage.getItem('imageUrls')) || [];
-        const imageDescriptions = JSON.parse(localStorage.getItem('imageDescriptions')) || [];
 
-        let currentIndex = 0;
-        let previousRow;
+        // Get images and descriptions from localStorage
+        const imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
 
-        while (currentIndex < imageUrls.length) {
-            // Randomly decide whether the row will have 2 or 3 panels
-            let numPanelsInRow = Math.random() < 0.55 ? 2 : 3;
+        // Clear previous comic grid
+        comicGrid.innerHTML = "";
 
-            // Check if it's the second-to-last row and only one image remains
-            if (imageUrls.length - currentIndex === 3 && previousRow) {
-                numPanelsInRow = 3; // Force the last row to have 3 panels if 3 images remain
+        // Generate layout using your function
+        const { gridAreas, panels } = generateComicLayout(imageObjects.length);
+
+        // Set up the CSS grid using the generated layout
+        comicGrid.style.gridTemplateAreas = gridAreas;
+
+        // Create and place each panel in the grid
+        panels.forEach(panel => {
+            const imageUrl = imageObjects[panel.index].image;
+            const captionText = imageObjects[panel.index].description;
+
+            const panelDiv = document.createElement('div');
+            panelDiv.classList.add('comic-panel');
+            panelDiv.style.gridArea = `panel${panel.index}`;
+
+            // Panel content (image and caption)
+            const content = document.createElement('div');
+            content.classList.add('panel-content');
+
+            // Randomly decide caption position
+            const isCaptionOnTop = Math.random() < 0.5;
+            const caption = document.createElement('div');
+            caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom');
+            caption.textContent = captionText || '';
+
+            const image = document.createElement('img');
+            image.src = imageUrl;
+            image.alt = "Comic Image";
+            image.classList.add('panel-image');
+
+            // Append caption and image in chosen order
+            if (isCaptionOnTop) {
+                content.appendChild(caption);
+                content.appendChild(image);
+            } else {
+                content.appendChild(image);
+                content.appendChild(caption);
             }
-            if(currentIndex == 0){
-                numPanelsInRow = 2; // Force the first row to have 2 panels
-            }
 
-            // Create a new row
-            const row = document.createElement('div');
-            row.classList.add('row');
-            row.classList.add(`row-${numPanelsInRow}`); // Add class to style appropriately
+            panelDiv.appendChild(content);
+            comicGrid.appendChild(panelDiv);
+        });
 
-            // Add panels to the row
-            for (let i = 0; i < numPanelsInRow && currentIndex < imageUrls.length; i++) {
-                const imageUrl = imageUrls[currentIndex];
-                const captionText = imageDescriptions[currentIndex];
-
-                // Create the panel with random caption positioning
-                const panel = createComicPanel(imageUrl, captionText);
-                row.appendChild(panel);
-
-                currentIndex++;
-            }
-
-            // Add the row to the grid
-            comicGrid.appendChild(row);
-
-            // Keep track of the previous row for special case handling
-            previousRow = row;
-        }
-        
+        // Show the comic overlay
         comicBackground.classList.remove("hidden");
     }
     
-    function createComicPanel(imageUrl, captionText) {
-        const panel = document.createElement('div');
-        panel.classList.add('comic-panel');
+    // function createComicPanel(imageUrl, captionText) {
+    //     const panel = document.createElement('div');
+    //     panel.classList.add('comic-panel');
     
-        const content = document.createElement('div');
-        content.classList.add('panel-content');
+    //     const content = document.createElement('div');
+    //     content.classList.add('panel-content');
     
-        // Randomly decide whether to put caption above or below
-        const isCaptionOnTop = Math.random() < 0.5; // 50% chance
+    //     // Randomly decide whether to put caption above or below
+    //     const isCaptionOnTop = Math.random() < 0.5; // 50% chance
     
-        const caption = document.createElement('div');
-        caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom'); // Add top or bottom class
-        caption.textContent = !captionText ? '' : captionText;
+    //     const caption = document.createElement('div');
+    //     caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom'); // Add top or bottom class
+    //     caption.textContent = !captionText ? '' : captionText;
     
-        const image = document.createElement('img');
-        image.src = imageUrl;
-        image.alt = "Comic Image";
-        image.classList.add('panel-image');
+    //     const image = document.createElement('img');
+    //     image.src = imageUrl;
+    //     image.alt = "Comic Image";
+    //     image.classList.add('panel-image');
     
-        // Append elements based on caption position
-        if (isCaptionOnTop) {
-            content.appendChild(caption); // Add caption first
-            content.appendChild(image); // Add image second
-        } else {
-            content.appendChild(image); // Add image first
-            content.appendChild(caption); // Add caption second
-        }
+    //     // Append elements based on caption position
+    //     if (isCaptionOnTop) {
+    //         content.appendChild(caption); // Add caption first
+    //         content.appendChild(image); // Add image second
+    //     } else {
+    //         content.appendChild(image); // Add image first
+    //         content.appendChild(caption); // Add caption second
+    //     }
     
-        panel.appendChild(content);
-        return panel;
-    }
+    //     panel.appendChild(content);
+    //     return panel;
+    // }
 
     function closeComicPanels() {
         const comicGrid = document.querySelector(".comic-grid");
@@ -296,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function showPlusButtons() {
         if (!addPanelMode) return;
 
-        const gridItems = document.querySelectorAll(".grid-item:not(.create)");
+        const gridItems = document.querySelectorAll(".grid-item");
         plusButtons.forEach(button => button.remove());  // Clear existing buttons
         
         // Create plus buttons before each item, between items, and after the last item
@@ -306,10 +389,9 @@ document.addEventListener("DOMContentLoaded", function() {
             plusButtons.push(plusBtn);
         });
 
-        // Add plus button after the last item and before the ".create" button
+        // Add plus button after the last item
         const lastPlusBtn = createPlusButton(gridItems.length);
-        const createItem = document.querySelector('.create');
-        gridContainer.insertBefore(lastPlusBtn, createItem);
+        gridContainer.appendChild(lastPlusBtn);
         plusButtons.push(lastPlusBtn);
     }
 
@@ -343,10 +425,10 @@ document.addEventListener("DOMContentLoaded", function() {
     openModal = (imageUrl, description, event) => {
         if(!modalDisabled){
             if(!event.target.classList.contains("circle")){
-                if(addPanelBtn.innerHTML == "Exit Add Panel Mode") {
+                if(addPanelBtn.innerHTML == "Cancel") {
                     addPanelBtn.click();
                 }
-                if(deletePanelBtn.innerHTML == "Exit delete panel mode") {
+                if(deletePanelBtn.innerHTML == "Cancel") {
                     deletePanelBtn.click();
                 }
                 modal.style.display = "block";
@@ -362,7 +444,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if (addPanelMode) {
             deletePanelBtn.style.pointerEvents = "none";
             showPlusButtons();
-            addPanelBtn.innerText = "Exit Add Panel Mode";  // Change button text
+            addPanelBtn.innerText = "Cancel";  // Change button text
         } else {
             deletePanelBtn.style.pointerEvents = "auto";
             hidePlusButtons();
@@ -422,15 +504,29 @@ document.addEventListener("DOMContentLoaded", function() {
         deleteMode = !deleteMode;
         deleteConfirmDropdown.classList.toggle('hidden');
         addPanelBtn.style.pointerEvents = deleteMode ? 'none' : 'auto';
-        deletePanelBtn.innerText = deleteMode ? 'Exit delete panel mode' : 'Delete Panel';
+        deletePanelBtn.innerText = deleteMode ? 'Cancel' : 'Delete Panel';
 
+        let imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
         if (deleteMode) {
-            document.querySelectorAll(".grid-item").forEach(item => {
-                if (!item.classList.contains("create") && !item.querySelector(".circle")) {
+            document.querySelectorAll(".grid-item").forEach(item, index => {
+                if (!item.querySelector(".circle")) {
                     let circle = document.createElement("div");
                     circle.classList.add("circle");
                     circle.style.display = "block"; // Make sure circle is visible
                     item.appendChild(circle);
+                    circle.addEventListener("click", function(event) {
+                        event.stopPropagation(); // Prevent click from bubbling up to grid-item
+                        circle.classList.toggle("selected");
+                        item.classList.toggle("highlight");
+
+                        if (circle.classList.contains("selected")) {
+                            // if selected, add index to selectedItems
+                            selectedItems.push(imageObjects[index]);
+                        } else {
+                            // if deselected, remove index from selectedItems
+                            selectedItems.splice(index, 1);
+                        }
+                    });
                 }
             });
         } else {
@@ -438,41 +534,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // Event delegation for click events on the grid container
-    document.querySelector(".grid-container").addEventListener("click", function(event) {
-        if (deleteMode && event.target.classList.contains("circle")) {
-            let circle = event.target;
-            circle.classList.toggle("selected");
-            circle.parentElement.classList.toggle("highlight");
-
-            if (circle.classList.contains("selected")) {
-                selectedItems.push(circle.parentElement);
-            } else {
-                selectedItems = selectedItems.filter(item => item !== circle.parentElement);
-            }
-        }
-    });
-
     // Confirm deletion of selected panels
     deleteConfirmBtn.addEventListener("click", async function() {
         deleteConfirmDropdown.classList.add('hidden');
-        
-        let imageDescriptions = JSON.parse(localStorage.getItem("imageDescriptions"));
-        let imageUrls = JSON.parse(localStorage.getItem("imageUrls"));
-
-        for (let item of selectedItems) {
-            let imgUrl = item.querySelector(".generated-image").src;
-            let index = imageUrls.indexOf(imgUrl);
-            if (index > -1) {
-                imageDescriptions.splice(index, 1);
-                imageUrls.splice(index, 1);
-            }
-            item.remove();
+        let imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
+        for (let imageObject of selectedItems) {
+            imageObjects.splice(imageObjects.indexOf(imageObject, 1));
         }
-
-        localStorage.setItem("imageDescriptions", JSON.stringify(imageDescriptions));
-        localStorage.setItem("imageUrls", JSON.stringify(imageUrls));
-        await saveImage(localStorage.getItem('userID'));
+        selectedItems = [];
+        await saveImage(localStorage.getItem('userID'), imageObjects, true);
 
         hideDeletePanels();
         deletePanelBtn.innerText = 'Delete Panel';
@@ -487,22 +557,20 @@ document.addEventListener("DOMContentLoaded", function() {
         selectedItems = [];
     }
 
-    // Delete all panels except "Create" on "Rewrite" button click
-    xBtn.addEventListener("click", function() {
+    // Delete all panels except on "Rewrite" button click
+    rewriteBtn.addEventListener("click", function() {
         dropdown.classList.toggle('hidden');
     });
 
-    deleteBtn.addEventListener("click", async function() {
+    rewriteConfirmBtn.addEventListener("click", async function() {
         dropdown.classList.add('hidden');
-        const gridItems = gridContainer.querySelectorAll(".grid-item:not(.create)");
-        for (let item of gridItems) {
-            let img = item.querySelector('.generated-image');
-            if (img && img.src) {
-                item.remove();
-            }
+        // remove all grid-item children of gridContainer
+        const gridContainer = document.getElementById("gridContainer");
+        while (gridContainer.firstChild) {
+            gridContainer.removeChild(gridContainer.firstChild);
         }
-        localStorage.setItem('imageDescriptions', JSON.stringify([]));
-        await saveImage(localStorage.getItem('userID'));
+        // Clear localStorage and reset imageObjects
+        await saveImage(localStorage.getItem('userID'), [], true);
     });
 
     // Prevent default form submission
@@ -520,22 +588,27 @@ function createPanel(src, image, position) {
     if (image) {
         newGridItem.innerHTML = `<img class="generated-image" src=${src}>`;
         const imageUrl = src;
-        const description = JSON.parse(localStorage.getItem('imageDescriptions'))[position];
+        const description = JSON.parse(localStorage.getItem('imageObjects'))[position].description;
         newGridItem.addEventListener('click', event => openModal(imageUrl, description, event));
     } else {
         newGridItem.innerHTML = `
-            <div class="scribble-container">
-                <img class="pencil hidden" src="imgs/pencil_icon_transparent.webp">
+            <div class="loading-container hidden">
+                <svg class="loading-spinner" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="45" stroke="#e32400" stroke-width="5" fill="none" />
+                    <text x="50%" y="50%" text-anchor="middle" fill="#e32400" font-size="12" dy=".3em" font-family="'Comic Sans MS', sans-serif">Loading...</text>
+                </svg>
             </div>
             <img class="generated-image" src=${src}>
             <form class="input-container" onSubmit="submitEvent(this, description.value)">
-                <textarea class="event-input" name="description" placeholder="Event" rows="1"></textarea>
-                <button class="mic-button" type="button">
-                    <img src="imgs/mic_icon.png" alt="speak" class="mic-icon">
-                </button>
-                <button class="event-submit" type="submit">
-                    <img src="imgs/pencil_icon.jpeg" alt="Submit" class="submit-image">
-                </button>
+                <textarea class="event-input" id="event-input" name="description" placeholder="Event" rows="1"></textarea>
+                <div class="event-input-btns">
+                    <button class="mic-button" type="button">
+                        <img src="imgs/mic_icon.png" alt="speak" class="mic-icon">
+                    </button>
+                    <button class="event-submit" type="submit">
+                        <img src="imgs/pencil_icon.jpeg" alt="Submit" class="submit-image">
+                    </button>
+                </div>
             </form>
         `;
     }
@@ -544,8 +617,7 @@ function createPanel(src, image, position) {
     if (position < gridItems.length - 1) {
         gridContainer.insertBefore(newGridItem, gridItems[position]);
     } else {
-        const createItem = document.querySelector('.create');
-        gridContainer.insertBefore(newGridItem, createItem);
+        gridContainer.appendChild(newGridItem);
     }
 
     if (!image) {
@@ -562,23 +634,23 @@ function createPanel(src, image, position) {
         };
         recognition.onstart = () => {
             recognizingSpeech = true;
-            document.getElementByClassName(`event-input`)[position].placeholder = "Listening...";
-            document.getElementByClassName(`mic-button`)[position].style.backgroundColor = "#00a6cb";
+            document.getElementsByClassName(`event-input`)[position].placeholder = "Listening...";
+            document.getElementsByClassName(`mic-button`)[position].style.backgroundColor = "#00a6cb";
 
             // Disable all other mic buttons
             disableOtherMicButtons(position, true);
         };
         recognition.onend = () => {
             recognizingSpeech = false;
-            document.getElementById(`event-input-${position}`).placeholder = "Event";
-            document.getElementById(`mic-button-${position}`).style.backgroundColor = "#e8e8e8"; // Reset background color
+            document.getElementsByClassName(`event-input`)[position].placeholder = "Event";
+            document.getElementsByClassName(`mic-button`)[position].style.backgroundColor = "#e8e8e8"; // Reset background color
 
             // Re-enable all mic buttons
             disableOtherMicButtons(position, false);
         };
 
         // Toggle between starting and stopping recognition
-        document.getElementById(`mic-button-${position}`).addEventListener("click", () => {
+        document.getElementsByClassName(`mic-button`)[position].addEventListener("click", () => {
             if (recognizingSpeech) {
                 recognition.stop(); // Stop recognition if it's currently running
             } else {
@@ -612,6 +684,7 @@ async function fillData(userID) {
         const data = userData.item;
 
         localStorage.setItem('username', data.username);
+        localStorage.setItem('attributes', JSON.stringify(data.attributes));
 
         // Fill in the #comic-title input tag with the comicTitle attribute value
         const comicTitle = document.getElementById('comic-title');
@@ -628,15 +701,8 @@ async function fillData(userID) {
         const sortedImages = imageObjects.sort((a, b) => a.order - b.order);
 
         // Render images on the page
-        const gridContainer = document.getElementById('gridContainer');
         sortedImages.forEach((imageObject) => {
-            const imageContainer = document.createElement('div');
-            imageContainer.classList.add('image-container'); // Add your container class
-            imageContainer.innerHTML = `
-                <img src="${imageObject.image}" alt="${imageObject.description}">
-                <p>${imageObject.description}</p>
-            `;
-            gridContainer.appendChild(imageContainer);
+            createPanel(imageObject.image, true, imageObject.order);
         });
     } catch (error) {
         console.error("Error fetching user data:", error);
@@ -645,47 +711,48 @@ async function fillData(userID) {
 
 function submitEvent(form, description) {
     event.preventDefault();
-
+    if (description.trim().length <= 1) {
+        return;
+    }
     document.querySelectorAll(".event-submit").forEach(button => button.disabled = true);
     addPanelBtn.disabled = true;
     deletePanelBtn.disabled = true;
 
-    const selectedPanel = form.parentElement.querySelector('.generated-image');
-    const pencil = form.parentElement.querySelector('.pencil');
-    pencil.classList.remove('hidden');
+    const gridItem = form.parentElement;
 
-    generateImage(selectedPanel, description.trim(), JSON.parse(localStorage.getItem('attributes')));
+    generateImage(gridItem, description.trim(), JSON.parse(localStorage.getItem('attributes')));
 }
 
 
-async function generateImage(imgElement, description, attributes) {
+async function generateImage(gridItem, description, attributes) {
     const prompt = `A high-energy comic book panel of a ${attributes.age} ${attributes.gender} superhero ${description}, 
     drawn in a bold ink style with thick outlines, Ben-Day dots, and exaggerated perspective. 
     Color palette: Vibrant primaries (red/blue/yellow) with comic-book halftone shading. 
     Style: Cross between [Jack Kirby's dynamic poses] and [Bruce Timm's clean lines]. 
     Add speed lines, sound effects, and a dramatic spotlight.`;
+
+    const imgElement = gridItem.querySelector(".generated-image");
+    const loadingContainer = gridItem.querySelector(".loading-container");
     
-    const position = Array.from(document.querySelectorAll(".generated-image")).indexOf(imgElement);
+    const position = Array.from(document.querySelectorAll(".grid-item")).indexOf(gridItem); 
+
+    // Show the loading animation for this grid-item
+    loadingContainer.classList.remove("hidden");
 
     const formData = new FormData();
 	formData.append("username", localStorage.getItem('username'));
     formData.append("userID", localStorage.getItem('userID'));
     formData.append("prompt", prompt);
-    formData.append("isAvatar", false);
+    formData.append("createAvatar", false);
+    formData.append("position", position);
 	formData.append("description", description);
+    formData.append("temporary", false);
+
     try {
         // Generate photo through /generatePhoto endpoint
         const response = await fetch("/generatePhoto", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ 
-                username: localStorage.getItem('userID'), 
-                prompt: prompt, 
-                isAvatar: false, 
-                position: position
-            }),
+            body: formData
         });
 
         const result = await response.json();
@@ -694,15 +761,16 @@ async function generateImage(imgElement, description, attributes) {
             return false;
         }
 
-        
-        saveImage(localStorage.getItem("userID"), result.imageObjects);
+        await saveImage(localStorage.getItem("userID"), result.imageObjects, false);
 
-        // Update the UI
-        imgElement.src = result.image;
-    } catch (error) {
+        imgElement.src = result.imageUrl;
+    } catch (error) { 
         console.error("Error generating image:", error);
-        imgElement.src = "imgs/blank_white.jpeg"; // Fallback image
+        imgElement.src = 'Public/imgs/errorwarning.webp'; // Fallback image
         return false;
+    } finally {
+        // Hide the loading animation for this grid-item
+        loadingContainer.classList.add("hidden");
     }
 
     document.querySelectorAll(".event-submit").forEach((button) => (button.disabled = false));
@@ -710,7 +778,30 @@ async function generateImage(imgElement, description, attributes) {
     deletePanelBtn.disabled = false;
 }
 
-async function saveImage(userID, imageObjects) {
+async function saveImage(userID, imageObjects, updateDB) {
+    // update imageObjects order
+    imageObjects.forEach((imageObject, index) => {
+        imageObject.order = index;
+        if (imageObject.image !== 'https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png') {
+            delete imageObject.image;
+        }
+    });
     localStorage.setItem("imageObjects", JSON.stringify(imageObjects));
+    if (updateDB) {
+        try {
+            const response = await fetch('/saveImages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userID, imageObjects })
+            });
+            if (!response.ok) {
+                throw new Error('Failed to save images');
+            }
+        } catch (error) {
+            console.error("Error saving images:", error);
+        }
+    }
 }
 

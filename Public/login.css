@@ -33,7 +33,7 @@ button, #upload-image-input{
     transition: 0.3s ease-in-out;
 }
 
-.container {
+#image-capture-container {
     position: relative;
     width: 100%;
     max-width: 500px;
@@ -444,7 +444,7 @@ button:hover,
 	textarea {
 		font-size: 1em;
 		line-height: 1em;
-		padding: 7px;
+		padding: 4px;
 		width: 95%;
 	}
 
