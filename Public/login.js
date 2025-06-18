@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
-	if (window.location.href.indexOf("localhost") > -1) {
-		localStorage.setItem("userID", '1002');
-		window.location.replace("/home.html");
-	}
+	// if (window.location.href.indexOf("localhost") > -1) {
+	// 	localStorage.setItem("userID", '1002');
+	// 	window.location.replace("/home.html");
+	// }
 	
 	document.querySelector(".login-container").style.display = "block";
 	setTimeout(() => {
@@ -14,7 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
 			event.preventDefault();
 			const username = document.querySelector("#username").value;
 			const password = document.querySelector("#password").value;
+			
+			// disable login button to prevent multiple clicks
+			const loginButton = document.querySelector("#loginBtn");
+			loginButton.disabled = true;
 			authenticate(username, password);
+			// enable login button after authentication
+			loginButton.disabled = false;
 		});
 
 	document.getElementById("signUpButton").addEventListener("click", () => {
@@ -58,21 +64,50 @@ document.addEventListener("DOMContentLoaded", function () {
     const uploadImageInput = document.getElementById("upload-image-input");
 	const uploadedImage = document.getElementById("uploaded-image");
 	const loadingContainer = document.getElementById("loading-container");
+	const takePictureBtn = document.getElementById("take-picture-btn");
 
-	document.getElementById("take-picture-btn").addEventListener("click", async () => {
-        uploadImageInput.value = ""; // Clear the file input
-        uploadedImage.src = ""; // Clear the uploaded image source
-        uploadedImage.style.display === "none";
-        //Show capture button
-        captureBtn.style.display = "block";
-        //Show webcam
-        video.style.display = "block";
-        //Hide uploaded image
-        uploadedImage.style.display = "none";
-        //Show canvas
-        canvas.style.display = "none";
+	takePictureBtn.addEventListener("click", async () => {
+		if (takePictureBtn.innerHTML == "Take a picture of yourself to create your superhero avatar!") {
+			takePictureBtn.innerHTML = "Cancel"
+			uploadImageInput.value = ""; // Clear the file input
+			uploadedImage.src = ""; // Clear the uploaded image source
+			uploadedImage.style.display === "none";
+			//Show capture button
+			captureBtn.style.display = "block";
+			//Show webcam
+			video.style.display = "block";
+			//Hide uploaded image
+			uploadedImage.style.display = "none";
+			//Show canvas
+			canvas.style.display = "none";
 
-        await startWebcam();
+			// Hide file input and label
+			uploadImageInput.style.display = "none";
+			uploadImageLabel.style.display = "none";
+
+			await startWebcam();
+		} else if (takePictureBtn.innerHTML == "Cancel") {
+			takePictureBtn.innerHTML = "Take a picture of yourself to create your superhero avatar!";
+			// Hide video and canvas
+			video.style.display = "none";
+			canvas.style.display = "none";
+			captureBtn.style.display = "none";
+
+			// Hide the generate avatar section
+			generateContainer.style.display = "none";
+			avatarContainer.style.display = "none";
+
+			// Stop webcam stream
+			if (video.srcObject) {
+				const tracks = video.srcObject.getTracks();
+				tracks.forEach((track) => track.stop());
+				video.srcObject = null;
+			}
+
+			// show file input and label
+			uploadImageInput.style.display = "block";
+			uploadImageLabel.style.display = "block";
+		}
     });
 
 	// Handle image upload
@@ -235,6 +270,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	// Confirm button saves avatar
 	confirmAvatarBtn.addEventListener("click", async () => {
+		// disable the button to prevent multiple clicks
+		confirmAvatarBtn.disabled = true;
 		let genderField = document.getElementById("gender").value;
 		let gender = genderField == "Non-binary" ? "" : genderField;
 		
@@ -249,6 +286,8 @@ document.addEventListener("DOMContentLoaded", function () {
 			document.getElementById("newPassword").value,
 			attributes
 		);
+		// enable the button after submission
+		confirmAvatarBtn.disabled = false;
 	});
 
 	document.getElementById("recoverPasswordForm").addEventListener("submit", async function (e) {
@@ -390,6 +429,7 @@ async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
 		.then((data) => {
 			if (data.success) {
 				// Redirect to home.html after successful upload
+				localStorage.setItem("userID", data.userID);
 				window.location.href = "./home.html";
 			}
 		})

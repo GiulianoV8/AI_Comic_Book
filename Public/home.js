@@ -1,5 +1,16 @@
 let openModal;
 let modalDisabled = false;
+function updatePanelCount() {
+    let panelCount = Array.from(document.querySelectorAll(".grid-item")).length;
+    addPanelBtn.innerHTML = `Add Panel ${panelCount}/12`;
+    if (panelCount >= 12) {
+        addPanelBtn.disabled = true;
+        addPanelBtn.style.pointerEvents = "none";
+    } else {
+        addPanelBtn.disabled = false;
+        addPanelBtn.style.pointerEvents = "auto";
+    }
+}
 document.addEventListener("DOMContentLoaded", function() {
     function testCreateImageObjects() {
         const imageObjects = [];
@@ -92,6 +103,7 @@ document.addEventListener("DOMContentLoaded", function() {
         if(deletePanelBtn.innerHTML == "Cancel") {
             deletePanelBtn.click();
         }
+        updatePanelCount();
         addPanelBtn.removeEventListener('click', showPlusClickEvent);
         addPanelBtn.style.zIndex = '';
         document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
@@ -203,64 +215,111 @@ document.addEventListener("DOMContentLoaded", function() {
     
     document.getElementById("createBtn").addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
-    
+
     function generateComicLayout(n) {
-		const gridSize = Math.ceil(Math.sqrt(n * 1.5));
-		const grid = Array(gridSize)
-			.fill()
-			.map(() => Array(gridSize).fill(null));
-		const panels = [];
-
-		const panelSizes = [
-			{ w: 1, h: 1 },
-			{ w: 1, h: 2 },
-			{ w: 2, h: 1 },
-			{ w: 2, h: 2 },
-		];
-
-		for (let i = 0; i < n; i++) {
-			let placed = false;
-			let attempts = 0;
-
-			while (!placed && attempts < 50) {
-				const size =
-					panelSizes[Math.floor(Math.random() * panelSizes.length)];
-				const row = Math.floor(Math.random() * (gridSize - size.h + 1));
-				const col = Math.floor(Math.random() * (gridSize - size.w + 1));
-
-				// Check if space is available
-				let canPlace = true;
-				for (let r = row; r < row + size.h; r++) {
-					for (let c = col; c < col + size.w; c++) {
-						if (grid[r][c] !== null) {
-							canPlace = false;
-							break;
-						}
-					}
-					if (!canPlace) break;
-				}
-
-				if (canPlace) {
-					// Place panel
-					for (let r = row; r < row + size.h; r++) {
-						for (let c = col; c < col + size.w; c++) {
-							grid[r][c] = i;
-						}
-					}
-					panels.push({ index: i, row, col, w: size.w, h: size.h });
-					placed = true;
-				}
-				attempts++;
-			}
-		}
-
-		// Convert to CSS grid-template-areas format
-		const gridAreas = grid
-			.map((row) => '"' + row.map((cell) => (cell !== null ? `panel${cell}` : ".")).join(" ") +'"')
-			.join("\n    ");
-
-		return { gridAreas, panels };
-	}
+        const layouts = [
+            // 1 image
+            [
+                ["panel0"]
+            ],
+            // 2 images
+            [
+                ["panel0", "panel1"]
+            ],
+            // 3 images
+            [
+                ["panel0", "panel1"],
+                ["panel2", "panel2"]
+            ],
+            // 4 images
+            [
+                ["panel0", "panel1"],
+                ["panel2", "panel3"]
+            ],
+            // 5 images
+            [
+                ["panel0", "panel1", "panel2"],
+                ["panel3", "panel4", "panel4"]
+            ],
+            // 6 images
+            [
+                ["panel0", "panel1", "panel2"],
+                ["panel3", "panel4", "panel5"]
+            ],
+            // 7 images
+            [
+                ["panel0", "panel1", "panel2"],
+                ["panel3", "panel4", "panel4"],
+                ["panel6", "panel6", "panel5"]
+            ],
+            // 8 images
+            [
+                ["panel0", "panel0", "panel1"],
+                ["panel0", "panel0", "panel2"],
+                ["panel3", "panel3", "panel4"],
+                ["panel5", "panel6", "panel7"]
+            ],
+            // 9 images
+            [
+                ["panel0", "panel1", "panel1"],
+                ["panel2", "panel4", "panel4"],
+                ["panel3", "panel4", "panel4"],
+                ["panel6", "panel6", "panel7"],
+                ["panel6", "panel6", "panel8"]
+            ],
+            // 10 images
+            [
+                ["panel0", "panel1", "panel2"],
+                ["panel3", "panel4", "panel4"],
+                ["panel5", "panel5", "panel6"],
+                ["panel7", "panel8", "panel9"]
+            ],
+            // 11 images
+            [
+                ["panel0", "panel1", "panel1"],
+                ["panel3", "panel2", "panel2"],
+                ["panel4", "panel5", "panel6"],
+                ["panel7", "panel8", "panel9"]
+            ],
+            // 12 images
+            [
+                ["panel0", "panel0", "panel2"],
+                ["panel1", "panel3", "panel4"],
+                ["panel5", "panel5", "panel6"],
+                ["panel5", "panel5", "panel7"],
+                ["panel8", "panel9", "panel10"],
+                ["panel11", "panel12", "panel12"],
+            ]
+        ];
+    
+        // Clamp n to [1, 12]
+        n = Math.max(1, Math.min(12, n));
+        const layout = layouts[n - 1];
+    
+        // Build grid-template-areas string
+        const gridAreas = layout.map(row =>
+            '"' + row.map(cell => cell === "." ? "." : cell).join(" ") + '"'
+        ).join("\n    ");
+    
+        // Build panels array with position and size for each panel
+        const panelMap = {};
+        layout.forEach((row, rIdx) => {
+            row.forEach((cell, cIdx) => {
+                if (cell !== ".") {
+                    if (!panelMap[cell]) {
+                        panelMap[cell] = { index: parseInt(cell.replace("panel", "")), row: rIdx, col: cIdx, w: 1, h: 1 };
+                    } else {
+                        // Expand width or height if panel spans multiple cells
+                        if (panelMap[cell].row === rIdx) panelMap[cell].w++;
+                        if (panelMap[cell].col === cIdx) panelMap[cell].h++;
+                    }
+                }
+            });
+        });
+        const panels = Object.values(panelMap);
+    
+        return { gridAreas, panels };
+    }
 
     function showComicPanels() {
         // Cancel add/delete panel modes if active
@@ -289,44 +348,40 @@ document.addEventListener("DOMContentLoaded", function() {
         comicGrid.style.gridTemplateAreas = gridAreas;
 
         // Create and place each panel in the grid
-        panels.forEach(panel => {
-            const imageUrl = imageObjects[panel.index].image;
-            const captionText = imageObjects[panel.index].description;
+        panels.forEach((panel, i) => {
+            if (!imageObjects[i]) return;
+            const imageUrl = imageObjects[i].image;
+            const captionText = imageObjects[i].description;
 
             const panelDiv = document.createElement('div');
             panelDiv.classList.add('comic-panel');
-            panelDiv.style.gridArea = `panel${panel.index}`;
-
-            // Panel content (image and caption)
-            const content = document.createElement('div');
-            content.classList.add('panel-content');
-
-            // Randomly decide caption position
-            const isCaptionOnTop = Math.random() < 0.5;
-            const caption = document.createElement('div');
-            caption.classList.add('panel-caption', isCaptionOnTop ? 'top' : 'bottom');
-            caption.textContent = captionText || '';
+            panelDiv.style.gridArea = `panel${i}`;
 
             const image = document.createElement('img');
             image.src = imageUrl;
             image.alt = "Comic Image";
             image.classList.add('panel-image');
 
-            // Append caption and image in chosen order
-            if (isCaptionOnTop) {
-                content.appendChild(caption);
-                content.appendChild(image);
-            } else {
-                content.appendChild(image);
-                content.appendChild(caption);
-            }
-
-            panelDiv.appendChild(content);
+            panelDiv.appendChild(image);
             comicGrid.appendChild(panelDiv);
-        });
 
+            panelDiv.addEventListener('click', event => {openModal(imageUrl, captionText, event);});
+        });
+        
+        const comicPanels = Array.from(comicGrid.children);
+        const columns = getComputedStyle(comicGrid).gridTemplateColumns.split(' ').length;
+
+        comicPanels.forEach((panel, idx) => {
+            const row = Math.floor(idx / columns);
+            if (row % 2 === 0) {
+                panel.style.transform = 'skewX(-5deg)';
+            } else {
+                panel.style.transform = 'skewX(5deg)';
+            }
+        });
         // Show the comic overlay
         comicBackground.classList.remove("hidden");
+
     }
     
     // function createComicPanel(imageUrl, captionText) {
@@ -381,18 +436,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const gridItems = document.querySelectorAll(".grid-item");
         plusButtons.forEach(button => button.remove());  // Clear existing buttons
-        
-        // Create plus buttons before each item, between items, and after the last item
-        gridItems.forEach((item, index) => {
-            const plusBtn = createPlusButton(index);
-            gridContainer.insertBefore(plusBtn, item);
-            plusButtons.push(plusBtn);
-        });
 
-        // Add plus button after the last item
-        const lastPlusBtn = createPlusButton(gridItems.length);
-        gridContainer.appendChild(lastPlusBtn);
-        plusButtons.push(lastPlusBtn);
+        // Track where we've already added a plus button
+        for (let i = 0; i <= gridItems.length; i++) {
+            const prevIsImage = i > 0 && !gridItems[i - 1]?.querySelector(".event-input");
+            const nextIsImage = i < gridItems.length && !gridItems[i]?.querySelector(".event-input");
+
+            // Add plus button at position i if:
+            // - The item to the left is an image and the item to the right is an image (or edge)
+            // - But NOT if either side is a form
+            if (
+                (i === 0 && nextIsImage) ||
+                (i === gridItems.length && prevIsImage) ||
+                (prevIsImage && nextIsImage)
+            ) {
+                const plusBtn = createPlusButton(i);
+                if (gridItems[i]) {
+                    gridContainer.insertBefore(plusBtn, gridItems[i]);
+                } else {
+                    gridContainer.appendChild(plusBtn);
+                }
+                plusButtons.push(plusBtn);
+            }
+        }
     }
 
     // Function to create a plus button
@@ -412,8 +478,8 @@ document.addEventListener("DOMContentLoaded", function() {
         plusButtons.forEach(button => button.remove());
         plusButtons = [];
         addPanelMode = false;
-        addPanelBtn.innerText = "Add Panel";  // Revert button text
         deletePanelBtn.style.pointerEvents = "auto";
+        updatePanelCount();  // Update panel count
     }
 
     // Function to close modal
@@ -437,20 +503,6 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     }
-
-    // Toggle add panel mode on "Add Panel" button click
-    addPanelBtn.addEventListener("click", function() {
-        addPanelMode = !addPanelMode;
-        if (addPanelMode) {
-            deletePanelBtn.style.pointerEvents = "none";
-            showPlusButtons();
-            addPanelBtn.innerText = "Cancel";  // Change button text
-        } else {
-            deletePanelBtn.style.pointerEvents = "auto";
-            hidePlusButtons();
-            addPanelBtn.innerText = "Add Panel";  // Revert button text
-        }
-    });
 
     // Function to enable editing
     editTitleBtn.addEventListener("click", function() {
@@ -499,6 +551,20 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // Toggle add panel mode on "Add Panel" button click
+    addPanelBtn.addEventListener("click", function() {
+        addPanelMode = !addPanelMode;
+        if (addPanelMode) {
+            deletePanelBtn.style.pointerEvents = "none";
+            showPlusButtons();
+            addPanelBtn.innerText = "Cancel";  // Change button text
+        } else {
+            deletePanelBtn.style.pointerEvents = "auto";
+            hidePlusButtons();
+            updatePanelCount();  // Revert button text
+        }
+    });
+
     // Toggle delete panel mode
     deletePanelBtn.addEventListener("click", function() {
         deleteMode = !deleteMode;
@@ -508,7 +574,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         let imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
         if (deleteMode) {
-            document.querySelectorAll(".grid-item").forEach(item, index => {
+            document.querySelectorAll(".grid-item").forEach((item, index) => {
                 if (!item.querySelector(".circle")) {
                     let circle = document.createElement("div");
                     circle.classList.add("circle");
@@ -520,13 +586,23 @@ document.addEventListener("DOMContentLoaded", function() {
                         item.classList.toggle("highlight");
 
                         if (circle.classList.contains("selected")) {
-                            // if selected, add index to selectedItems
-                            selectedItems.push(imageObjects[index]);
+                            if (item.querySelector(".event-input")) {
+                                selectedItems.push({eventInput: true, gridItem: item, index: index})
+                            } else {
+                                // if selected, add index to selectedItems
+                                selectedItems.push({gridItem: item, imageObjects: imageObjects[index]});
+                            }
                         } else {
                             // if deselected, remove index from selectedItems
                             selectedItems.splice(index, 1);
                         }
+                        if (selectedItems.length > 0) {
+                            deleteConfirmBtn.disabled = false;
+                        } else {
+                            deleteConfirmBtn.disabled = true;
+                        }
                     });
+                    
                 }
             });
         } else {
@@ -539,15 +615,31 @@ document.addEventListener("DOMContentLoaded", function() {
         deleteConfirmDropdown.classList.add('hidden');
         let imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
         for (let imageObject of selectedItems) {
-            imageObjects.splice(imageObjects.indexOf(imageObject, 1));
+            if (imageObject.eventInput) {
+                // If it's an event input, remove the grid item
+                const gridItem = imageObject.gridItem;
+                if (gridItem) {
+                    gridItem.remove();
+                }
+            }else {
+                // If it's an image object, remove the grid item and the image object
+                const gridItem = imageObject.gridItem;
+                if (gridItem) {
+                    gridItem.remove();
+                }
+                imageObjects.splice(imageObjects.indexOf(imageObject.imageObject, 1));
+            }
         }
         selectedItems = [];
-        await saveImage(localStorage.getItem('userID'), imageObjects, true);
+        
+            await saveImage(localStorage.getItem('userID'), imageObjects, true);
 
         hideDeletePanels();
         deletePanelBtn.innerText = 'Delete Panel';
         addPanelBtn.style.pointerEvents = 'auto';
         deleteMode = false;
+
+        updatePanelCount();
     });
 
     // Hide and reset delete panels
@@ -571,6 +663,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         // Clear localStorage and reset imageObjects
         await saveImage(localStorage.getItem('userID'), [], true);
+        updatePanelCount();
     });
 
     // Prevent default form submission
@@ -593,10 +686,7 @@ function createPanel(src, image, position) {
     } else {
         newGridItem.innerHTML = `
             <div class="loading-container hidden">
-                <svg class="loading-spinner" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="45" stroke="#e32400" stroke-width="5" fill="none" />
-                    <text x="50%" y="50%" text-anchor="middle" fill="#e32400" font-size="12" dy=".3em" font-family="'Comic Sans MS', sans-serif">Loading...</text>
-                </svg>
+                <span class="loader loading"></span>
             </div>
             <img class="generated-image" src=${src}>
             <form class="input-container" onSubmit="submitEvent(this, description.value)">
@@ -621,6 +711,8 @@ function createPanel(src, image, position) {
     }
 
     if (!image) {
+        const eventInput = newGridItem.querySelector(".event-input");
+        const micButton = newGridItem.querySelector(".mic-button");
         const LANG = "en-US";
         const recognition = new (window.SpeechRecognition ||
             window.webkitSpeechRecognition ||
@@ -630,27 +722,27 @@ function createPanel(src, image, position) {
 
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
-            document.getElementsByClassName(`event-input`)[position].value += ` ${transcript}`;
+            eventInput.value += ` ${transcript}`;
         };
         recognition.onstart = () => {
             recognizingSpeech = true;
-            document.getElementsByClassName(`event-input`)[position].placeholder = "Listening...";
-            document.getElementsByClassName(`mic-button`)[position].style.backgroundColor = "#00a6cb";
+            eventInput.placeholder = "Listening...";
+            micButton.style.backgroundColor = "#00a6cb";
 
             // Disable all other mic buttons
             disableOtherMicButtons(position, true);
         };
         recognition.onend = () => {
             recognizingSpeech = false;
-            document.getElementsByClassName(`event-input`)[position].placeholder = "Event";
-            document.getElementsByClassName(`mic-button`)[position].style.backgroundColor = "#e8e8e8"; // Reset background color
+            eventInput.placeholder = "Event";
+            micButton.style.backgroundColor = "#e8e8e8"; // Reset background color
 
             // Re-enable all mic buttons
             disableOtherMicButtons(position, false);
         };
 
         // Toggle between starting and stopping recognition
-        document.getElementsByClassName(`mic-button`)[position].addEventListener("click", () => {
+        micButton.addEventListener("click", () => {
             if (recognizingSpeech) {
                 recognition.stop(); // Stop recognition if it's currently running
             } else {
@@ -704,6 +796,8 @@ async function fillData(userID) {
         sortedImages.forEach((imageObject) => {
             createPanel(imageObject.image, true, imageObject.order);
         });
+
+        updatePanelCount();
     } catch (error) {
         console.error("Error fetching user data:", error);
     }
@@ -763,10 +857,13 @@ async function generateImage(gridItem, description, attributes) {
 
         await saveImage(localStorage.getItem("userID"), result.imageObjects, false);
 
+        // delete grid-item and replace it with the new panel
+        gridItem.remove();
+        createPanel(result.imageUrl, true, position);
         imgElement.src = result.imageUrl;
     } catch (error) { 
         console.error("Error generating image:", error);
-        imgElement.src = 'Public/imgs/errorwarning.webp'; // Fallback image
+        imgElement.src = 'imgs/errorwarning.webp'; // Fallback image
         return false;
     } finally {
         // Hide the loading animation for this grid-item
@@ -805,3 +902,4 @@ async function saveImage(userID, imageObjects, updateDB) {
     }
 }
 
+// 1  +  3  2  3  4  5

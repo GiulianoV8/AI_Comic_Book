@@ -51,13 +51,14 @@ video, canvas {
 #capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input{
     background-color: rgb(255, 198, 0);
     border: none;
-    padding: 10px 20px;
-    font-size: 16px;
+    padding: 5px 10px;
+    font-size: 0.5em;
     font-weight: bold;
     color: black;
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+	width: auto;
 }
 
 #uploaded-image {
@@ -75,7 +76,6 @@ video, canvas {
     transform: translateX(-50%);
     background-color: #ffcc00;
     border: none;
-    padding: 10px 20px;
     cursor: pointer;
     font-size: 16px;
 }
@@ -117,7 +117,6 @@ video, canvas {
 }
 
 #avatar-image {
-    display: none;
     width: 100%;
     max-width: 100%;
     margin-top: 10px;
@@ -130,23 +129,6 @@ video, canvas {
 @keyframes bounce {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
-}
-
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    button {
-        font-size: 1rem;
-        padding: 10px 15px;
-    }
-    
-    video, canvas, #avatar-image {
-        width: 95%;
-    }
-
-    #down-arrow {
-        font-size: 2rem;
-    }
 }
 
 
@@ -372,6 +354,10 @@ button:hover,
 	.recovery-message {
 		font-size: 0.8em;
 	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 0.4rem;
+	}
 }
 
 @media (max-width: 400px) {
@@ -422,7 +408,11 @@ button:hover,
 
 	.subtitle-text,
 	label {
-		font-size: 1.2em;
+		font-size: 1.1em;
+	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 0.6rem;
 	}
 }
 
@@ -467,6 +457,10 @@ button:hover,
 	.attributes-container,
 	.recover-password-container {
 		max-width: 93%;
+	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 0.7rem;
 	}
 }
 
@@ -515,6 +509,25 @@ button:hover,
 	.recovery-message {
 		font-size: 1.1em;
 	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 1.1rem;
+	}
+}
+
+@media (max-width: 600px) {
+    button {
+        font-size: 1rem;
+        padding: 10px 15px;
+    }
+    
+    video, canvas, #avatar-image {
+        width: 95%;
+    }
+
+    #down-arrow {
+        font-size: 2rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -561,6 +574,10 @@ button:hover,
 	.recover-button {
 		font-size: 1.5em;
 	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 1.3rem;
+	}
 }
 
 @media (min-width: 1000px) {
@@ -604,5 +621,8 @@ button:hover,
 	.recovery-message {
 		font-size: 1.4em;
 	}
+
+	#capture-btn, #take-picture-btn, #confirm-avatar-btn, #upload-image-input {
+		font-size: 1.5rem;
+	}
 }
-    

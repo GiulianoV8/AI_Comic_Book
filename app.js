@@ -69,6 +69,12 @@ function bufferToStream(buffer) {
     stream.push(null);
     return stream;
 }
+
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
 async function convertImageToJPEGBuffer(blob, mimeType) {
     try {
         console.log('Converting File: ', blob);
@@ -118,34 +124,6 @@ async function convertImageToJPEGBuffer(blob, mimeType) {
     } catch (error) {
         console.error('Error in convertImageToJPEG:', error);
         throw new Error('Failed to convert image to JPEG');
-    }
-}
-
-async function updateS3Keys(username, oldImageObjects, newImageObjects) {
-    for (let i = 0; i < newImageObjects.length; i++) {
-        const newKey = newImageObjects[i].key;
-        const oldKey = oldImageObjects[i]?.key;
-
-        // If the key has changed, update the S3 object key
-        if (newKey !== oldKey) {
-            console.log(`Updating S3 key from ${oldKey} to ${newKey}`);
-
-
-            // Copy the object to the new key
-            const copyParams = {
-                Bucket: s3_BUCKET_NAME,
-                CopySource: `${s3_BUCKET_NAME}/${username}/${oldKey}`,
-                Key: `${username}/${newKey}`,
-            };
-            await s3.send(new CopyObjectCommand(copyParams));
-
-            // Delete the old object
-            const deleteParams = {
-                Bucket: s3_BUCKET_NAME,
-                Key: `${username}/${oldKey}`,
-            };
-            await s3.send(new DeleteObjectCommand(deleteParams));
-        }
     }
 }
 
@@ -300,6 +278,10 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 console.log('Old Image Objects:', oldImageObjects);
 
                 // Generate a presigned URL for the new image
+                const getObjectParams = {
+                    Bucket: s3_BUCKET_NAME,
+                    Key: s3Key,
+                };
                 imageUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
                     expiresIn: 3600, // URL expires in 1 hour
                 });
@@ -319,7 +301,7 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                     obj.order = index;
                 });
 
-                updatedImageObjects = newImageObject;
+                updatedImageObjects = newImageObjects;
                 console.log('New Image Objects:', newImageObjects);
 
                 // Update the user's imageObjects in DynamoDB
@@ -335,14 +317,7 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                 };
 
                 docClient.update(updateParams);
-
-                const getObjectParams = {
-                    Bucket: s3_BUCKET_NAME,
-                    Key: s3Key,
-                };
-                imageUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
-                    expiresIn: 3600, // URL expires in 1 hour
-                });
+                
             } else if (isAvatar) {
                 console.log('Processing avatar image...');
                 // Save avatar to S3
@@ -362,10 +337,10 @@ app.post('/generatePhoto', upload.single('image'), async (req, res) => {
                     Bucket: s3_BUCKET_NAME,
                     Key: s3Key,
                 };
-                avatarUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
+                imageUrl = await getSignedUrl(s3, new GetObjectCommand(getObjectParams), {
                     expiresIn: 3600, // URL expires in 1 hour
                 });
-                console.log('Avatar URL:', avatarUrl);
+                console.log('Avatar URL:', imageUrl);
             }
         }
 
@@ -532,7 +507,7 @@ app.post('/signup', async (req, res) => {
         };
 
         await docClient.put(user);
-        return res.status(201).json({ success: true, message: 'User signed up successfully.' });
+        return res.status(201).json({ success: true, userID: userID, message: 'User signed up successfully.' });
     } catch (err) {
         console.error('Error adding user:', JSON.stringify(err, null, 2));
         return res.status(500).json({ success: false, message: 'Error signing up.' });
@@ -691,8 +666,8 @@ app.get('/getUserData', async (req, res) => {
                 })
             );
         }
+        console.log('Updated Image Objects:', updatedImageObjects);
         
-
         res.json({ item: { ...data.Item, imageObjects: updatedImageObjects, firstLogin: firstLogin } });
     } catch (error) {
         console.error('Error fetching data from DynamoDB:', error);
