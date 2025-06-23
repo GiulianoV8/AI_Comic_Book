@@ -135,7 +135,7 @@ video, canvas {
 .signup-container,
 .attributes-container {
 	color: red;
-	text-shadow: 1px 1.5px black;
+	text-shadow: 0.5px 0.5px black;
 	background: #fff;
 	border: 5px solid #000;
 	box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
