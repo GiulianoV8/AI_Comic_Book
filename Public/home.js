@@ -484,6 +484,11 @@ document.addEventListener("DOMContentLoaded", function() {
         const gridItems = document.querySelectorAll(".grid-item");
         plusButtons.forEach(button => button.remove());  // Clear existing buttons
 
+        if (gridItems.length == 0) {
+            const plusBtn = createPlusButton(0);
+            gridContainer.appendChild(plusBtn);
+            plusButtons.push(plusBtn);
+        }
         // Track where we've already added a plus button
         for (let i = 0; i <= gridItems.length; i++) {
             const prevIsImage = i > 0 && !gridItems[i - 1]?.querySelector(".event-input");
@@ -522,7 +527,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Function to hide plus buttons
     function hidePlusButtons() {
-        plusButtons.forEach(button => button.remove());
+        document.querySelectorAll(".plus-button").forEach(btn => btn.remove());
         plusButtons = [];
         addPanelMode = false;
         deletePanelBtn.style.pointerEvents = "auto";
