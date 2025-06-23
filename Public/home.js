@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function() {
         saveImage(localStorage.getItem('userID'), imageObjects, true);
         return imageObjects;
     }
-    document.getElementById("testTenBtn").addEventListener("click", testCreateImageObjects);
+    // document.getElementById("testTenBtn").addEventListener("click", testCreateImageObjects);
     function isLocalStorageEnabled() {
         const testKey = "testkey";
     
