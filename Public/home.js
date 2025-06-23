@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const username = localStorage.getItem('username') || 'GiulianoV';
         const baseDate = Date.now();
         // Fetch the image as a buffer (ArrayBuffer)
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < 12; i++) {
             imageObjects.push({
                 image: `https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png`,
                 description: `Test image ${i + 1}`,
@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     const rewriteBtn = document.getElementById("rewriteBtn");
     const rewriteConfirmBtn = document.getElementById("rewriteConfirmBtn");
-    const dropdown = document.getElementById('deleteDropdown');
+    const dropdown = document.getElementById('rewriteDropdown');
     let deleteMode = false;
     let selectedItems = [];
 
@@ -71,134 +71,175 @@ document.addEventListener("DOMContentLoaded", function() {
     const saveTitleBtn = document.getElementById("save-title-btn");
     const cancelTitleBtn = document.getElementById("cancel-title-btn");
 
-    const modal = document.getElementById("imageModal");
+    const imageModal = document.getElementById("imageModal");
     const modalImg = document.getElementById("modalImage");
     const captionText = document.getElementById("imageCaption");
-    const closeBtn = document.getElementsByClassName("close")[0];
-
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    
+    const tutorialOverlay = document.getElementById("tutorial-overlay");
+    const tutorialBtn = document.getElementById("questionBtn");
+    const closeTutorialBtn = document.getElementById("close-tutorial-btn");
     const createBtn = document.getElementById("createBtn");
 
-    const steps = [
-        { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, because everything you do is a daily heroic.' },
-        { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event (I cooked breakfast, ran in the park, etc.) in the input field and click the pencil button. Alternatively, you can press the microphone button (or use built in speech-to-text if your device has) and speak into your device to record your event Let the image load, and you will have superhero you doing that event.' },
-        { element: '#deletePanelBtn', content: 'Deleting an event: AI is not perfect, and will therefore not produce a perfect image every time. So, if you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
-        { element: '#createBtn-container', content: 'Viewing your comic: At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
-    ];
+    // const steps = [
+    //     { element: '#createBtn', content: 'This is your superhero diary. Whether you are going for a run, cooking lunch, or doing homework, you can record it, because everything you do is a daily heroic.' },
+    //     { element: '#addPanelBtn', content: 'Adding an event: This is where you record an event. Click "Add Panel" to add a comic panel. Then click one of the + buttons to select the placement of your event. Once a panel is created, enter a description of your event (I cooked breakfast, ran in the park, etc.) in the input field and click the pencil button. Alternatively, you can press the microphone button (or use built in speech-to-text if your device has) and speak into your device to record your event Let the image load, and you will have superhero you doing that event.' },
+    //     { element: '#deletePanelBtn', content: 'Deleting an event: AI is not perfect, and will therefore not produce a perfect image every time. So, if you don\'t like the image generated or you made a mistake, you can delete the panel. Click the "Delete Panel" button and select unwanted panels. Once selected, you can click "Delete Selected" to delete the selected panels.' },
+    //     { element: '#createBtn-container', content: 'Viewing your comic: At the end of the day, when you have recorded all of your events, you can view your comic. Click the "Create" button to view your daily heroics! ' }
+    // ];
 
-    let currentStep = 0;
+    // let currentStep = 0;
     
-    const tutorialPopup = document.getElementById('tutorialPopup');
-    const tutorialContent = document.getElementById('tutorialContent');
-    const tutorialOverlay = document.getElementById('tutorialOverlay');
-    const nextStepButton = document.getElementById('nextStep');
-    const prevStepButton = document.getElementById('prevStep');
-    const skipButton = document.getElementById('skipTutorial');
-    const comicBackground = document.getElementById('comic-background');
+    // const tutorialPopup = document.getElementById('tutorialPopup');
+    // const tutorialContent = document.getElementById('tutorialContent');
+    // const tutorialOverlay = document.getElementById('tutorialOverlay');
+    // const nextStepButton = document.getElementById('nextStep');
+    // const prevStepButton = document.getElementById('prevStep');
+    // const skipButton = document.getElementById('skipTutorial');
+    // const comicBackground = document.getElementById('comic-background');
 
-    hideTutorial();
-    function resetTutorials() {
-        if(addPanelBtn.innerHTML == "Cancel") {
-            addPanelBtn.click();
-        }
-        if(deletePanelBtn.innerHTML == "Cancel") {
-            deletePanelBtn.click();
-        }
-        updatePanelCount();
-        addPanelBtn.removeEventListener('click', showPlusClickEvent);
-        addPanelBtn.style.zIndex = '';
-        document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
-        deletePanelBtn.style.zIndex = '';
-        document.getElementById("deleteConfirmDropdown").style.zIndex = '';
-        comicBackground.style.zIndex = '2';
-        createBtn.style.zIndex = '1';
-        document.querySelectorAll(".circle").forEach(elem => elem.style.zIndex = '3');
-        document.querySelectorAll('.grid-item').forEach(elem => {
-            elem.style.zIndex = '';
-            modalDisabled = false;
-        });
-        document.querySelectorAll('.plus-button').forEach((element) => {
-            element.style.zIndex = '';
-            element.removeEventListener('click', showPanelsEvent);
-        });
-        nextStepButton.innerText = "Next";
-    }
-    function showPanelsEvent() {
-        document.querySelectorAll('.grid-item').forEach(elem => {
-            elem.style.zIndex = '1000';
-            modalDisabled = true;
-        });
-    }
-    function showPlusClickEvent() {
-        document.querySelectorAll('.plus-button').forEach((element) => {
-            element.style.zIndex = '1000';
-            element.addEventListener('click', showPanelsEvent);
-        });
-    }
-    function showStep(stepIndex) {
-        const step = steps[stepIndex];
-        const targetElement = document.querySelector(step.element);
+    // hideTutorial();
+    // function resetTutorials() {
+    //     if(addPanelBtn.innerHTML == "Cancel") {
+    //         addPanelBtn.click();
+    //     }
+    //     if(deletePanelBtn.innerHTML == "Cancel") {
+    //         deletePanelBtn.click();
+    //     }
+    //     updatePanelCount();
+    //     addPanelBtn.removeEventListener('click', showPlusClickEvent);
+    //     addPanelBtn.style.zIndex = '';
+    //     document.querySelectorAll('.grid-item').forEach(elem => elem.style.zIndex = '');
+    //     deletePanelBtn.style.zIndex = '';
+    //     document.getElementById("deleteConfirmDropdown").style.zIndex = '';
+    //     comicBackground.style.zIndex = '2';
+    //     createBtn.style.zIndex = '1';
+    //     document.querySelectorAll(".circle").forEach(elem => elem.style.zIndex = '3');
+    //     document.querySelectorAll('.grid-item').forEach(elem => {
+    //         elem.style.zIndex = '';
+    //         modalDisabled = false;
+    //     });
+    //     document.querySelectorAll('.plus-button').forEach((element) => {
+    //         element.style.zIndex = '';
+    //         element.removeEventListener('click', showPanelsEvent);
+    //     });
+    //     nextStepButton.innerText = "Next";
+    // }
+    // function showPanelsEvent() {
+    //     document.querySelectorAll('.grid-item').forEach(elem => {
+    //         elem.style.zIndex = '1000';
+    //         modalDisabled = true;
+    //     });
+    // }
+    // function showPlusClickEvent() {
+    //     document.querySelectorAll('.plus-button').forEach((element) => {
+    //         element.style.zIndex = '1000';
+    //         element.addEventListener('click', showPanelsEvent);
+    //     });
+    // }
+    // function showStep(stepIndex) {
+    //     const step = steps[stepIndex];
+    //     const targetElement = document.querySelector(step.element);
         
-        tutorialContent.textContent = step.content;
-        tutorialPopup.style.display = 'block';
-        tutorialOverlay.style.display = 'block';
+    //     tutorialContent.textContent = step.content;
+    //     tutorialPopup.style.display = 'block';
+    //     tutorialOverlay.style.display = 'block';
 
-        switch(stepIndex) {
-            case 0: // intro
-                resetTutorials();
-                break;
-            case 1: // add panel
-                resetTutorials();
-                showPanelsEvent();
-                showPlusClickEvent();
-                targetElement.onclick = showPlusClickEvent;
-                break;
-            case 2: // delete panel
-                resetTutorials();
-                showPanelsEvent();
-                document.getElementById("deleteConfirmDropdown").style.zIndex = '1000';
-                break;
-            case 3: // create buttom
-                resetTutorials();
-                targetElement.style.zIndex = '1000';
-                comicBackground.style.zIndex = '1001';
-                break;
-        }
-        targetElement.style.zIndex = '1000';
+    //     switch(stepIndex) {
+    //         case 0: // intro
+    //             resetTutorials();
+    //             break;
+    //         case 1: // add panel
+    //             resetTutorials();
+    //             showPanelsEvent();
+    //             showPlusClickEvent();
+    //             targetElement.onclick = showPlusClickEvent;
+    //             break;
+    //         case 2: // delete panel
+    //             resetTutorials();
+    //             showPanelsEvent();
+    //             document.getElementById("deleteConfirmDropdown").style.zIndex = '1000';
+    //             break;
+    //         case 3: // create buttom
+    //             resetTutorials();
+    //             targetElement.style.zIndex = '1000';
+    //             comicBackground.style.zIndex = '1001';
+    //             break;
+    //     }
+    //     targetElement.style.zIndex = '1000';
         
-        // Enable or disable navigation buttons
-        prevStepButton.disabled = stepIndex === 0;
-        if(stepIndex === steps.length - 1) {
-            nextStepButton.innerText = "Let's Go!";
-        }
-    }
+    //     // Enable or disable navigation buttons
+    //     prevStepButton.disabled = stepIndex === 0;
+    //     if(stepIndex === steps.length - 1) {
+    //         nextStepButton.innerText = "Let's Go!";
+    //     }
+    // }
 
-    function hideTutorial() {
-        resetTutorials();
-        tutorialPopup.style.display = 'none';
+    // function hideTutorial() {
+    //     resetTutorials();
+    //     tutorialPopup.style.display = 'none';
+    //     tutorialOverlay.style.display = 'none';
+    //     currentStep = 0;
+    //     nextStepButton.innerText = 'Next';
+    // }
+
+    // nextStepButton.addEventListener('click', () => {
+    //     if(nextStepButton.innerText === "Let's Go!") {
+    //         hideTutorial();
+    //     } else {
+    //         currentStep++;
+    //         showStep(currentStep);
+    //     }
+    // });
+
+    // prevStepButton.addEventListener('click', () => {
+    //     currentStep--;
+    //     showStep(currentStep);
+    // });
+
+    // skipButton.addEventListener('click', hideTutorial);
+
+    tutorialBtn.addEventListener('click', () => {
+        tutorialOverlay.style.display = "block";
+        tabBtns[0].click(); // start with first tab active
+    });
+
+    // Tutorial Overlay Tab Logic
+    const tabBtns = tutorialOverlay.querySelectorAll('.tutorial-tab');
+    const videos = tutorialOverlay.querySelectorAll('.tutorial-video');
+    const tutorialCaptions = tutorialOverlay.querySelectorAll('.tutorial-caption');
+    videos.forEach(video => {
+        video.muted = true;
+        video.volume = 0;
+        video.addEventListener('volumechange', () => {
+            video.muted = true;
+            video.volume = 0;
+        });
+    });
+    tabBtns.forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+            tabBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            videos.forEach((vid, vIdx) => {
+                if (vIdx === idx) {
+                    tutorialCaptions[vIdx].style.display = 'block';
+                    vid.style.display = 'block';
+                    vid.currentTime = 0;
+                    vid.play();
+                } else {
+                    tutorialCaptions[vIdx].style.display = 'none';
+                    vid.pause();
+                    vid.style.display = 'none';
+                }
+            });
+        });
+    });
+
+        // Function to close tutorial modal
+    closeTutorialBtn.addEventListener("click", () => {
+        document.getElementById("tutorial-overlay").style.display = "none";
+        videos.forEach(vid => vid.pause());
         tutorialOverlay.style.display = 'none';
-        currentStep = 0;
-        nextStepButton.innerText = 'Next';
-    }
-
-    nextStepButton.addEventListener('click', () => {
-        if(nextStepButton.innerText === "Let's Go!") {
-            hideTutorial();
-        } else {
-            currentStep++;
-            showStep(currentStep);
-        }
-    });
-
-    prevStepButton.addEventListener('click', () => {
-        currentStep--;
-        showStep(currentStep);
-    });
-
-    skipButton.addEventListener('click', hideTutorial);
-
-    document.getElementById('questionBtn').addEventListener('click', () => {
-        currentStep = 0;
-        showStep(currentStep);
     });
     
     if(!isLocalStorageEnabled) {
@@ -213,7 +254,7 @@ document.addEventListener("DOMContentLoaded", function() {
         fillData(userID);    
     }
     
-    document.getElementById("createBtn").addEventListener("click", showComicPanels);
+    createBtn.addEventListener("click", showComicPanels);
     document.querySelector(".close-overlay").addEventListener("click", closeComicPanels);
 
     function generateComicLayout(n) {
@@ -238,8 +279,9 @@ document.addEventListener("DOMContentLoaded", function() {
             ],
             // 5 images
             [
-                ["panel0", "panel1", "panel2"],
-                ["panel3", "panel4", "panel4"]
+                ["panel0", "panel2"],
+                ["panel1", "panel2"],
+                ["panel3", "panel4"]
             ],
             // 6 images
             [
@@ -261,9 +303,9 @@ document.addEventListener("DOMContentLoaded", function() {
             ],
             // 9 images
             [
-                ["panel0", "panel1", "panel1"],
-                ["panel2", "panel4", "panel4"],
+                ["panel0", "panel1", "panel2"],
                 ["panel3", "panel4", "panel4"],
+                ["panel5", "panel4", "panel4"],
                 ["panel6", "panel6", "panel7"],
                 ["panel6", "panel6", "panel8"]
             ],
@@ -277,18 +319,19 @@ document.addEventListener("DOMContentLoaded", function() {
             // 11 images
             [
                 ["panel0", "panel1", "panel1"],
-                ["panel3", "panel2", "panel2"],
-                ["panel4", "panel5", "panel6"],
-                ["panel7", "panel8", "panel9"]
+                ["panel2", "panel2", "panel3"],
+                ["panel4", "panel5", "panel5"],
+                ["panel6", "panel7", "panel7"],
+                ["panel8", "panel9", "panel10"]
+
             ],
             // 12 images
             [
-                ["panel0", "panel0", "panel2"],
-                ["panel1", "panel3", "panel4"],
-                ["panel5", "panel5", "panel6"],
-                ["panel5", "panel5", "panel7"],
-                ["panel8", "panel9", "panel10"],
-                ["panel11", "panel12", "panel12"],
+                ["panel0", "panel0", "panel1"],
+                ["panel2", "panel3", "panel4"],
+                ["panel5", "panel6", "panel6"],
+                ["panel7", "panel8", "panel9"],
+                ["panel10", "panel1", "panel11"],
             ]
         ];
     
@@ -307,7 +350,7 @@ document.addEventListener("DOMContentLoaded", function() {
             row.forEach((cell, cIdx) => {
                 if (cell !== ".") {
                     if (!panelMap[cell]) {
-                        panelMap[cell] = { index: parseInt(cell.replace("panel", "")), row: rIdx, col: cIdx, w: 1, h: 1 };
+                        panelMap[cell] = { name: cell, index: parseInt(cell.replace("panel", "")), row: rIdx, col: cIdx, w: 1, h: 1 };
                     } else {
                         // Expand width or height if panel spans multiple cells
                         if (panelMap[cell].row === rIdx) panelMap[cell].w++;
@@ -316,7 +359,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             });
         });
-        const panels = Object.values(panelMap);
+        // Sort panels by their index to match imageObjects order
+        const panels = Object.values(panelMap).sort((a, b) => a.index - b.index);
     
         return { gridAreas, panels };
     }
@@ -341,6 +385,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // Clear previous comic grid
         comicGrid.innerHTML = "";
 
+        console.log("Generating comic layout with", imageObjects);
+
         // Generate layout using your function
         const { gridAreas, panels } = generateComicLayout(imageObjects.length);
 
@@ -349,13 +395,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Create and place each panel in the grid
         panels.forEach((panel, i) => {
-            if (!imageObjects[i]) return;
-            const imageUrl = imageObjects[i].image;
-            const captionText = imageObjects[i].description;
+            console.log(panel, i, panel.index, imageObjects[panel.index]);
+            if (!imageObjects[panel.index]) return;
+            const imageUrl = imageObjects[panel.index].image;
+            const captionText = imageObjects[panel.index].description;
 
             const panelDiv = document.createElement('div');
             panelDiv.classList.add('comic-panel');
-            panelDiv.style.gridArea = `panel${i}`;
+            panelDiv.style.gridArea = panel.name;
 
             const image = document.createElement('img');
             image.src = imageUrl;
@@ -371,9 +418,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const comicPanels = Array.from(comicGrid.children);
         const columns = getComputedStyle(comicGrid).gridTemplateColumns.split(' ').length;
 
-        comicPanels.forEach((panel, idx) => {
-            const row = Math.floor(idx / columns);
-            if (row % 2 === 0) {
+        comicPanels.forEach(panel => {
+            const gridRow = parseInt(getComputedStyle(panel).gridRowStart, 10);
+            if (gridRow % 2 === 1) {
                 panel.style.transform = 'skewX(-5deg)';
             } else {
                 panel.style.transform = 'skewX(5deg)';
@@ -483,8 +530,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // Function to close modal
-    closeBtn.onclick = function () {
-        modal.style.display = "none";
+    closeModalBtn.onclick = function () {
+        imageModal.style.display = "none";
     }
     
     // Function to open modal
@@ -497,7 +544,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if(deletePanelBtn.innerHTML == "Cancel") {
                     deletePanelBtn.click();
                 }
-                modal.style.display = "block";
+                imageModal.style.display = "block";
                 modalImg.src = imageUrl;
                 captionText.innerHTML = description ? description : "";
             }
@@ -567,6 +614,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Toggle delete panel mode
     deletePanelBtn.addEventListener("click", function() {
+        deleteConfirmBtn.disabled = true;
         deleteMode = !deleteMode;
         deleteConfirmDropdown.classList.toggle('hidden');
         addPanelBtn.style.pointerEvents = deleteMode ? 'none' : 'auto';
@@ -584,23 +632,23 @@ document.addEventListener("DOMContentLoaded", function() {
                         event.stopPropagation(); // Prevent click from bubbling up to grid-item
                         circle.classList.toggle("selected");
                         item.classList.toggle("highlight");
-
+                        let realIndex = -1;
                         if (circle.classList.contains("selected")) {
                             if (item.querySelector(".event-input")) {
+                                realIndex = index;
                                 selectedItems.push({eventInput: true, gridItem: item, index: index})
                             } else {
                                 // if selected, add index to selectedItems
-                                selectedItems.push({gridItem: item, imageObjects: imageObjects[index]});
+                                let imageObjectIndex = imageObjects.findIndex(obj => obj.image == item.querySelector(".generated-image").src);
+                                selectedItems.push({gridItem: item, index: imageObjectIndex});
+                                realIndex = imageObjectIndex;
                             }
                         } else {
                             // if deselected, remove index from selectedItems
-                            selectedItems.splice(index, 1);
+                            selectedItems.splice(realIndex, 1);
                         }
-                        if (selectedItems.length > 0) {
-                            deleteConfirmBtn.disabled = false;
-                        } else {
-                            deleteConfirmBtn.disabled = true;
-                        }
+
+                        deleteConfirmBtn.disabled = selectedItems.length == 0;
                     });
                     
                 }
@@ -615,25 +663,21 @@ document.addEventListener("DOMContentLoaded", function() {
         deleteConfirmDropdown.classList.add('hidden');
         let imageObjects = JSON.parse(localStorage.getItem('imageObjects')) || [];
         for (let imageObject of selectedItems) {
-            if (imageObject.eventInput) {
-                // If it's an event input, remove the grid item
-                const gridItem = imageObject.gridItem;
-                if (gridItem) {
-                    gridItem.remove();
-                }
-            }else {
-                // If it's an image object, remove the grid item and the image object
-                const gridItem = imageObject.gridItem;
-                if (gridItem) {
-                    gridItem.remove();
-                }
-                imageObjects.splice(imageObjects.indexOf(imageObject.imageObject, 1));
+            const gridItem = imageObject.gridItem;
+            if (gridItem) {
+                gridItem.remove();
+            }
+            if (!imageObject.eventInput) {
+                imageObjects.splice(imageObject.index, 1);
             }
         }
+
+        if (selectedItems.length !== 0) {
+            await saveImage(localStorage.getItem('userID'), imageObjects, true);
+        }
+
         selectedItems = [];
         
-            await saveImage(localStorage.getItem('userID'), imageObjects, true);
-
         hideDeletePanels();
         deletePanelBtn.innerText = 'Delete Panel';
         addPanelBtn.style.pointerEvents = 'auto';
@@ -820,7 +864,7 @@ function submitEvent(form, description) {
 
 async function generateImage(gridItem, description, attributes) {
     const prompt = `A high-energy comic book panel of a ${attributes.age} ${attributes.gender} superhero ${description}, 
-    drawn in a bold ink style with thick outlines, Ben-Day dots, and exaggerated perspective. 
+    drawn in a bold ink style with thick outlines and exaggerated perspective. 
     Color palette: Vibrant primaries (red/blue/yellow) with comic-book halftone shading. 
     Style: Cross between [Jack Kirby's dynamic poses] and [Bruce Timm's clean lines]. 
     Add speed lines, sound effects, and a dramatic spotlight.`;
@@ -879,9 +923,6 @@ async function saveImage(userID, imageObjects, updateDB) {
     // update imageObjects order
     imageObjects.forEach((imageObject, index) => {
         imageObject.order = index;
-        if (imageObject.image !== 'https://upload.wikimedia.org/wikipedia/commons/6/63/Icon_Bird_512x512.png') {
-            delete imageObject.image;
-        }
     });
     localStorage.setItem("imageObjects", JSON.stringify(imageObjects));
     if (updateDB) {

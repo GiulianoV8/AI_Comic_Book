@@ -618,7 +618,7 @@ app.get('/getUserData', async (req, res) => {
         console.log('User Data: ', data);
     
         // Get today's date in the user's local time zone
-        const today = 1 // Format: YYYYMMDD
+        const today = 1 // Should be fixed to after testing Format: YYYYMMDD
         // Convert lastLogin to the same format as today
         const lastLogin = parseInt(data.Item.lastLogin);
         console.log(today, lastLogin);
@@ -626,22 +626,22 @@ app.get('/getUserData', async (req, res) => {
         let firstLogin = false;
         const imageObjects = data.Item.imageObjects || [];
 
-        if (!lastLogin || lastLogin < today) {
-            firstLogin = true;
-            console.log("First login of the day!");
+        // if (!lastLogin || lastLogin < today) {
+        //     firstLogin = true;
+        //     console.log("First login of the day!");
     
-            // Update the last login date in DynamoDB, and delete all imageObjects
-            const updateParams = {
-                TableName: TABLE_NAME,
-                Key: { userID: userID },
-                UpdateExpression: "SET lastLogin = :date, imageObjects = :emptyList",
-                ExpressionAttributeValues: {
-                    ":date": today,
-                    ":emptyList": []
-                }
-            };
-            await docClient.update(updateParams);
-        }
+        //     // Update the last login date in DynamoDB, and delete all imageObjects
+        //     const updateParams = {
+        //         TableName: TABLE_NAME,
+        //         Key: { userID: userID },
+        //         UpdateExpression: "SET lastLogin = :date, imageObjects = :emptyList",
+        //         ExpressionAttributeValues: {
+        //             ":date": today,
+        //             ":emptyList": []
+        //         }
+        //     };
+        //     await docClient.update(updateParams);
+        // }
 
         let updatedImageObjects;
         if (imageObjects.length > 0 && !firstLogin) {

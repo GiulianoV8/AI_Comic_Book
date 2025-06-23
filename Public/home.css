@@ -15,7 +15,8 @@ nav {
     justify-content: space-around;
     background-color: #333;
     padding: 10px;
-    max-height: 90px;
+    max-height: 80px;
+    width: 100vw;
 }
 
 nav button {
@@ -69,10 +70,8 @@ a {
 .red-button {
     background-color: rgb(155, 0, 0);
 }
-#xBtn {
-    margin: 0;
-}
-#xBtn:hover {
+
+#rewriteBtn:hover {
     background-color: #cd0000;
     border-radius: 5px 0 0 5px; /* Rounded left corners */
 }
@@ -86,6 +85,7 @@ a {
     color: white;
     font-family: 'Comic Sans MS', sans-serif;
     font-size: 1em;
+    text-transform: uppercase;
     background-color: #cd0000;
     border: 2px solid #333;
     border-radius: 5px;
@@ -95,7 +95,7 @@ a {
     transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
 }
 #deleteConfirmBtn:hover {
-    background-color: #a00000;
+    background-color: #bc0000;
     box-shadow: 4px 4px 0 #5d0000; /* More pronounced shadow on hover */
     transform: translate(-2px, -2px); /* "Lifted" effect on hover */
 }
@@ -147,7 +147,6 @@ a {
     padding: 5px 10px;
     cursor: pointer;
     font-size: 16px;
-    height: 100%;
     font-family: 'Comic Sans MS', sans-serif;
     transition: background-color 0.3s, box-shadow 0.3s;
 }
@@ -176,7 +175,92 @@ input#comic-title {
     display: flex;
     justify-content: center;
     margin-bottom: 20px;
+    margin-top: 20px;
 }
+
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    overflow: scroll;
+
+}
+
+/* Modal */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 100; /* Sit on top */
+    padding-top: 5%; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+}
+
+/* Modal Content (the image) */
+.modal-content {
+    display: block;
+    width: 80vw;
+    max-width: 500px;
+    margin: auto;
+    border: 4px double rgb(255, 198, 0);
+    border-radius: 2px;
+}
+
+/* Caption of Modal Image */
+.caption {
+    margin: auto;
+    display: block;
+    width: 81vw;
+    max-width: 505px;
+    border: 4px double black;
+    border-radius: 0px 0px 25% 25%;
+    text-align: center;
+    padding: 10px 5px;
+    background-color: rgb(255, 198, 0);
+    color: black;
+    font-family: 'Comic Sans MS', sans-serif;
+    text-transform: uppercase;
+    line-height: 120%;
+    font-size: 120%;
+}
+
+/* The Close Button */
+.close {
+    text-align: center;
+    line-height: 0.75em;
+    position: fixed;
+    top: 2%;
+    right: 1%;
+    color: #e10000;
+    font-weight: bold;
+    transition: 0.3s;
+    cursor: pointer;
+    height: 1em;
+    width: 1em;
+    font-size: 2.5em;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: background-color, border, 0.1s ease-in-out;
+    background-color: rgb(213, 213, 213);
+}
+
+.close:hover,
+.close:focus {
+    color: #ff0b0b;
+    background-color: #959595;
+    border: 2px solid white;
+}
+
 
 #addPanelBtn, #deletePanelBtn, #createBtn {
     background-color: #FFEB3B; /* Bright yellow for a comic book feel */
@@ -195,6 +279,7 @@ input#comic-title {
 #createBtn {
     display: flex;
     justify-self: center;
+    margin-bottom: 10px;
 }
 
 #addPanelBtn:hover, #deletePanelBtn:hover {
@@ -223,8 +308,8 @@ input#comic-title {
 
 .loader {
     width: 15%;
-    height: 15%;
-    border: 5px solid #ff3a00;
+    aspect-ratio: 1 / 1;
+    border: 3px solid #ff3a00;
     border-radius: 50%;
     display: inline-block;
     box-sizing: border-box;
@@ -236,7 +321,7 @@ input#comic-title {
     position: absolute;
     width: 115%;
     height: 115%;
-    border: 5px solid #ff3a00;
+    border: 3px solid #ff6638;
     border-radius: 50%;
     display: inline-block;
     box-sizing: border-box;
@@ -278,13 +363,12 @@ input#comic-title {
     border: 3px double black;
     text-align: center;
     position: relative;
-    height: 100%; /* Ensure it takes up full height */
+    height: fit-content; /* Ensure it takes up full height */
     width: 100%; /* Ensure it takes up full width */
     max-width: 45vw;
     transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
     box-shadow: 3px 3px 0 #333;
     overflow: hidden;
-    min-height: 190px; /* Ensures that the grid item maintains a minimum height */
     aspect-ratio: 1 / 1; /* Ensures grid item has a consistent width to height ratio */
     box-sizing: border-box;
 }
@@ -451,25 +535,16 @@ input#comic-title {
     display: flex;
 }
 
-#deleteDropdown {
+#rewriteDropdown {
     display: block;
-    position: absolute;
-    min-width: 120px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    left: 100%;
-    max-height: 90%;
-    top: 0;
 }
 
-#deleteBtn {
-    color: white;
+#rewriteConfirmBtn {
     background-color: rgb(255, 31, 31);
     border: 2px solid rgb(159, 0, 0);
     border-radius: 0 5px 5px 0;
     padding: 5px;
     text-align: center;
-    width: 100%;
 }
 
 /* Hidden Elements */
@@ -545,88 +620,73 @@ input#comic-title {
     width: 20%;
 }
 
-.tutorial-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    display: none;
+#close-tutorial-btn {
+    position: relative;
 }
 
-/* Modal */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 100; /* Sit on top */
-    padding-top: 5%; /* Location of the box */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+#tutorial-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(20, 20, 30, 0.96);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: inherit;
 }
-
-/* Modal Content (the image) */
-.modal-content {
-    display: block;
-    width: 80vw;
-    max-width: 700px;
-    margin: auto;
-    margin-top: 25vh;
-    border: 4px double rgb(255, 198, 0);
-    border-radius: 2px;
+#tutorial-overlay #tutorial-tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1vw;
+  margin-top: 10vh;
 }
-
-/* Caption of Modal Image */
-.caption {
-    margin: auto;
-    display: block;
-    width: 81vw;
-    max-width: 705px;
-    border: 4px double black;
-    border-radius: 0px 0px 25% 25%;
-    text-align: center;
-    padding: 10px 5px;
-    background-color: rgb(255, 198, 0);
-    color: black;
-    font-family: 'Comic Sans MS', sans-serif;
-    text-transform: uppercase;
-    line-height: 120%;
-    font-size: 120%;
-}
-
-/* The Close Button */
-.close {
-    text-align: center;
-    line-height: 0.75em;
-    position: fixed;
-    top: 2%;
-    right: 1%;
-    color: #e10000;
-    font-weight: bold;
-    transition: 0.3s;
+#tutorial-overlay .tutorial-tab {
+    background: #3a2222;
+    color: #fff;
+    border: none;
+    outline: none;
+    padding: 2% 2%;
+    border-radius: 1.3vh 1.3vh 0 0;
     cursor: pointer;
-    height: 1em;
-    width: 1em;
-    font-size: 2.5em;
-    border-radius: 50%;
-    text-decoration: none;
-    transition: background-color, border, 0.1s ease-in-out;
-    background-color: rgb(213, 213, 213);
+    transition: background 0.2s, color 0.2s;
+    opacity: 0.8;
+    width: max-content;
+}
+#tutorial-overlay .tutorial-tab.active {
+    background: #d63838;
+    color: #fff4c8;
+    opacity: 1;
 }
 
-.close:hover,
-.close:focus {
-    color: #ff0b0b;
-    background-color: #959595;
-    border: 2px solid white;
+#tutorial-overlay .tutorial-video {
+  width: 100vw;
+  max-width: 1000px;
+  margin: auto;
+  object-fit: contain;
+  display: none;
+  background: #000;
+  border-radius: 2vh;
+  box-shadow: 0 0 2vw #000a;
+  position: relative;
+}
+#tutorial-overlay .tutorial-video:first-child {
+  display: block;
 }
 
+.tutorial-caption {
+    width: 95vw;
+    max-width: 1000px;
+}
+
+/* Remove obsolete slider/gallery styles */
+.tutorial-slider, .slider-3d, .slider-dot, .slider-arrow, .slider-track, .slider-panel {
+  display: none !important;
+}
+
+/* Title Box Adjustments for Comic Effect */
 .comic-title-box {
     padding: 5px 5px;
     background-color: rgb(255, 68, 0);
@@ -705,22 +765,9 @@ input#comic-title {
     flex-grow: 1; /* Allow to grow to fill available space */
 }
 
-.panel-caption {
-    width: 100%;
-    text-align: center;
-    background-color: #f0f0f0;
-    color: #000;
-    font-family: 'Comic Sans MS', sans-serif;
-    font-size: 0.9em;
-    padding: 5px;
-    margin-top: auto; /* Pushes the caption to the bottom */
-    box-sizing: border-box;
-    flex-shrink: 0; /* Prevents shrinking */
-}
-
 /* Comic Panel Enhancements */
 .comic-panel {
-    border: 4px double #e8ded1;
+    border: 4px double #4e4e4e;
     transition: box-shadow 0.2s, transform 0.2s;
     overflow: visible;
     width: 100%;
@@ -734,37 +781,19 @@ input#comic-title {
 .comic-grid {
     flex: 1 1 auto;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(23%, 1fr));
+    grid-template-rows: repeat(auto-fit, minmax(10%, 1fr));
     gap: 1px;
     width: 100%;
     height: 100%;
     max-height: 100%;
-    overflow: hidden;
+    overflow-y: scroll;
     box-sizing: border-box;
     align-items: stretch;
     justify-items: stretch;
     background-color: #e8ded1;
-}
-
-.panel-caption {
-    font-family: 'Bangers', 'Comic Sans MS', cursive, sans-serif;
-    font-size: 1.2em;
-    letter-spacing: 1.5px;
-    background: linear-gradient(90deg, #ffe600 60%, #ffcc00 100%);
-    color: #111;
-    border: 1px solid #000;
-    border-radius: 7px 2px 5px 2px;
-    padding: 4px 4px;
-    text-transform: uppercase;
-    position: relative;
-    z-index: 1;
-}
-.panel-caption.top {
-    margin-top: 1px;
-}
-
-.panel-caption.bottom {
-    margin-bottom: 1px;
+    border: 4px double #424242;
+    margin-top: 2%;
+    margin-bottom: 2%;
 }
 
 .panel-image {
@@ -776,7 +805,7 @@ input#comic-title {
 
 .comic-panel:hover .panel-image {
     box-shadow: 4px 4px 4px #000;
-    transform: scale(1.02) rotate(1deg);
+    transform: scale(1.02);
     z-index: 2;
 }
 
@@ -836,21 +865,101 @@ input#comic-title {
     }
 }
 
-.login-container.show,
-.signup-container.show,
-.attributes-container.show,
-.recover-password-container.show {
-	display: block;
-	opacity: 1;
+#tutorial-slider {
+    aspect-ratio: 16 / 9;
+    width: 75vw;
+    margin: 80px auto;
+    perspective: 750px;
+    transform-style: preserve-3d;
 }
 
-.login-button:hover,
-.signup-button:hover,
-.forgot-password-link:hover,
-button:hover,
-.recover-button:hover {
-	background-color: #c00;
+#tutorial-slider label {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 400ms ease;
 }
+
+#tutorial-slider label video {
+    width: 100%;
+    height: 100%;
+}
+
+#slider-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 75vw;
+  margin: 20px auto 0 auto;
+}
+
+input[type=radio] {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 2vw;
+  min-width: 15px;
+  aspect-ratio: 1 / 1;
+  margin: 0 10px;
+  opacity: 0.7;
+  transform: none;
+  cursor: pointer;
+  display: inline-block;
+}
+
+input[type=radio]:checked {
+  opacity: 1;
+}
+
+#slide1 {
+  background: yellow;
+}
+
+#slide2 {
+  background: yellowgreen;
+}
+
+#slide3 {
+  background: dodgerblue;
+}
+
+
+/* Slider Functionality */
+
+/* Active Slide */
+#s1:checked ~ #slide1 {
+  transform: translate3d(0%, 0, 0px);
+  box-shadow: 0 13px 26px rgba(0,0,0, 0.3), 0 12px 6px rgba(0,0,0, 0.2);
+}
+#s2:checked ~ #slide2 {
+  transform: translate3d(0%, 0, 0px);
+  box-shadow: 0 13px 26px rgba(0,0,0, 0.3), 0 12px 6px rgba(0,0,0, 0.2);
+}
+#s3:checked ~ #slide3 {
+  transform: translate3d(0%, 0, 0px);
+  box-shadow: 0 13px 26px rgba(0,0,0, 0.3), 0 12px 6px rgba(0,0,0, 0.2);
+}
+
+/* Next Slide */
+#s1:checked ~ #slide2,
+#s2:checked ~ #slide3,
+#s3:checked ~ #slide1 {
+  transform: translate3d(15%, 0, -100px);
+  box-shadow: 0 6px 10px rgba(0,0,0, 0.3), 0 2px 2px rgba(0,0,0, 0.2);
+}
+
+/* Previous Slide */
+#s1:checked ~ #slide3,
+#s2:checked ~ #slide1,
+#s3:checked ~ #slide2 {
+  transform: translate3d(-15%, 0, -100px);
+  box-shadow: 0 6px 10px rgba(0,0,0, 0.3), 0 2px 2px rgba(0,0,0, 0.2);
+}
+
 
 @media (max-width: 380px) {
     nav svg{
@@ -863,13 +972,13 @@ button:hover,
     }
     .edit-btn, .save-btn, .cancel-btn {
         font-size: 14px;
-        padding: 4px 8px;
+        padding: 3px;
     }
     .title-box span, .comic-title-box span, #createBtn{
         font-size: 1.2rem;
     }
-    #deleteBtn {
-        font-size: 0.8em;
+    #rewriteConfirmBtn {
+        font-size: 0.7em;
     }
     #addPanelBtn, #deletePanelBtn {
         font-size: 1em;
@@ -878,11 +987,14 @@ button:hover,
     .caption, .tutorial-navigation > button, .tutorial-popup > p {
         font-size: 1em;
     }
-    .panel-caption {
-        display: none;
+    .tutorial-tab {
+        font-size: 0.67em;
     }
     .close, .tutorial-popup h2 {
         font-size: 1.8em;
+    }
+    .tutorial-caption {
+        font-size: 1em;
     }
 }
 
@@ -893,14 +1005,14 @@ button:hover,
     }
     .edit-btn, .save-btn, .cancel-btn{
         font-size: 15px;
-        padding: 5px 9px;
+        padding: 3px;
     }
     .title-box span, .comic-title-box span, #createBtn{
         font-size: 1.3rem;
     }
-    #deleteBtn {
-        font-size: 1.1em;
-        padding: 1.5px;
+    #rewriteConfirmBtn {
+        font-size: 0.8em;
+        padding: 5px;
     }
     #addPanelBtn, #deletePanelBtn {
         font-size: 1em;
@@ -918,24 +1030,24 @@ button:hover,
     }
     .edit-btn, .save-btn, .cancel-btn {
         font-size: 16px;
-        padding: 6px 10px;
+        padding: 3px;
     }
     .title-box span, .comic-title-box span, #createBtn{
         font-size: 1.5rem;
     }
-    #deleteBtn {
-        font-size: 1.2em;
-        padding: 1.45px;
+    #rewriteConfirmBtn {
+        font-size: 1em;
+        padding: 2px;
     }
     #addPanelBtn, #deletePanelBtn {
         font-size: 1em;
         padding: 10px 18px;
     }
+    .tutorial-tab {
+        font-size: 0.9em;
+    }
     .caption, .tutorial-navigation > button, .tutorial-popup > p {
         font-size: 1.2em;
-    }
-    .panel-caption {
-        font-size: 0.8em;
     }
     .close, .tutorial-popup h2 {
         font-size: 2em;
@@ -953,22 +1065,28 @@ button:hover,
     .title-box span, .comic-title-box span, #createBtn{
         font-size: 1.6rem;
     }
-    #deleteBtn {
+    #rewriteConfirmBtn {
         font-size: 1.3em;
         padding: 3px;
     }
     #addPanelBtn, #deletePanelBtn, #createBtn {
         font-size: 1.6em;
-        padding: 12px 20px;
+        padding: 3px;
     }
     .event-input {
         font-size: 1.3em;
     }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+    .tutorial-tab {
+        font-size: 1.035em;
+    }
+    .caption, .tutorial-navigation > button, .tutorial-popup > p {
         font-size: 1.3em;
     }
     .close, .tutorial-popup h2 {
         font-size: 2em;
+    }
+    .grid-container {   
+        grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
     }
 }
 
@@ -978,7 +1096,7 @@ button:hover,
     }
     .edit-btn, .save-btn, .cancel-btn {
         font-size: 30px;
-        padding: 10px 15px;
+        padding: 4px;
     }
     .title-box span, #createBtn{
         font-size: 2.2rem;
@@ -986,23 +1104,20 @@ button:hover,
     .comic-title-box span{
         font-size: 2.4rem;
     }
-    #deleteBtn {
-        font-size: 1.6em;
+    #rewriteConfirmBtn {
+        font-size: 1.8em;
     }
     #addPanelBtn, #deletePanelBtn, #createBtn{
         font-size: 2em;
         padding: 12px 23px;
     }
-    .modal-content {
-        width: 450px;
-    }
-    .caption {
-        width: 460px;
-    }
     .event-input{
         font-size: 1.7em;
     }
-    .caption, .panel-caption, .tutorial-navigation > button, .tutorial-popup > p {
+    .tutorial-tab {
+        font-size: 1.5em;
+    }
+    .caption, .tutorial-navigation > button, .tutorial-popup > p {
         font-size: 1.4em;
     }
     .close, .tutorial-popup h2 {
@@ -1012,7 +1127,7 @@ button:hover,
         font-size: 6em;
     }
     .grid-container {   
-        grid-template-columns: repeat(auto-fit, minmax(30%, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(22%, 1fr));
     }
 }
 
@@ -1022,7 +1137,7 @@ button:hover,
     }
     .edit-btn, .save-btn, .cancel-btn {
         font-size: 35px;
-        padding: 12px 18px;
+        padding: 5px;
     }
     .title-box span, #createBtn{
         font-size: 2.4rem;
@@ -1030,20 +1145,20 @@ button:hover,
     .comic-title-box span{
         font-size: 2.7rem;
     }
-    #deleteBtn {
-        font-size: 2em;
+    #rewriteConfirmBtn {
+        font-size: 1.9em;
     }
     #addPanelBtn, #deletePanelBtn {
-        font-size: 2.3em;
+        font-size: 2.1em;
         padding: 15px 25px;
     }
-    .modal-content {
-        width: 480px;
+    .tutorial-tab {
+        font-size: 1.7em;
     }
-    .caption {
-        width: 490px;
-    }
-    .event-input , .caption , .panel-caption, .tutorial-navigation > button, .tutorial-popup > p{
+    .event-input , .caption , .tutorial-navigation > button, .tutorial-popup > p{
         font-size: 1.9em;
+    }
+    .tutorial-caption {
+        font-size: 1.2em;
     }
 }

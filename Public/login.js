@@ -331,20 +331,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	document.querySelector("#continue-sign-up-btn").addEventListener("click", (event) => {
 			event.preventDefault();
+			// if fields not filled out, deny
+			const usernameField = document.getElementById("newUsername").value.trim();
+			const emailField = document.getElementById("newEmail").value.trim();
+			const passwordField = document.getElementById("newPassword").value.trim();
+
+			if (!usernameField || !emailField || !passwordField) {
+				return; // Halt workflow
+			}
 			fetch("/check-username", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					username: document.getElementById("newUsername").value,
-					email: document.getElementById("newEmail").value,
+					username: usernameField.value,
+					email: emailField.value,
 				}),
 			})
 				.then((response) => response.json())
 				.then((data) => {
 					if (data.emailExists) {
-						const emailField = document.getElementById("newEmail");
 						emailField.style.color = "red";
 						emailField.value = "Email Already In Use!";
 						emailField.onclick = () => {
@@ -353,8 +360,6 @@ document.addEventListener("DOMContentLoaded", function () {
 						};
 					}
 					if (data.usernameExists) {
-						const usernameField =
-							document.getElementById("newUsername");
 						usernameField.style.color = "red";
 						usernameField.value = "Username Already In Use!";
 						usernameField.onclick = () => {
