@@ -484,7 +484,7 @@ app.post('/recover-password', async (req, res) => {
 });
 
 app.post('/signup', async (req, res) => {
-    const { username, email, password, attributes, comicTitle, lastLogin } = req.body;
+    const { username, email, password, attributes, comicTitle } = req.body;
     console.log('Signup request body:', req.body); // Log the request body for debugging
     if (!username || !email || !password || !attributes) {
         return res.status(400).json({ success: false, message: 'All fields are required.' });
@@ -501,7 +501,6 @@ app.post('/signup', async (req, res) => {
                 password: password,
                 attributes: attributes,
                 comicTitle: comicTitle,
-                lastLogin: lastLogin,
                 imageObjects: [],
             }
         };
@@ -617,34 +616,9 @@ app.get('/getUserData', async (req, res) => {
 
         console.log('User Data: ', data);
     
-        // Get today's date in the user's local time zone
-        const today = parseInt(new Date().toLocaleDateString('en-CA').replace(/-/g, '')); // Format: YYYYMMDD
-        // Convert lastLogin to the same format as today
-        const lastLogin = parseInt(data.Item.lastLogin);
-        console.log(today, lastLogin);
-
-        let firstLogin = false;
-        const imageObjects = data.Item.imageObjects || [];
-
-        if (!lastLogin || lastLogin < today) {
-            firstLogin = true;
-            console.log("First login of the day!");
-    
-            // Update the last login date in DynamoDB, and delete all imageObjects
-            const updateParams = {
-                TableName: TABLE_NAME,
-                Key: { userID: userID },
-                UpdateExpression: "SET lastLogin = :date, imageObjects = :emptyList",
-                ExpressionAttributeValues: {
-                    ":date": today,
-                    ":emptyList": []
-                }
-            };
-            await docClient.update(updateParams);
-        }
 
         let updatedImageObjects;
-        if (imageObjects.length > 0 && !firstLogin) {
+        if (imageObjects.length > 0) {
             // Generate presigned URLs for each image
             updatedImageObjects = await Promise.all(
                 imageObjects.map(async (imageObject) => {
@@ -668,7 +642,7 @@ app.get('/getUserData', async (req, res) => {
         }
         console.log('Updated Image Objects:', updatedImageObjects);
         
-        res.json({ item: { ...data.Item, imageObjects: updatedImageObjects, firstLogin: firstLogin } });
+        res.json({ item: { ...data.Item, imageObjects: updatedImageObjects} });
     } catch (error) {
         console.error('Error fetching data from DynamoDB:', error);
         res.status(500).json({ error: 'Internal Server Error' });

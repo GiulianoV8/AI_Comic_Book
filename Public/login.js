@@ -425,9 +425,6 @@ async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
 			password: newPassword,
 			attributes: attributes,
 			comicTitle: `${newUsername}'s Great Adventure`,
-			lastLogin: parseInt(
-				new Date().toLocaleDateString("en-CA").replace(/-/g, "")
-			),
 		}),
 	})
 		.then((response) => response.json())

@@ -1,8 +1,0 @@
--Integrate image generator (Novita)
-    -Add image fill
--Connect image resetting lambda function to AWS
--Create Tutorial
--Create comic display at Create!
-    -Ask user if sure
-    -Slideshow display
--Touch up CSS
