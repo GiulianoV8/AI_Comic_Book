@@ -615,7 +615,8 @@ app.get('/getUserData', async (req, res) => {
         }
 
         console.log('User Data: ', data);
-    
+        
+        const imageObjects = data.Item.imageObjects || [];
 
         let updatedImageObjects;
         if (imageObjects.length > 0) {
