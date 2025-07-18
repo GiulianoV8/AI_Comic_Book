@@ -641,7 +641,7 @@ input#comic-title {
   flex-direction: row;
   justify-content: center;
   gap: 1vw;
-  margin-top: 10vh;
+  margin-top: 1vh;
 }
 #tutorial-overlay .tutorial-tab {
     background: #3a2222;
