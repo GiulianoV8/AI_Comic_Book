@@ -225,7 +225,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     tutorialCaptions[vIdx].style.display = 'block';
                     vid.style.display = 'block';
                     vid.currentTime = 0;
-                    vid.play();
                 } else {
                     tutorialCaptions[vIdx].style.display = 'none';
                     vid.pause();
