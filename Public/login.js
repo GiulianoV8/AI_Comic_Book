@@ -128,6 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 // Show the generate avatar section
                 generateContainer.style.display = "block";
                 generateAvatarBtn.innerHTML === "Generate Superhero Avatar";
+				generateAvatarBtn.disabled = false;
 			};
 			reader.readAsDataURL(file);
 		}
@@ -165,6 +166,7 @@ document.addEventListener("DOMContentLoaded", function () {
 			// Show the generate avatar section
 			generateContainer.style.display = "block";
 			generateAvatarBtn.innerHTML === "Generate Superhero Avatar";
+			generateAvatarBtn.disabled = false;
 		} else {
 			// Retake photo
 			video.style.display = "block";
@@ -173,6 +175,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 			// Hide the generate avatar section
 			generateContainer.style.display = "none";
+			generateAvatarBtn.disabled = true;
 			avatarContainer.style.display = "none";
 		}
 	});
@@ -185,14 +188,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		const username = document.getElementById("newUsername").value.trim();
 
-		let imageBlob;
-		if (uploadedImage.style.display === "block") {
+		let imageBlob = null;
+		const ctx = canvas.getContext("2d");
+		const pixel = ctx.getImageData(0, 0, 1, 1).data;
+		const isNotBlank = pixel[3] !== 0; // alpha channel not zero means something was drawn
+		const isCanvasVisible = canvas.style.display !== "none";
+
+		if (uploadedImage.files && uploadedImage.files.length > 0) {
 			// Use the uploaded image
 			const response = await fetch(uploadedImage.src);
 			imageBlob = await response.blob();
-		} else {
+		} else if (isCanvasVisible && isNotBlank) {
 			// Use the captured image from the canvas
 			imageBlob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg"));
+		} else {
+			// No image available, show an error or handle accordingly
+			alert("Please upload an image or take a photo to generate your avatar.");
+			generateAvatarBtn.disabled = false;
+			loadingContainer.style.display = "none";
+			return;
 		}
 		console.log("imageBlob:", imageBlob);
 
@@ -345,8 +359,8 @@ document.addEventListener("DOMContentLoaded", function () {
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
-					username: usernameField.value,
-					email: emailField.value,
+					username: usernameField,
+					email: emailField,
 				}),
 			})
 				.then((response) => response.json())
@@ -368,7 +382,7 @@ document.addEventListener("DOMContentLoaded", function () {
 						};
 					}
 
-					if (!data.usernameExists && !data.emailExists) {
+					if ((!data.usernameExists && !data.emailExists) || !data.error) {
 						transitionForms(
 							".signup-container",
 							".attributes-container"
@@ -410,6 +424,7 @@ async function authenticate(username, password) {
 		.catch((error) => {
 			// Could not login
 			console.error("Error:", error);
+			alert("There was an error logging in. Please try again.");
 		});
 }
 
@@ -437,6 +452,7 @@ async function submitSignUp(newUsername, newEmail, newPassword, attributes) {
 		})
 		.catch((error) => {
 			console.error("Error:", error);
+			alert("There was an error signing up. Please try again.");
 		});
 }
 

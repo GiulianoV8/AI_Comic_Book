@@ -33,6 +33,10 @@ button, #upload-image-input{
     transition: 0.3s ease-in-out;
 }
 
+#upload-image-input {
+	max-width: 100%;
+}
+
 #image-capture-container {
     position: relative;
     width: 100%;
@@ -80,7 +84,7 @@ video, canvas {
     font-size: 16px;
 }
 
-#capture-btn:hover, #take-picture-btn:hover, #confirm-avatar-btn:hover, #upload-image-input:hover {
+#capture-btn:hover, #take-picture-btn:hover, #confirm-avatar-btn:hover, #upload-image-input:hover, #generate-avatar-btn:hover {
     background-color: rgb(255, 170, 0);
 }
 
@@ -111,9 +115,6 @@ video, canvas {
     transition: 0.3s;
 }
 
-#generate-avatar-btn:hover{
-    background-color: rgb(0, 80, 200);
-}
 
 #avatar-image {
     width: 100%;
@@ -123,6 +124,47 @@ video, canvas {
 	margin-right: auto;
 	border: 2px solid black;
     border-radius: 3%;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+	margin-top: 10px;
+    z-index: 10;
+}
+
+.loader {
+    width: 15%;
+    aspect-ratio: 1 / 1;
+    border: 3px solid #ff3a00;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    position: relative;
+    animation: pulse 1s linear infinite;
+}
+.loading:after {
+    content: '';
+    position: absolute;
+    width: 115%;
+    height: 115%;
+    border: 3px solid #ff6638;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    animation: scaleUp 1s linear infinite;
+}
+
+@keyframes scaleUp {
+  0% { transform: translate(-50%, -50%) scale(0) }
+  60% , 100% { transform: translate(-50%, -50%)  scale(1)}
+}
+@keyframes pulse {
+  0% , 60% , 100%{ transform:  scale(1) }
+  80% { transform:  scale(1.2)}
 }
 
 @keyframes bounce {
@@ -136,7 +178,7 @@ video, canvas {
 .attributes-container {
 	color: red;
 	text-shadow: 0.5px 0.5px black;
-	background: #fff;
+	background: beige;
 	border: 5px solid #000;
 	box-shadow: 10px 10px 0 #ff0000, 10px 10px 0 5px #000;
 	display: none;
@@ -230,9 +272,8 @@ option {
 #title {
 	background-color: red;
 	border: 5px solid #000;
-	color: black;
 	border-radius: 10px;
-	box-shadow: 10px 10px 0 #fff;
+	box-shadow: 5px 5px 2px black;
 	font-family: "Comic Sans MS", sans-serif;
 	margin-bottom: 2%;
 	margin-top: 2%;
@@ -240,6 +281,7 @@ option {
 	padding: 15px;
 	text-align: center;
 	transition: all 0.3s ease-in-out;
+	color: white;
 }
 
 .title-text {
@@ -255,7 +297,7 @@ option {
 	font-weight: normal;
 	margin-top: 10px;
 	text-shadow: 1px 0 #000;
-	color: white;
+	color: beige;
 }
 
 .recover-password-container {
